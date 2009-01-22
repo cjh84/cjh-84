@@ -1,0 +1,22 @@
+# this is a comment
+:terminators
+# bone prop. of parent in x,y, and z, rot axis and magnitude
+lhand 0.18 0.05 0.4 1.0 0.0 0.0 180
+rhand 0.18 0.05 0.4 1.0 0.0 0.0 180
+lfoot 0.1 0.15 0.4 0.0 1.0 0.0 110
+rfoot 0.1 0.15 0.4 0.0 1.0 0.0 110
+head 0.5 0.4 0.6 0.0 1.0 0.0 180
+
+:hierarchy
+pelvis lfemur 1 rfemur 1 thorax 0
+lfemur ltibia 1
+ltibia lfoot 1
+rfemur rtibia 1
+rtibia rfoot 1
+thorax lclavicle 1 rclavicle 1 head 0
+lclavicle lhumerus 1
+rclavicle rhumerus 1
+lhumerus lradius 1
+lradius lhand 1
+rhumerus rradius 1
+rradius rhand 1

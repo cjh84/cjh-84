@@ -1,0 +1,40 @@
+Phase 1 Project Selection Status Report
+
+Name: Cheryl Hung                                                           
+
+College: King's                                              
+
+User Identifier: cjh84
+
+Director of Studies: Dr Simone Teufel                                           
+
+Please complete 1, 2 and 3 below.
+
+1. Please write 100 words on your current project ideas.
+                                                                 
+This project involves using the Vicon motion capture system, together with machine learning techniques, to implement gesture recognition. Initially, I intend to use Hidden Markov Models and neural networks, comparing their success rate in my evaluation.
+
+A set of 5-10 gestures will drive a robot, including accelerate, decelerate and turn; currently an OLPC XO laptop mounted onto an iRobot Create. Extensions include:
+
+3D gestures, allowing people to move around while performing a gesture
+Multiperson gesture recognition, each user controlling one robot
+Using the Create touch sensors to detect collisions for a game
+Using the OLPC webcam to stream real time video from the robot's POV.                                                              
+
+2. Please list names of potential project supervisors.
+                                                                 
+Cecily Morrison, cpm38
+Laurel Riek, lr314
+
+3. Is there any chance that your project will involve any
+computing resources other than the Computing Service's PWF and
+software that is already installed there, for example: your own
+machine, machines in College, special peripherals, imported
+software packages, special hardware, network access, substantial
+extra disc space on the PWF.
+
+If so indicate below what, and what it is needed for.
+
+Vicon motion capture system, for gesture recognition
+Two iRobot Create and OLPC XO laptops; approximately £400 total. I have secured funding from the women@CL Outreach program for the inital robot, and have applied to my college for the second. 
+If the robots are unavailable, my backup plan is to drive a virtual robot using the same techniques.

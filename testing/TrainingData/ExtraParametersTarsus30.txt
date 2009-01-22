@@ -1,0 +1,3 @@
+NumReconThreads: -1
+NumKinThreads: -1
+EOF

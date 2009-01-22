@@ -1,0 +1,28 @@
+C The PHMM software package 
+C 
+C Copyright (C) Piero Fariselli 
+C 
+C 
+C This program is free software; you can redistribute it and/or modify
+C it under the terms of the GNU General Public License as published by
+C the Free Software Foundation; version 2 of the License. With the
+C exception that if you use this program in any scientific work you have
+C to explicitly state that you have used 'PHMM' and quote it.
+C This program is distributed in the hope that it will be useful, but
+C WITHOUT ANY WARRANTY; without even the implied warranty of
+C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+C General Public License for more details. You should have received a
+C copy of the GNU General Public License along with this program (in 
+C the file gpl.txt); if not, write to the Free Software Foundation, 
+C Inc., 59 Temple Place - Suite 330, Boston, MA 02111-13
+C
+C contacts: Piero Fariselli
+C           http://www.biocomp.unibo.it/piero
+C           e-mail: piero@biocomp.unibo.it, piero.fariselli@unibo.it
+C           Dept. of Biology
+C           University of Bologna
+C           via Irnerio 42
+C           40126 Bologna
+C           Italy
+C
+C 
