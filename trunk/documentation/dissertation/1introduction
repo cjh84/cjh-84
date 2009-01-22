@@ -1,0 +1,15 @@
+The Introduction should explain the principal motivation for the project. Show how the work fits into the broad area of surrounding Computer Science and give a brief survey of previous related work. It should generally be unnecessary to quote at length from technical papers or textbooks. If a simple bibliographic reference is insufficient, consign any lengthy quotation to an appendix. 
+
+The motivation of this project was to investigate different methods of gesture recognition as applied to real-time robotics control.
+
+Artificial intelligence is the study of agents who transform information about their surroundings into actions to achieve a goal. Early AI, based on playing games such as chess, used heuristics together with search techniques under various optimizations (minimax and alpha-beta pruning) to exhaustively search the game tree.
+
+This lead naturally on to machine learning, where instead of trying all possible paths, the computer could determine patterns in data based on seeing previous examples. Depending on whether these examples are labelled, supervised and unsupervised learning techniques have been used in data mining, natural language processing, search engines, financial fraud and many other applications. The key innovation was to use statistical methods, which allows use of imperfect data such as in many real world contexts.
+
+Pattern recognition is a specific example of machine learning which  aims to classify data into categories or patterns. Image processing and speech and handwriting recognition are both commercially available examples of pattern recognition, the former in CCTV systems to recognize human faces and the latter for hands-free data entry. Typically, the raw data is processed using feature extraction, to reduce the dimensionality and thus allow faster processing.
+
+Gesture recognition is temporal pattern recognition on hand, face or body gestures, typically to issue a command in real time rather than to classify a collection of data. Currently, easily available and widespread implementations exist in applications such as mouse gestures in the Opera web browser and the iPhone, which aim to allow intuitive interaction with a system.
+
+Conversely, robots have generally been operated by skilled engineers and researchers. The science fiction fantasy of ubiquitous robots in the home relies on natural interaction with humans, without extensive training, and with the ability to adapt and learn online from imperfect and noisy information. Machine learning is a good fit for these parameters, and thus the ambition was to implement real-time gesture recognition for control of robots.
+
+Specifically I designed a system using the Vicon motion capture system for data capture and its associated computer for the classifier. The robots used are iRobot Creates, connected to OLPC XO laptops for wireless control and webcam capabilities.

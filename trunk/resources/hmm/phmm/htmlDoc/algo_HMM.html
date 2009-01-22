@@ -1,0 +1,114 @@
+
+<!doctype html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module algo_HMM</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>algo_HMM</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/piero/PHMM/Src/algo_HMM.py">/home/piero/PHMM/Src/algo_HMM.py</a></font></td></tr></table>
+    <p><tt>This&nbsp;file&nbsp;contains&nbsp;the&nbsp;main&nbsp;algorithms<br>
+used&nbsp;to&nbsp;train&nbsp;the&nbsp;hmms,&nbsp;namely&nbsp;forward,backward,viterbi&nbsp;and&nbsp;bawn-welch</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#fffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="Numeric.html">Numeric</a><br>
+</td><td width="25%" valign=top><a href="copy.html">copy</a><br>
+</td><td width="25%" valign=top><a href="psyco.html">psyco</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-Baum_Welch"><strong>Baum_Welch</strong></a>(*args, **kwargs)</dt><dd><tt><a href="#-Baum_Welch">Baum_Welch</a>(hmm,set_of_trobj,Scale=None,labels=None,maxcycles=10000,tolerance=DEF.small_positive)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;o&nbsp;hmm&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;the&nbsp;hmm&nbsp;to&nbsp;train<br>
+&nbsp;&nbsp;&nbsp;&nbsp;o&nbsp;set_of_trobj&nbsp;&nbsp;-&gt;&nbsp;list&nbsp;of&nbsp;trainable&nbsp;objects<br>
+&nbsp;&nbsp;&nbsp;&nbsp;o&nbsp;Scale=None&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;scaling&nbsp;(if&nbsp;!=&nbsp;from&nbsp;None&nbsp;or&nbsp;[]&nbsp;etc.&nbsp;scaling&nbsp;is&nbsp;used<br>
+&nbsp;&nbsp;&nbsp;&nbsp;o&nbsp;labels=None&nbsp;&nbsp;&nbsp;-&gt;&nbsp;if&nbsp;labels&nbsp;is&nbsp;!=&nbsp;None&nbsp;labels&nbsp;of&nbsp;the&nbsp;trainable&nbsp;objects&nbsp;are&nbsp;used<br>
+&nbsp;&nbsp;&nbsp;&nbsp;o&nbsp;maxcycles=10000&nbsp;-&gt;&nbsp;maximum&nbsp;number&nbsp;of&nbsp;training&nbsp;cycles&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;o&nbsp;tolerance&nbsp;-&gt;&nbsp;we&nbsp;stop&nbsp;the&nbsp;learning&nbsp;if&nbsp;log(ProbNew/Probold)&nbsp;&lt;&nbsp;tolerance<br>
+&nbsp;&nbsp;&nbsp;&nbsp;o&nbsp;verbose&nbsp;-&gt;&nbsp;print&nbsp;on&nbsp;the&nbsp;screen&nbsp;the&nbsp;probability&nbsp;every&nbsp;cycles<br>
+&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;return&nbsp;(lPr,delta_P,cyc)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lPr&nbsp;-&gt;&nbsp;final&nbsp;log(probability)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;delta_P&nbsp;-&gt;&nbsp;log(ProbNew/Probold)/log(ProbNew)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cyc&nbsp;-&gt;&nbsp;final&nbsp;number&nbsp;of&nbsp;cycles</tt></dd></dl>
+ <dl><dt><a name="-ap_viterbi"><strong>ap_viterbi</strong></a>(hmm, seq, label_list<font color="#909090">=None</font>, labels<font color="#909090">=None</font>, Scale<font color="#909090">='y'</font>)</dt><dd><tt>viterbi&nbsp;algorithm&nbsp;on&nbsp;the&nbsp;a&nbsp;posteriori<br>
+if&nbsp;label_list&nbsp;==&nbsp;None&nbsp;:&nbsp;the&nbsp;state&nbsp;path&nbsp;is&nbsp;returned<br>
+else&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;label&nbsp;path&nbsp;is&nbsp;returned&nbsp;<br>
+&nbsp;<br>
+labels&nbsp;sequence&nbsp;labelling&nbsp;#&nbsp;this&nbsp;is&nbsp;used&nbsp;in&nbsp;the&nbsp;forward/backward<br>
+Scale&nbsp;!=&nbsp;None&nbsp;we&nbsp;use&nbsp;the&nbsp;scaling&nbsp;&nbsp;<br>
+-&gt;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;return(best_state_path,val)<br>
+&nbsp;&nbsp;&nbsp;best_state_path&nbsp;=&nbsp;the&nbsp;best&nbsp;path<br>
+&nbsp;&nbsp;&nbsp;val&nbsp;=&nbsp;the&nbsp;score&nbsp;of&nbsp;the&nbsp;best&nbsp;path</tt></dd></dl>
+ <dl><dt><a name="-eval_eMat"><strong>eval_eMat</strong></a>(*args, **kwargs)</dt><dd><tt>compute&nbsp;the&nbsp;eMat&nbsp;and&nbsp;update&nbsp;it<br>
+<a href="#-eval_eMat">eval_eMat</a>(hmm,&nbsp;seq,&nbsp;eMat)<br>
+eMat[s][i]&nbsp;=&nbsp;e(s,seq[i])&nbsp;is&nbsp;the&nbsp;precalculated&nbsp;emission&nbsp;probability&nbsp;matrix</tt></dd></dl>
+ <dl><dt><a name="-for_back"><strong>for_back</strong></a>(hmm, seq, Scale<font color="#909090">=None</font>, labels<font color="#909090">=None</font>)</dt><dd><tt>forward/backward&nbsp;algorithm&nbsp;<br>
+<a href="#-for_back">for_back</a>(hmm,&nbsp;seq,&nbsp;Scale=None,&nbsp;labels=None):<br>
+-&gt;&nbsp;<br>
+return(for_matrix,back_matrix,scale,log_Prob))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;for_matrix&nbsp;&nbsp;=&nbsp;calculated&nbsp;forward&nbsp;matrix&nbsp;shape=(Seqence&nbsp;length+1,&nbsp;number&nbsp;of&nbsp;states)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;back_matrix&nbsp;=&nbsp;calculated&nbsp;backward&nbsp;matrix&nbsp;shape=(Seqence&nbsp;length+1,&nbsp;number&nbsp;of&nbsp;states)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;scale&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;scale&nbsp;factor&nbsp;array&nbsp;shape=(Seqence&nbsp;length+1,)&nbsp;#&nbsp;if&nbsp;Scale!=None<br>
+&nbsp;&nbsp;&nbsp;&nbsp;log_Prob&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;log(&nbsp;P(sequence&nbsp;|&nbsp;hmm)&nbsp;)&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;states&nbsp;are&nbsp;in&nbsp;the&nbsp;hmm.topo_order</tt></dd></dl>
+ <dl><dt><a name="-for_back_mat"><strong>for_back_mat</strong></a>(hmm, seq, Scale<font color="#909090">=None</font>, labels<font color="#909090">=None</font>)</dt><dd><tt>forward/backward&nbsp;algorithm&nbsp;<br>
+<a href="#-for_back_mat">for_back_mat</a>(hmm,&nbsp;seq,&nbsp;Scale=None,&nbsp;labels=None):<br>
+-&gt;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;return(for_matrix,back_matrix,eMat,scale,log_Prob))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;for_matrix&nbsp;&nbsp;=&nbsp;calculated&nbsp;forward&nbsp;matrix&nbsp;shape=(Seqence&nbsp;length+1,&nbsp;number&nbsp;of&nbsp;states)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;back_matrix&nbsp;=&nbsp;calculated&nbsp;backward&nbsp;matrix&nbsp;shape=(Seqence&nbsp;length+1,&nbsp;number&nbsp;of&nbsp;states)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;eMat&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;precalculated&nbsp;emission&nbsp;probability&nbsp;matrix&nbsp;shape=(number&nbsp;of&nbsp;states,Seqence&nbsp;length)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;scale&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;scale&nbsp;factor&nbsp;array&nbsp;shape=(Seqence&nbsp;length+1,)&nbsp;#&nbsp;if&nbsp;Scale!=None<br>
+&nbsp;&nbsp;&nbsp;&nbsp;log_Prob&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;log(&nbsp;P(sequence&nbsp;|&nbsp;hmm)&nbsp;)&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;states&nbsp;are&nbsp;in&nbsp;the&nbsp;hmm.topo_order</tt></dd></dl>
+ <dl><dt><a name="-lnProb"><strong>lnProb</strong></a>(hmm, seq, Scale<font color="#909090">=None</font>, labels<font color="#909090">=None</font>)</dt><dd><tt><a href="#-lnProb">lnProb</a>(hmm,&nbsp;seq,&nbsp;Scale=None,&nbsp;labels=None)<br>
+computes&nbsp;ln(&nbsp;P(seq&nbsp;|&nbsp;hmm)&nbsp;)&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;logaritm&nbsp;of&nbsp;probability&nbsp;of&nbsp;the&nbsp;sequence&nbsp;seq&nbsp;given&nbsp;the&nbsp;hmm</tt></dd></dl>
+ <dl><dt><a name="-one_best_AK"><strong>one_best_AK</strong></a>(hmm, seq, Scale<font color="#909090">=None</font>)</dt><dd><tt>one&nbsp;best&nbsp;decoding&nbsp;algorithm&nbsp;which&nbsp;takes&nbsp;advantage&nbsp;of&nbsp;the&nbsp;precalculated&nbsp;emissions&nbsp;eMat<br>
+<a href="#-one_best_AK">one_best_AK</a>(hmm,&nbsp;seq,&nbsp;Scale=None)&nbsp;as&nbsp;we&nbsp;understood&nbsp;from&nbsp;Anders&nbsp;Krogh&nbsp;paper<br>
+(Two&nbsp;methods&nbsp;for&nbsp;improving&nbsp;performance&nbsp;of&nbsp;a&nbsp;HMM&nbsp;and&nbsp;their&nbsp;application&nbsp;for&nbsp;gene&nbsp;finding<br>
+&nbsp;ISMB&nbsp;1997&nbsp;179-186)<br>
+&nbsp;<br>
+o&nbsp;WARNING:&nbsp;the&nbsp;program&nbsp;may&nbsp;not&nbsp;work&nbsp;properly&nbsp;if&nbsp;there&nbsp;are&nbsp;null&nbsp;states&nbsp;different&nbsp;from<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;begin&nbsp;and&nbsp;end&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+-&gt;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;return(best_label_path,bestval)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bestval&nbsp;=&nbsp;the&nbsp;value&nbsp;of&nbsp;the&nbsp;best&nbsp;label&nbsp;path<br>
+&nbsp;&nbsp;&nbsp;&nbsp;best_label_path&nbsp;=&nbsp;the&nbsp;best&nbsp;label&nbsp;path&nbsp;(as&nbsp;string&nbsp;og&nbsp;labels)</tt></dd></dl>
+ <dl><dt><a name="-sum_aposteriori"><strong>sum_aposteriori</strong></a>(hmm, seq, Scale<font color="#909090">=None</font>, label_list<font color="#909090">=[]</font>, labels<font color="#909090">=None</font>)</dt><dd><tt>a&nbsp;posteriori&nbsp;decoding&nbsp;algorithm&nbsp;<br>
+<a href="#-sum_aposteriori">sum_aposteriori</a>(hmm,Scale=None,&nbsp;label_list=[])&nbsp;<br>
+Scale&nbsp;the&nbsp;scaling&nbsp;vector<br>
+label_list&nbsp;the&nbsp;list&nbsp;of&nbsp;all&nbsp;possible&nbsp;labels<br>
+labels&nbsp;is&nbsp;the&nbsp;sequence&nbsp;labelling&nbsp;used&nbsp;in&nbsp;the&nbsp;forward/backward&nbsp;phases<br>
+-&gt;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;return(aposteriori_mat,best_path,logProb)<br>
+&nbsp;&nbsp;&nbsp;if&nbsp;label_list&nbsp;!=&nbsp;[]&nbsp;then<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;best_path&nbsp;contains&nbsp;the&nbsp;best&nbsp;label<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;each&nbsp;sequence&nbsp;position<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;aposteriori_mat&nbsp;the&nbsp;corrisponding&nbsp;probabilities<br>
+&nbsp;&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;best_path&nbsp;contains&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;best&nbsp;state&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;each&nbsp;sequence&nbsp;position<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;aposteriori_mat&nbsp;the&nbsp;corrisponding&nbsp;probabilities</tt></dd></dl>
+ <dl><dt><a name="-viterbi"><strong>viterbi</strong></a>(hmm, seq, labels<font color="#909090">=None</font>)</dt><dd><tt>viterbi&nbsp;algorithm&nbsp;<br>
+<a href="#-viterbi">viterbi</a>(hmm,&nbsp;seq,&nbsp;labels=None):<br>
+-&gt;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;return(best_state_path)</tt></dd></dl>
+ <dl><dt><a name="-viterbi_label"><strong>viterbi_label</strong></a>(hmm, seq, labels<font color="#909090">=None</font>)</dt><dd><tt>viterbi&nbsp;algorithm&nbsp;<br>
+<a href="#-viterbi_label">viterbi_label</a>(hmm,&nbsp;seq,&nbsp;labels):<br>
+-&gt;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;return(best_LABEL_path)<br>
+&nbsp;&nbsp;&nbsp;best_LABEL_path&nbsp;=&nbsp;the&nbsp;path&nbsp;containing&nbsp;the&nbsp;labels&nbsp;of&nbsp;the&nbsp;best&nbsp;states</tt></dd></dl>
+</td></tr></table>
+</body></html>
