@@ -1,3 +1,12 @@
+/*
+I've attached the class. Each time you call it, it will give you a double array the length of the number of data points that you have requested.
+
+You can request the array by calling getData.
+You will need to change the array (I've marked it)chanFinder to match the names of the data fields that you want.
+
+I don't know what frame does. I may give the number of frames per second but it doesn't give the number of frame of data. I think it is only given on the initial handshake. 
+*/
+
 package projectorFirst1;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
