@@ -1,5 +1,6 @@
 #import ann.bpnn
 import os
+import bpnn
 import vicon
 
 class Trainer:
@@ -16,6 +17,7 @@ class Trainer:
 		acceldir = "/home/cheryl/project/testing/TrainingData/Accelerate"
 		accelerates = [(os.path.join(acceldir, a)) for a in os.listdir(acceldir) if os.path.isfile(os.path.join(acceldir, a))]
 
+		#Label accelerates with 0
 		for accelerate in accelerates:
 			acceldata = [(a,0) for a in Vicon.getData(accelerate)]
 		
@@ -23,17 +25,23 @@ class Trainer:
 		deceldir = "/home/cheryl/project/testing/TrainingData/Decelerate"
 		decelerates = [(os.path.join(deceldir, a)) for a in os.listdir(deceldir) if os.path.isfile(os.path.join(deceldir, a))]
 
+		#Label decelerates with 1
 		for decelerate in decelerates:
-			deceldata = Vicon.getData(decelerate)		
+			deceldata = [(a,1) for a in Vicon.getData(decelerate)]
+			
+		return [acceldata, deceldata]
 
+	def train(self):
+
+		pat = self.load()
 		
-		print acceldata[0]
-		print acceldata[1]
+		n = bpnn.NN(18, 20, 1)
 	
+		n.train(pat)
 
-
+		n.test(pat)
 
 	
 if __name__ == '__main__':
 	trainer = Trainer()
-	trainer.load()
+	trainer.train()

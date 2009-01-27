@@ -36,29 +36,53 @@ class DataParserR:
 						
 		except StopIteration:
 			pass
-	
+		
+		frames = merge(belt, lefthand, righthand)[2:]
+		return flatten(frames)
+		
 		# Discard headers
-		return self.flatten(zip(belt, lefthand, righthand)[2:])
-		
-	def flatten(self, data):
-		#Converts the mixed tuple and list return type into one list per frame
-		#Floaterize
-		#Use mm ints instead of floats for position? Exact value not important with ANN?
-		for frame in data:
-			frame = list(frame)
-			for bodypart in frame:
-				bodypart = [float(datapoint) for datapoint in bodypart]
-			frame = sum(frame, [])
-
-		return data
-		
-		'''
-		if not isinstance(line,(tuple,list)): return [line]
-		if len(line)==0: return []
-		return self.flatten(line[0])+self.flatten(line[1:])
-		'''
+		#return self.flatten(zip(belt, lefthand, righthand)[2:])		
 	
+def numberize(ls):
+	fls = []
+	for l in ls:
+		fls.append(map(float_and_round, l))
+	return fls
+
+def float_and_round(str_numb):
+	return int(float(str_numb)*1000)
+
+	
+def flatten(data):
+	#Use mm ints instead of floats for position? Exact value not important with ANN?
+	flatdata = []
+	for frame in data:
+		flatdata.append(sum(numberize(frame), []))
+	return flatdata
+	
+	'''
+	if not isinstance(line,(tuple,list)): return [line]
+	if len(line)==0: return []
+	return self.flatten(line[0])+self.flatten(line[1:])
+	'''
+	
+def merge(*args):
+	#Identical to zip() but returns a list of lists
+    ret = []
+    i = 0
+    try:
+        while 1:
+            item = []
+            for s in args:
+                item.append(s[i])
+            ret.append(item)
+            #ret.append(tuple(item))
+            i = i + 1
+    except IndexError:
+        return ret	
+
 if __name__ == '__main__':
 	vicon = DataParserR()		
-	print vicon.getData("/home/cheryl/project/testing/TrainingData/Accelerate/001a.csv")[0]
+	data = vicon.getData("/home/cheryl/project/testing/TrainingData/Accelerate/001a.csv")
+	print data
 
