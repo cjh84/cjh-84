@@ -69,6 +69,7 @@ class NN:
         for j in range(self.nh):
             sum = 0.0
             for i in range(self.ni):
+            	print self.ai[i], self.wi[i][j]
                 sum = sum + self.ai[i] * self.wi[i][j]
             self.ah[j] = sigmoid(sum)
 
