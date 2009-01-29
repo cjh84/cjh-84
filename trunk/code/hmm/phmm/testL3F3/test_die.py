@@ -20,7 +20,7 @@ pset=open(sys.argv[1]).readlines()
 # read all proteins
 trobjlist=[]
 for protname in pset:
-#    print protname.strip()+".io"
+    #print protname.strip()+".io"
     prot=open(protname.strip()).readlines()
     seq=[]
     labels=[]

@@ -1,8 +1,4 @@
-# This is the Makefile for the demonstration dissertation
-# written by Martin Richards
-#
-# Note that continuation lines require '\'
-# and that TAB is used after ':' and before unix commands.
+# This is the Makefile for the proposal.
 
 DISS = diss.tex refs.bib propbody.tex figs/diagram.eps makefile.txt
 
