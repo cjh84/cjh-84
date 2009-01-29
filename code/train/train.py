@@ -2,6 +2,7 @@
 import os
 import bpnn
 import vicon
+import format
 
 class Trainer:
 
@@ -16,10 +17,15 @@ class Trainer:
 
 		acceldir = "/home/cheryl/project/testing/TrainingData/Accelerate"
 		accelerates = [(os.path.join(acceldir, a)) for a in os.listdir(acceldir) if os.path.isfile(os.path.join(acceldir, a))]
-
+		
+		#Preprocess
 		#Label accelerates with 0
 		for accelerate in accelerates:
-			acceldata = [(a,0) for a in Vicon.getData(accelerate)]
+			acceldata = [[a,[0]] for a in Vicon.getData(accelerate)]
+		
+		import pprint
+		p = pprint.PrettyPrinter()
+		#p.pprint(acceldata[0])
 		
 		#Read in examples of decelerate gestures
 		deceldir = "/home/cheryl/project/testing/TrainingData/Decelerate"
@@ -27,15 +33,26 @@ class Trainer:
 
 		#Label decelerates with 1
 		for decelerate in decelerates:
-			deceldata = [(a,1) for a in Vicon.getData(decelerate)]
+			deceldata = [[d,[1]] for d in Vicon.getData(decelerate)]
 			
-		return [acceldata, deceldata]
+		trainingdata = []
+		trainingdata.extend(acceldata)
+		trainingdata.extend(deceldata)
+		
+		return trainingdata
+
+	def preprocess(self, gesturedir, label):
+		gestures = [(os.path.join(gesturedir, g)) for g in os.listdir(gesturedir) if os.path.isfile(os.path.join(gesturedir, g))]
+		for gesture in gestures:
+			
+			gesturedata = [[frame,[label]] for frame in Vicon.getData(gesture)]
+
 
 	def train(self):
 
 		pat = self.load()
-		
-		n = bpnn.NN(18, 20, 1)
+
+		n = bpnn.NN(18, 18, 1)
 	
 		n.train(pat)
 

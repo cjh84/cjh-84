@@ -69,7 +69,7 @@ class NN:
         for j in range(self.nh):
             sum = 0.0
             for i in range(self.ni):
-            	print self.ai[i], self.wi[i][j]
+            	#print self.ai[i], self.wi[i][j]
                 sum = sum + self.ai[i] * self.wi[i][j]
             self.ah[j] = sigmoid(sum)
 
@@ -158,14 +158,18 @@ def demo():
         [[1,0], [1]],
         [[1,1], [0]]
     ]
-
+    
     # create a network with two input, two hidden, and one output nodes
     n = NN(2, 2, 1)
+    
     # train it with some patterns
     n.train(pat)
+
     # test it
     n.test(pat)
-
+    
+    import pprint
+    p = pprint.PrettyPrinter()
 
 
 if __name__ == '__main__':

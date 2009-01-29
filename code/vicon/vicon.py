@@ -50,6 +50,7 @@ def numberize(ls):
 	return fls
 
 def float_and_round(str_numb):
+	#Multiply by 1000 so that everything doesn't round to same values!
 	return int(float(str_numb)*1000)
 
 	
