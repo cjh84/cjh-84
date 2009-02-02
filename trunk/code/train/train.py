@@ -2,63 +2,62 @@
 import os
 import bpnn
 import vicon
-import format
+import params
 
 class Trainer:
 
+	def __init__(self):
+		self.vicon = vicon.DataParserR()
+		self.neural_network = bpnn.NN(18, 18, 1)
+
 	def load(self):
 	
-		Vicon = vicon.DataParserR()
 		#trainingdata = "/home/cheryl/project/testing/TrainingData"
 		#for gestures in os.listdir(trainingdata):
 		#	for gesturefile in os.listdir(trainingdata + gestures):
 			
-		#Read in examples of accelerate gestures
-
-		acceldir = "/home/cheryl/project/testing/TrainingData/Accelerate"
-		accelerates = [(os.path.join(acceldir, a)) for a in os.listdir(acceldir) if os.path.isfile(os.path.join(acceldir, a))]
 		
-		#Preprocess
-		#Label accelerates with 0
-		for accelerate in accelerates:
-			acceldata = [[a,[0]] for a in Vicon.getData(accelerate)]
+		trainingdata = []	
+	
+		trainingdata.extend(self.preprocess("/home/cheryl/project/testing/TrainingData/Accelerate", 0))
+		trainingdata.extend(self.preprocess("/home/cheryl/project/testing/TrainingData/Decelerate", 1))
 		
-		import pprint
-		p = pprint.PrettyPrinter()
-		#p.pprint(acceldata[0])
-		
-		#Read in examples of decelerate gestures
-		deceldir = "/home/cheryl/project/testing/TrainingData/Decelerate"
-		decelerates = [(os.path.join(deceldir, a)) for a in os.listdir(deceldir) if os.path.isfile(os.path.join(deceldir, a))]
-
-		#Label decelerates with 1
-		for decelerate in decelerates:
-			deceldata = [[d,[1]] for d in Vicon.getData(decelerate)]
-			
-		trainingdata = []
-		trainingdata.extend(acceldata)
-		trainingdata.extend(deceldata)
-		
-		return trainingdata
+		return trainingdata		
 
 	def preprocess(self, gesturedir, label):
+		#Load a set of gestures and label
+		#Preprocess: subtract belt position from lefthand and righthand
 		gestures = [(os.path.join(gesturedir, g)) for g in os.listdir(gesturedir) if os.path.isfile(os.path.join(gesturedir, g))]
+		
 		for gesture in gestures:
+			gesturedata = [[frame,[label]] for frame in self.vicon.getData(gesture)]
 			
-			gesturedata = [[frame,[label]] for frame in Vicon.getData(gesture)]
+		return gesturedata
 
 
 	def train(self):
 
 		pat = self.load()
 
-		n = bpnn.NN(18, 18, 1)
+		
+		"""
+		import pprint
+		p = pprint.PrettyPrinter()
+		p.pprint(pat[0])
+		"""
 	
-		n.train(pat)
+		#self.neural_network.train(pat)
 
-		n.test(pat)
 
+	def test(self):
+	
+		testdata = []
+		testdata = self.preprocess("/home/cheryl/project/testing/TestingData", None)
+		print testdata[0]
+		#self.neural_network.test(testdata)
+		
 	
 if __name__ == '__main__':
 	trainer = Trainer()
 	trainer.train()
+	trainer.test()
