@@ -159,6 +159,8 @@ def demo():
         [[1,1], [0]]
     ]
     
+    print pat[0]
+    
     # create a network with two input, two hidden, and one output nodes
     n = NN(2, 2, 1)
     

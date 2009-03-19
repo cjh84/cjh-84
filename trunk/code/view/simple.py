@@ -1,0 +1,18 @@
+from Tkinter import *
+from Arena import Arena
+from WalkingTurtle import WalkingTurtle
+from Vector import *
+import scop
+
+sock1 = scop.scop_open("www.srcf.ucam.org", "view1")
+sock2 = scop.scop_open("www.srcf.ucam.org", "view2")
+
+scop.scop_listen(sock1, "p1ctrl")
+scop.scop_listen(sock2, "p2ctrl")
+
+tk = Tk()
+arena = Arena(tk, sock1, sock2)
+arena.pack()
+arena.add(WalkingTurtle(Vector(200,300), 0, 1, fill='turquoise'))
+arena.add(WalkingTurtle(Vector(600,300), 0, 1, fill='purple'))
+tk.mainloop()

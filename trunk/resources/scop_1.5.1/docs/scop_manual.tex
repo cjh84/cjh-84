@@ -1,0 +1,1408 @@
+\documentclass[12pt,a4paper,twoside]{article}
+\usepackage{fancyhdr}
+
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{2ex plus1ex minus 0.5ex}
+
+\addtolength{\evensidemargin}{-2.5cm}
+\addtolength{\oddsidemargin}{-0.5cm}
+\addtolength{\textwidth}{3cm}
+
+\addtolength{\headheight}{0.2cm}
+\addtolength{\topmargin}{-1cm}
+\addtolength{\textheight}{2.5cm}
+% \addtolength{\footskip}{0.5cm}
+
+\renewcommand{\_}{\texttt{\symbol{95}}}
+\addtolength{\fboxsep}{0.1cm}
+\newcommand{\param}[1]{\textit{\textrm{\textmd{#1}}}}
+\newcommand{\codebar}{\rule{\textwidth}{0.3mm}}
+
+\newlength{\codelen}
+\newcommand{\code}[1]
+{\begin{center}\fbox{\parbox{16cm}{\texttt{#1}}}\end{center}}
+
+\fancyhead{}
+\fancyhead[RO,LE]{\thepage}
+\fancyhead[LO,RE]{SCOP Programmer's Manual}
+\fancyfoot{}
+\pagestyle{fancy}
+
+\input{macros}
+\begin{document}
+
+\centerline{\textbf{\LARGE SCOP Programmer's Manual}}
+\vspace{0.5cm}
+\centerline{Version 1.5, 11th September 2006}
+\centerline{David Ingram (\texttt{dmi1000@cam.ac.uk})}
+
+{ \parskip 1mm plus 1pt \tableofcontents }
+
+\section{API Structure}
+
+This programmer's manual describes the SCOP API (for a general
+introduction to SCOP and what it can do, please see the separate
+overview and installation guide document). The API is structured in
+several layers:
+
+\begin{bulletlist}
+\item \textbf{Level 0} - Protocol
+\item \textbf{Level 1} - Library calls
+\item \textbf{Level 2} - Types (XML)
+\item \textbf{Level 3} - Reflection
+\item \textbf{Level 4} - Shell commands
+\end{bulletlist}
+
+If you want to get started programming quickly, just look at the
+documentation for level 1. Level 0 describes the low-level protocol,
+and levels 2 \& 3 are just further refinement. In this manual \S
+\ref{level1} (which describes API level 1) contains all the functions
+you need to write a program using SCOP.
+
+Level 3 is a work-in-progress, intended to provide type checking and
+introspective capabilities. Currently it is not shipped with SCOP so
+you can ignore it (unless you are using the cookie feature).
+
+Level 4 is the command line interface, which is described in the
+installation guide. It is useful for trying things out and for
+debugging.
+
+Note: it's not a good idea to use a mixture of levels, unless you
+know exactly what you are doing.
+
+\section{Language bindings}
+
+Bindings currently exist for C++, Python and Java, with contributed
+support for C and Scheme.
+
+In principle any language can be used to access SCOP via API levels 0
+and 4 (because you can write your own library routines to implement as
+much of the protocol as you need, or invoke the system command
+interpreter to call the shell utilities from your program).
+
+Support for levels 1 to 3 requires a language binding. These are easy
+to create because only the client-side library needs to be ported (the
+server and command line utilities can still be written in C++).
+
+The main manual describes the C++ binding; the Java and Python syntax
+are covered in separate annexes. I have chosen to present it this way
+rather than to describe the API in pseudo-code followed by bindings for
+all languages. This is because (i) in that case \textit{everyone}
+suffers the inconvenience of cross-referencing the API, and (ii) C++ is
+better defined than pseudo-code, and I suspect most programmers have a
+fair idea of what the basic syntax means.
+
+\subsection{C++}
+
+C++ is fully supported at levels 1 and 2.
+
+The interface actually isn't particularly object-oriented;
+it would arguably be better to create an SCOP connection class
+and make the function calls methods of this class, to avoid
+passing a socket parameter to every call.
+
+\subsection{Java}
+
+The Java bindings fully implement levels 1 and 2. The syntax is
+described in the separate annex to this document.
+
+\subsection{Python}
+
+The Python binding also provides full functionality at levels 1 and 2,
+and specifics are described in another annex.
+
+\subsection{C}
+
+Plain C is not officially supported. However, SCOP makes only light use
+of C++'s additional features and Sven Hartrumpf has now created a C
+port of SCOP.
+
+\subsection{Scheme}
+
+Sven has also completed a Scheme language binding for SCOP, which
+is maintained separately (not included in the main package).
+
+\section{Programming model}
+
+\subsection{Connections}
+
+\sloppypar{
+You may open the library multiple times from within the same program,
+thereby holding several
+connections to the \texttt{scopserver}. This is sometimes useful for
+listening to multiple event sources. It is also encouraged for
+clarity and to avoid errors when you are doing complex mixtures of
+message passing, receiving and RPC's (even when they could in principle
+be done on the same connection).}
+
+Connections are returned to you from the library as standard UNIX file
+descriptors, each of which identifies an open TCP/IP socket. You can
+therefore use the operating system's ordinary \texttt{select()} call to
+handle multiple connections at once or test if events have arrived,
+therefore integrating SCOP communications cleanly with the rest of your
+program's I/O. SCOP does not require you to hand control over to a
+built-in event loop, so you can organise your program's flow of control
+any way you see fit.
+
+\subsection{Endpoints}
+
+Every connection to the server has a name, which you
+specify when you open it. Actually the underlying protocol doesn't
+demand that you set a name, but until you do so your connection
+is labelled \texttt{Unnamed}. You can also specify that you wish
+to listen to events sent to a more general category name in which you
+express ``interest''.
+
+Connection \textit{names} and \textit{interests} are collectively
+called \textit{endpoints}. Messages can be sent to any endpoint.
+Effectively all clients ``listen'' to their own name, regardless of
+whether they have mentioned an interest as well. If multiple clients
+have the same name or interest they will all receive a copy of any
+messages sent there.
+
+If no-one is listening to an endpoint the default behaviour is to
+silently discard messages. This allows you to start up event sources
+and sinks in any order, and to restart servers without affecting
+clients, since \texttt{scopserver} will rebind endpoints to the same
+name without disturbing other connections. This is in contrast
+to traditional systems where clients must register with services
+which are already running, and need to be restarted if the server
+dies. \texttt{scopserver} \textit{decouples} event sources and sinks.
+
+You may have noticed that supporting both names and interests is almost
+redundant; multicast works to both types of endpoint and names are not
+used for anything other than to label endpoints for incoming messages.
+Indeed a previous version of SCOP only supported interests (and not
+names). The main problem with this is that when clients are listed
+using \texttt{scop list} they are all described according to the
+endpoint they are listening to, so it is difficult to tell them apart.
+It is therefore important to choose names which accurately describe the
+\textit{client}, and interests which cover the kinds of
+\textit{event source} you want to hear from.
+
+The RPC commands do not allow multicast since their purpose is
+to contact a specific server by name.
+
+\subsection{Scenarios}
+
+Here are some typical communication scenarios, illustrating
+choices of endpoints:
+
+\begin{center}
+\begin{tabular}{|l|l|l|l|}
+\hline
+& \rule[-3mm]{0mm}{8mm}Message source name &
+Destination interest & Message target name[s]\\
+\hline
+1 & \rule{0mm}{5mm}Window Manager & \textit{-- not set --} & Panel dock\\
+2 & Weather station & Weather update & Alpha, Beta, Gamma (clients)\\
+3 & Beta & P2P file share & Alpha, Beta, Gamma (peers)\\
+4 & Alpha, Beta, Gamma & \textit{-- not set --} & Central log facility\\
+\hline
+\end{tabular}
+\end{center}
+
+The first example is a point-to-point message which is sent directly
+to the target's name (Panel dock), so no listening interest is necessary.
+The second example is a multicast to a set of different clients all
+of whom are listening to the ``Weather update'' endpoint. In the third
+case the sender also happens to be one of the clients.
+The final case demonstrates fan-in, with
+multiple clients of the central log facility sending messages to it.
+
+In keeping with the layered design philosophy, SCOP does not provide
+\textit{event filtering} services. You can easily build these on top of
+SCOP by writing your own event filtering server, which listens to streams
+of interest and outputs filtered versions.
+
+\section{API Level 1 - Library calls}
+\label{level1}
+
+\subsection{General semantics}
+
+The level 1 API is simple because it only supports one datatype,
+namely null-terminated ASCII strings. It is up to you how you structure the
+information you send.
+
+The following memory management strategy is consistently
+applied to all SCOP library functions.
+Buffers passed \textbf{to} the library must be \textit{allocated
+and freed by you}. You may free them immediately after the call which
+uses them.
+Buffers returned to you \textbf{from} the library are
+\textit{allocated by the library} and
+must be \textit{freed by you} using the standard C++ \texttt{delete} keyword
+(which is why the library can't be called from plain C without some
+modification).
+
+Endpoint names may include any printable character (including spaces)
+except for the exclamation mark.
+
+\subsection{Connection establishment and teardown}
+
+\code{%
+int scop\_open(const char *remote\_hostname, const char *name,
+int unique = 0);\\
+void scop\_listen(int sock, const char *interest, int unique = 0);\\
+int close(int sock);
+}
+
+\texttt{scop\_open} returns a file descriptor (referred to later as
+\texttt{sock}) on success, or -1 if there's an error (which usually
+means there's no \texttt{scopserver} process to connect to).
+
+Specify ``\texttt{localhost}'' for \texttt{remote\_hostname} if you
+aren't using a remote \texttt{scopserver}. UNIX domain sockets are not
+supported at present, only local-case TCP.
+
+The \texttt{name} may be \texttt{NULL} if you wish to remain anonymous
+(you can't receive messages in this case). Note that it is encouraged
+to name endpoints even if you are only going to send messages,
+so that event sources can be listed with ``\texttt{scop list}''.
+
+If you set the \texttt{unique} flag, any clients already connected with the
+same name are disconnected from
+\texttt{scopserver} by this call first. Leave \texttt{unique} set to zero if
+you wish to perform multicast transmissions to this endpoint.
+
+Connections are terminated using the \textit{normal} OS \texttt{close}
+routine for sockets (note the lack of \texttt{scop} prefix).
+
+\subsection{Message functions}
+
+\code{%
+int scop\_send\_message(int sock, const char *endpoint,
+const char *message, int verify = 0);\\
+char *scop\_get\_message(int sock);
+}
+
+Following the memory management conventions, it
+is safe to delete \texttt{message} as soon as \texttt{scop\_send\_message}
+returns.
+
+If \texttt{verify} = \texttt{1} then \texttt{scop\_send\_message}
+returns the number of clients actually sent to, which may be zero, one or more.
+%It may also return \texttt{VERIFY\_SYNTAX\_ERROR} if the request is badly
+%formatted, although this should never happen because the formatting
+%is done for you by the library.
+If \texttt{verify} = \texttt{0}, \texttt{scop\_send\_message}
+returns \texttt{0}.
+It is a good idea not to request verification unless you actually need
+it since this will reduce network traffic and speed up the call.
+If \texttt{scopserver} disconnects then \texttt{scop\_send\_message}
+returns \texttt{-1} regardless of the value of the \texttt{verify} flag.
+
+\texttt{scop\_get\_message} blocks until a message arrives. You
+will never receive a partial fragment of a message. It either
+returns the message content or \texttt{NULL} if the connection
+has been closed for some reason. The library doesn't tell you
+who sent each message, so if this matters it is best to encode
+the name of the client in the message body.
+
+\subsubsection*{Message passing example}
+
+At this point we have dealt with all the really important stuff, so
+we can present a fully working example. The rest of this document
+covers more advanced or specialised features.
+
+Important note: all error-checking has been omitted from the examples,
+to keep them concise. In reality it would be extremely foolish not to
+check every return code from an \texttt{scop} function: for example,
+\texttt{scop\_open} will fail if the server isn't running, and
+\texttt{scop\_get\_message} will return \texttt{NULL} if the connection
+has been lost, which may happen at any time if somebody decides to kill
+the process, for instance. Failing to check for these conditions often
+causes unpleasant crashes, such as busy waiting in an infinite loop and
+filling up the disk with error log output...
+
+All of the examples in this manual are also provided in the
+\texttt{examples/} subdirectory of the SCOP distribution. To compile
+them, first build and install SCOP from the toplevel directory in the
+usual way, as described in the installation guide. Then change into the
+\texttt{examples/} subdirectory. Look at the \texttt{Makefile} there;
+if you didn't install SCOP as root you should change the definitions
+near the top of it, as indicated by the comments. Then type
+\texttt{make} to compile the examples.
+
+The first example consists of two programs, \texttt{sender}
+and \texttt{receiver}. They should be self-explanatory.
+You can of course run multiple copies at the same time,
+and the library will distribute messages to all the
+receivers. Make sure \texttt{scopserver} is running before
+trying them out.
+
+\codebar
+\small
+\begin{verbatim}
+// sender.cpp - DMI - 7-9-02
+
+/* Usage: sender [ <message> ]   (default message is "Hello world!") */
+
+#include <scop.h>
+
+int main(int argc, char **argv)
+{
+   int sock;
+   char *msg = argc > 1 ? argv[1] : (char *)"Hello world!";
+   
+   sock = scop_open("localhost", "sender");
+   scop_send_message(sock, "receiver", msg);
+   
+   close(sock);
+   return 0;
+}
+\end{verbatim}
+\normalsize
+\codebar
+\small
+\begin{verbatim}
+// receiver.cpp - DMI - 7-9-02
+
+#include <scop.h>
+
+int main()
+{
+   int sock;
+   char *msg;
+   
+   sock = scop_open("localhost", "receiver");
+   while(1)
+   {
+      msg = scop_get_message(sock);
+      printf("Received <%s>\n", msg);
+      if(!strcmp(msg, "quit")) break;
+      delete[] msg;
+   }
+   
+   close(sock);
+   return 0;
+}
+\end{verbatim}
+\normalsize
+\codebar
+
+\subsection{Predefined event sources}
+
+\code{%
+void scop\_set\_source\_hint(int sock, const char *endpoint);\\
+int scop\_emit(int sock, const char *message, int verify = 0);
+}
+
+Every connection may have a \textit{source hint}. If set, you
+can omit the destination endpoint for messages by sending
+them with \texttt{scop\_emit} instead of \texttt{scop\_send\_message};
+they will go to the endpoint specified by the source hint.
+
+The motivation for this is that while some message-based programs send
+messages to lots of different named targets, programs that behave as
+sources of general-purpose events typically direct them to a specific
+endpoint (which others can listen to). Specifying it in advance
+is not done to improve efficiency but to improve status reporting
+and the reflective power of the system. For example,
+\texttt{scop\_list} reports source hints, which is useful as
+a reminder of the endpoint clients must listen to in order to
+receive events from a particular source.
+
+Once the source hint has been set for a connection it can be
+changed at any time, and \texttt{scop\_emit}'s may be mixed in
+with \texttt{scop\_send\_message}'s to arbitrary targets;
+so this does not restrict what you can do with the connection
+nor guarantee where it will actually send messages.
+Nevertheless, it is a useful concept in some cases.
+
+\texttt{scop\_emit} returns the same values as \texttt{scop\_send\_message}.
+
+\subsubsection*{Event sources example}
+
+The programs \texttt{event\_source} and \texttt{event\_listener}
+demonstrate source hints and listening to endpoints.
+\texttt{event\_source} emits a stream of events, one per
+second.
+
+The third program below, \texttt{multi\_listener}, is more interesting.
+This is a replacement for \texttt{event\_listener} which listens to two
+different endpoints at once (\texttt{news} and \texttt{updates}). You
+can try running \texttt{multi\_listener} and then starting two copies
+of \texttt{event\_source}, one with the command line argument
+\texttt{updates} (which changes the name of the source). In this case
+\texttt{multi\_listener} will display a stream of interleaved events
+from the two different sources. Observe the effect when you stop and
+start the event sources whilst \texttt{multi\_listener} is running. If
+you run \texttt{scop list} at this point you will see the following
+useful summary of the communication in progress. Note that the
+first two connections are from a single process.
+
+\begin{verbatim}
+4 clients connected:
+Client connection <multi_listener> listening to <news>, source hint <>
+Client connection <multi_listener> listening to <updates>, source hint <>
+Client connection <event_source> listening to <>, source hint <news>
+Client connection <event_source> listening to <>, source hint <updates>
+\end{verbatim}
+
+The code for \texttt{multi\_listener} uses \texttt{select()} to
+process messages from the two separate connections.
+
+\codebar
+\small
+\begin{verbatim}
+// event_source.cpp - DMI - 7-9-02
+
+/* Usage: event_source [ <source> ]   (default source is "news") */
+
+#include <scop.h>
+
+int main(int argc, char **argv)
+{
+   int sock;
+   int count = 1;
+   char msg[80];
+   
+   sock = scop_open("localhost", "event_source");
+   scop_set_source_hint(sock, argc > 1 ? argv[1] : (char *)"news");
+   
+   while(1)
+   {
+      sprintf(msg, "Item %d", count);
+      scop_emit(sock, msg);
+      count++;
+      sleep(1);
+   }
+   
+   return 0;
+}
+\end{verbatim}
+\normalsize
+\codebar
+\small
+\begin{verbatim}
+// event_listener.cpp - DMI - 7-9-02
+
+#include <scop.h>
+
+int main()
+{
+   int sock;
+   char *msg;
+   
+   sock = scop_open("localhost", "event_listener");
+   scop_listen(sock, "news");
+   while(1)
+   {
+      msg = scop_get_message(sock);
+      printf("Received <%s>\n", msg);
+      delete[] msg;
+   }
+   
+   return 0;
+}
+\end{verbatim}
+\normalsize
+\codebar
+\small
+\begin{verbatim}
+// multi_listener.cpp - DMI - 7-9-02
+
+/* Usage: multi_listener [ <source-one> <source-two> ]
+   (default sources are "news" and "updates") */
+
+#include <sys/select.h>
+
+#include <scop.h>
+
+int main(int argc, char **argv)
+{
+   int sock[2];
+   char *msg;
+   fd_set read_fds;
+   int max_fd;
+   
+   for(int i = 0; i < 2; i++)
+      sock[i] = scop_open("localhost", "multi_listener");
+   scop_listen(sock[0], argc == 3 ? argv[1] : (char *)"news");
+   scop_listen(sock[1], argc == 3 ? argv[2] : (char *)"updates");
+   
+   while(1)
+   {
+      FD_ZERO(&read_fds);
+      max_fd = 0;
+      for(int i = 0; i < 2; i++)
+      {
+         FD_SET(sock[i], &read_fds);
+         if(sock[i] > max_fd) max_fd = sock[i];
+      }
+      select(max_fd + 1, &read_fds, NULL, NULL, NULL);
+      
+      for(int i = 0; i < 2; i++)
+      {
+         if(FD_ISSET(sock[i], &read_fds))
+         {     
+            msg = scop_get_message(sock[i]);
+            printf("Received <%s> from %s\n", msg,
+                  i == 1 ? "updates" : "news");
+            delete[] msg;
+         }
+      }
+   }
+   
+   return 0;
+}
+\end{verbatim}
+\normalsize
+\codebar
+
+\subsection{RPC functions}
+
+\code{%
+char *scop\_rpc(int sock, const char *endpoint, const char *args);\\
+char *scop\_get\_message(int sock, int *rpc\_flag = NULL);\\
+int scop\_send\_reply(int sock, const char *reply);
+}
+
+\texttt{endpoint} refers to the connection name of the target server.
+It must exist and be unique, otherwise this call fails and return
+\texttt{NULL}. \texttt{scop\_rpc} also returns \texttt{NULL} if
+\texttt{scopserver} has disconnected. \texttt{scop\_send\_reply}
+returns \texttt{0} except when \texttt{scopserver} has disconnected, in
+which case it returns \texttt{-1}.
+
+Servers \textit{must} reply to RPC requests in FCFS order so that
+\texttt{scopserver} can match each reply up with the corresponding request.
+If you skip an RPC, callers will get incorrect answers (probably
+causing an imminent crash) and clients will remain blocked.
+
+Note the extended version of \texttt{scop\_get\_message} (if
+\texttt{rpc\_flag} isn't \texttt{NULL}, it is set to 1 or 0 to indicate
+whether an RPC request or an event message was received, respectively.
+In the former case, the \texttt{scop-rpc-call} protocol is removed and
+the remainder of the buffer is copied to a new area, so you can safely
+delete it as usual).
+
+\subsubsection*{RPC example}
+
+This illustrates a server which takes a string argument and
+then echoes back each character twice (so the reply to the
+default query will be \texttt{HHeelllloo  wwoorrlldd!!}).
+
+\codebar
+\small
+\begin{verbatim}
+// client.cpp - DMI - 7-9-02
+
+/* Usage: client [ <query> ]   (default query is "Hello world!") */
+
+#include <scop.h>
+
+int main(int argc, char **argv)
+{
+   int sock;
+   char *query = argc > 1 ? argv[1] : (char *)"Hello world!";
+   char *reply;
+   
+   sock = scop_open("localhost", "client");
+   reply = scop_rpc(sock, "server", query);
+   printf("Query <%s>, Reply <%s>\n", query, reply);
+   delete[] reply;
+   
+   close(sock);
+   return 0;
+}
+\end{verbatim}
+\normalsize
+\codebar
+\small
+\begin{verbatim}
+// server.cpp - DMI - 7-9-02
+
+#include <scop.h>
+
+int main()
+{
+   int sock;
+   char *query, *reply;
+   int len;
+   
+   sock = scop_open("localhost", "server");
+   while(1)
+   {
+      query = scop_get_message(sock);
+      len = strlen(query);
+      reply = new char[len * 2 + 1];
+      for(int i = 0; i < len; i++)
+         reply[i * 2] = reply[i * 2 + 1] = query[i];
+      reply[len * 2] = '\0';
+      scop_send_reply(sock, reply);
+      delete[] reply;
+      delete[] query;
+   }
+   
+   close(sock);
+   return 0;
+}
+\end{verbatim}
+\normalsize
+\codebar
+
+\subsection{Admin functions}
+
+\begin{verbatim}
+struct list_node
+{
+   char *name, *interest, *src_hint;
+   list_node *next;
+};
+\end{verbatim}
+
+\code{%
+int scop\_query(int sock, const char *endpoint);\\
+void scop\_clear(int sock, const char *endpoint);\\
+void scop\_set\_log(int sock, int log\_level);\\
+list\_node *scop\_list(int sock, int *count);\\
+void scop\_terminate(int sock);\\
+void scop\_reconfigure(int sock);
+}
+
+\texttt{scop\_query} returns the number of clients connected to
+a given endpoint (which may be a name or an interest).
+
+\texttt{scop\_clear} disconnects all clients connected to a given
+endpoint (again, this could be due to their name or interest).
+After a \texttt{scop\_clear} you can be sure that no-one is
+listening to the endpoint which you cleared.
+
+\texttt{scop\_set\_log} changes the \texttt{scopserver}'s log level
+whilst running. Valid log levels are currently 0 (only serious errors),
+or 1 (almost every operation).
+
+\texttt{scop\_list} returns a linked list, which should be deleted
+by the caller after use. This can be done just by deleting the first
+element of the list (the destructor will cascade down the list
+and delete all the embedded strings).
+
+\texttt{scop\_terminate} requests that \texttt{scopserver} shutdown,
+and \texttt{scop\_reconfigure} causes it to re-read the authorised
+hosts file (but not to close any existing connections, even if they
+would no longer be accepted).
+
+\subsection{Cookies}
+
+\code{%
+void scop\_set\_plain\_cookie(int sock, const char *text);\\
+char *scop\_get\_plain\_cookie(int sock, const char *name);
+}
+
+There is a maximum cookie size of 4 KB per connection.
+
+It is recommended that the XML versions of these functions
+(see \S \ref{xml_cookies}) are always used instead by applications.
+
+\subsection*{Error-checking example}
+
+I'll close this chapter with one final example which actually
+includes error checking (just to show it isn't hard!)
+It's a server which simply logs all the messages it receives
+using the standard \texttt{syslog} facility.
+This is actually a real program which I used to get error
+messages from a process running on an embedded system where
+\texttt{syslog} wasn't available but TCP sockets were.
+
+\codebar
+\small
+\begin{verbatim}
+// sos.cpp - DMI - 3-1-2002
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <syslog.h>
+
+#include <sys/types.h>
+#include <sys/socket.h>
+
+#include <scop.h>
+
+int main(int argc, char **argv)
+{
+   int sock;
+   char *buf;
+   int rpc_flag;
+
+   sock = scop_open("localhost", "sos", 1);
+   if(sock == -1)
+   {
+      printf("Can't connect to scopserver.\n");
+      exit(0);
+   }
+   
+   if(fork() > 0) exit(0); // Detach
+   
+   while(1)
+   {
+      buf = scop_get_message(sock);
+      if(buf == NULL)
+      {
+         syslog(LOG_INFO, "Lost connection to scopserver.\n");
+         exit(0);
+      }
+      syslog(LOG_INFO, "%s\n", buf);
+      delete[] buf;
+   }
+   
+   close(sock);
+   return 0;
+}
+\end{verbatim}
+\normalsize
+\codebar
+
+\subsection{Undocumented examples}
+
+There are a few more small programs in the examples directory which
+aren't discussed in this manual. They are \texttt{rtt\_client} (used
+for performance measurements), \texttt{multiplex} and
+\texttt{multiplex\_listener} (wrappers for \texttt{select()}).
+These can safely be ignored!
+
+\section{API Level 2 - Types with XML}
+
+\subsection{General semantics}
+
+The level 2 API adds support for typed and structured data,
+which is encoded into strings for delivery via level 1 using
+a kind of XML format. Data is stored in a special type
+called \texttt{vertex}. The API provides functions to pack
+typed data into vertices (and to combine vertices to form
+larger data structures), a set of higher level SCOP functions
+which transport vertices rather than strings, and a third
+set of functions to extract the raw data from a \texttt{vertex}
+afterwards.
+
+It is important to realise that the format of received messages and RPC
+call arguments is not checked for you by the library. This isn't
+because we don't believe in type checking but because it is seen as
+something which should be implemented as a higher level service (for
+example using IDL). Currently this is up to the application (but it
+could be supported by a new SCOP API layer in future). As usual we omit
+error checking from our examples; in practice you should be more
+careful unless you can be absolutely sure what type everything will be.
+
+An XML \texttt{vertex} tree is freed by deleting the top node only.
+This deletes all the sub-vertices.
+Any \texttt{char *} or \texttt{byte *} buffers contained within the tree
+are deleted by this too, so you don't have to delete the
+results of the \texttt{extract\_string} and \texttt{extract\_bytes}
+functions. This also implies that you must make deep copies of them if
+you want to save the results beyond the \texttt{vertex} deletion.
+
+To use level 2, add this to your source files:
+
+\begin{verbatim}
+#include <scopxml.h>
+\end{verbatim}
+
+\subsection{Marshalling}
+
+Marshalling primitive datatypes:
+
+\code{%
+vertex *pack(int n);\\
+vertex *pack(const char *s);\\
+vertex *pack(double x);\\
+vertex *pack(byte *buf, int bytes);
+}
+
+Constructing lists:
+
+\code{%
+vertex *mklist();\\
+vertex *append(vertex *list, vertex *v);\\
+\\
+vertex *pack(vertex **vert\_array, int n);\\
+\\
+vertex *pack(vertex *v1, vertex *v2);\\
+vertex *pack(vertex *v1, vertex *v2, vertex *v3);\\
+...\\
+vertex *pack(vertex *v1, ..., vertex *v6);
+}
+
+The last group of list construction calls are convenience functions
+for making short lists (between two and six items) without resorting
+to arrays or \texttt{append} calls.
+
+All of the list functions ``consume'' their arguments, in the
+sense that they are linked into the overall tree and you don't
+have to worry about them beyond that point (recall that child
+vertices are deleted when the parent is).
+
+\subsection{Unpacking}
+
+Extracting primitive data types:
+
+\code{%
+int vertex::extract\_int(int item = -1);\\
+double vertex::extract\_double(int item = -1);\\
+char *vertex::extract\_string(int item = -1);\\
+void *vertex::extract\_bytes(int item = -1);\\
+int vertex::count\_bytes(int item = -1);
+}
+
+Extracting from lists:
+
+\code{%
+vertex *vertex::extract\_item(int item);\\
+int vertex::count\_items();\\
+\\
+vertex **vertex::extract\_array();\\
+\\
+char *vertex::extract\_method();\\
+vertex *vertex::extract\_args();
+}
+
+The latter two calls are convenience methods to support RPC method names
+(see \S\ref{method-names}).
+
+The optional \texttt{item} arguments to the primitive extraction
+functions are a short-cut for extracting them from lists. For
+example, \verb/v->extract_int(3)/ means the same thing as
+\verb/v->extract_item(3)->extract_int()/; in both cases \texttt{v}
+must be a list, the fourth item of which is an integer.
+
+\subsection{XML Message functions}
+	
+\code{%
+int scop\_send\_struct(int sock, const char *endpoint, vertex *args,
+const char *method = NULL);\\
+vertex *scop\_get\_struct(int sock, int *rpc\_flag = NULL);
+}
+
+These calls are similar to \texttt{scop\_send\_message} and
+\texttt{scop\_get\_message}, but operate on vertices rather
+than character strings. We shall defer discussion of
+the \texttt{method} parameter to \S\ref{method-names}.
+The return value from \texttt{scop\_send\_struct} is always
+\texttt{0} unless \texttt{scopserver}
+has disconnected in which case it returns \texttt{-1}.
+
+\subsubsection*{XML example}
+
+This is an example of sending structured data. I've chosen an
+associative array --- an address book containing (name, address) tuples.
+It's a good idea to put the marshalling code in a function by itself,
+and I've created an \texttt{AddressBook} class to take care of this.
+The example consists of four files; both \texttt{xml\_sender}
+and \texttt{xml\_receiver} depend on the header file
+\texttt{address\_book.h} and need to be linked with
+\texttt{address\_book.o}
+
+If you run \texttt{xml\_receiver} with the command line option
+\texttt{-inspect} it will show the actual XML it receives from
+\texttt{xml\_sender} across the network as well as the final unpacked
+data structure. The \texttt{pretty\_print} function is used to
+achieve this (its output is the same as the real wire format,
+except for whitespace added to enhance readability).
+
+\codebar
+\small
+\begin{verbatim}
+// address_book.h - DMI - 7-9-02
+
+class AddressBook
+{
+   public:
+         
+      char **name;
+      char **address;
+      int entries;
+      
+      AddressBook(int size);
+      ~AddressBook();
+      
+      void set_entry(int i, char *n, char *a);
+      void dump();
+      
+      vertex *marshall();
+      AddressBook(vertex *v);
+};
+\end{verbatim}
+\normalsize
+\codebar
+\small
+\begin{verbatim}
+// address_book.cpp - DMI - 7-9-02
+
+#include <stdlib.h>
+#include <stdio.h>
+
+#include <scop.h>
+#include <scopxml.h>
+
+#include "address_book.h"
+
+AddressBook::AddressBook(int size)
+{
+   entries = size;
+   name = new (char *)[entries];
+   address = new (char *)[entries];
+   for(int i = 0; i < entries; i++)
+      name[i] = address[i] = NULL;
+}
+
+AddressBook::~AddressBook()
+{
+   for(int i = 0; i < entries; i++)
+   {
+      if(name[i]) delete[] name[i];
+      if(address[i]) delete[] address[i];
+   }
+   delete[] name;
+   delete[] address;
+}
+
+void AddressBook::set_entry(int i, char *n, char *a)
+{
+   name[i] = new char[strlen(n) + 1];
+   address[i] = new char[strlen(a) + 1];
+   strcpy(name[i], n);
+   strcpy(address[i], a);
+}
+
+void AddressBook::dump()
+{
+   for(int i = 0; i < entries; i++)
+      printf("Name %s, Address %s\n", name[i], address[i]);
+}
+
+vertex *AddressBook::marshall()
+{
+   vertex *list, *tuple;
+   
+   list = mklist();
+   for(int i = 0; i < entries; i++)
+   {
+      tuple = pack(pack(name[i]), pack(address[i]));
+      append(list, tuple);
+   }
+   return pack(pack(entries), list);
+}
+
+AddressBook::AddressBook(vertex *v)
+{
+   vertex *list, *tuple;
+   char *n, *a;
+   
+   entries = v->extract_int(0);
+   name = new (char *)[entries];
+   address = new (char *)[entries]; 
+   list = v->extract_item(1);
+   for(int i = 0; i < entries; i++)
+   {
+      tuple = list->extract_item(i);
+      n = tuple->extract_string(0);
+      a = tuple->extract_string(1);
+      name[i] = new char[strlen(n) + 1];
+      address[i] = new char[strlen(n) + 1];
+      strcpy(name[i], n);
+      strcpy(address[i], a);
+   }
+}
+\end{verbatim}
+\normalsize
+\codebar
+\small
+\begin{verbatim}
+// xml_sender.cpp - DMI - 7-9-02
+
+#include <scop.h>
+#include <scopxml.h>
+
+#include "address_book.h"
+
+int main()
+{
+   int sock;
+   AddressBook ab(3);
+   vertex *v;
+   
+   ab.set_entry(0, "Poirot", "Belgium");
+   ab.set_entry(1, "Morse", "Oxford, UK");
+   ab.set_entry(2, "Danger Mouse", "London, UK");
+   v = ab.marshall();
+   
+   sock = scop_open("localhost", "xml_sender");
+   scop_send_struct(sock, "xml_receiver", v);
+   delete v;
+   
+   close(sock);
+   return 0;
+}
+\end{verbatim}
+\normalsize
+\codebar
+\small
+\begin{verbatim}
+// xml_reciever.cpp - DMI - 7-9-02
+
+/* Usage: xml_reciever [-inspect] */
+
+#include <scop.h>
+#include <scopxml.h>
+
+#include "address_book.h"
+
+int main(int argc, char **argv)
+{
+   int sock;
+   AddressBook *ab;
+   vertex *v;
+   
+   sock = scop_open("localhost", "xml_receiver");
+   v = scop_get_struct(sock);
+   if(argc == 2 && !strcmp(argv[1], "-inspect"))
+   {
+      char *c = pretty_print(v);
+      printf("%s\n", c);
+      delete[] c;
+   }
+   ab = new AddressBook(v);
+   delete v;
+   ab->dump();
+   delete ab;
+   
+   close(sock);
+   return 0;
+}
+\end{verbatim}
+\normalsize
+\codebar
+
+\subsection{XML RPC functions}
+
+Here we present versions of the RPC functions which have \texttt{vertex}
+arguments and results.
+
+Remember that SCOP views RPC's fundamentally as communications to which
+a \textit{reply} is expected. If the procedure you are trying to call
+remotely has a \texttt{void} return value you should therefore treat it
+as an XML \textit{message} and use \texttt{scop\_send\_struct} rather
+than these RPC calls.
+
+\code{%
+vertex *scop\_rpc(int sock, const char *endpoint, vertex *args,
+const char *method = NULL);\\
+vertex *scop\_get\_request(int sock);\\
+int scop\_send\_reply(int sock, vertex *reply);
+}
+
+In strict adherence to the memory management conventions,
+\texttt{args} is \textit{not} deleted for you by \texttt{scop\_rpc},
+and \texttt{reply} is \textit{not} deleted by
+\texttt{scop\_send\_reply} (even though in both cases you almost always
+want to do so immediately thereafter):
+
+The \texttt{method} parameter is discussed in \S\ref{method-names}.
+
+\texttt{scop\_rpc} returns \texttt{NULL} if the target endpoint
+does not exist or isn't unique.
+
+\texttt{scop\_send\_reply} returns \texttt{0} except when
+\texttt{scopserver} has disconnected, in which case it returns
+\texttt{-1}.
+
+If a message is sent to your connection whilst it is waiting in
+a \texttt{scop\_rpc} call for a reply to a RPC, the message
+is thrown away. This is done because interrupting your wait
+would break the atomicity of the RPC API, and queueing the
+message for later would be quite a bit more complex to implement.
+Don't use the same connection for RPC's and as a message target
+at the same time.
+
+If a message is sent to a server which is waiting in a
+\texttt{scop\_get\_request} call for an incoming RPC, the message is
+thrown away and the call returns \texttt{NULL}. You should use
+\texttt{scop\_get\_struct} instead if you need to
+check for messages as well as handling RPC's, or better still
+use separate connections. \texttt{NULL} is also returned by
+\texttt{scop\_rpc} if \texttt{scopserver} has disconnected.
+
+\subsubsection*{XML RPC example}
+
+The server in this case calculates binomial coefficients
+given arguments n and k (the number of ways of choosing k
+objects from n). I've no idea why you would want to do this
+in a different process, but it illustrates the principle
+well enough! You can pass the parameters to the client
+on the command line.
+
+\codebar
+\small
+\begin{verbatim}
+// xml_client.cpp - DMI - 7-9-02
+
+/* Usage: xml_client [<n> <k>]    (default values n = 4, k = 2) */
+
+#include <scop.h>
+#include <scopxml.h>
+
+int main(int argc, char **argv)
+{
+   int sock;
+   int n, k;
+   vertex *v, *w;
+
+   if(argc != 3)
+   {
+      n = 4;
+      k = 2;
+   }
+   else
+   {
+      n = atoi(argv[1]);
+      k = atoi(argv[2]);
+   }
+      
+   sock = scop_open("localhost", "xml_client"); 
+   v = pack(pack(n), pack(k));
+   w = scop_rpc(sock, "xml_server", v);
+   delete v;
+   printf("%d choose %d equals %d.\n", n, k, w->extract_int());
+   delete w;
+      
+   close(sock);
+   return 0;
+}
+\end{verbatim}
+\normalsize
+\codebar
+\small
+\begin{verbatim}
+// xml_server.cpp - DMI - 7-9-02
+
+#include <scop.h>
+#include <scopxml.h>
+
+int combi(int n, int k);
+
+int main()
+{
+   int sock;
+   vertex *v, *w;
+   
+   sock = scop_open("localhost", "xml_server");
+   while(1)
+   {
+      v = scop_get_request(sock);
+      w = pack(combi(v->extract_int(0), v->extract_int(1)));
+      delete v;
+      scop_send_reply(sock, w);
+      delete w;
+   }
+   
+   close(sock);
+   return 0;
+}
+
+int combi(int n, int k)
+{
+   int result = 1;
+   if(k > n || k < 0)
+      return 0;
+   
+   for(int i = 0; i < k; i++)
+      result *= n - i;
+   
+   for(int i = 1; i <= k; i++)
+      result /= i;
+   
+   return result;
+}
+\end{verbatim}
+\normalsize
+\codebar
+
+\subsection{XML RPC method names}
+\label{method-names}
+
+SCOP does not directly support remote method names, because messages
+are pure ASCII or XML strings, without a remote address parameter.
+However there is no reason why you can't pack method names into the
+payload together with the arguments, using an XML two-element list.
+This is sufficiently useful that SCOP provides some convenience
+functions to help you with it, and optional \texttt{method} arguments
+to the XML versions of \texttt{scop\_rpc} and
+\texttt{scop\_send\_struct} so that the method name doesn't have to be
+combined in a separate step beforehand.
+
+If you are using this convention, it is possible that some of your
+methods may require no parameters at all (i.e. the method name alone is
+enough). In this case you may pass \texttt{NULL} for the \texttt{args}
+parameter.
+
+\subsubsection*{Multiple RPC methods example}
+
+This illustrates the support for naming remote procedure calls. The
+server here implements three methods. \texttt{ctof} converts
+temperatures from centigrade to fahrenheit, \texttt{ftoc} does the
+reverse, and \texttt{stats} reports the number of times the server's
+main two methods have been invoked since it was started.
+
+\codebar
+\small
+\begin{verbatim}
+// method_client.cpp - DMI - 7-9-02
+
+#include <scop.h>
+#include <scopxml.h>
+
+double cent_to_faren(int sock, double c);
+double faren_to_cent(int sock, double f);
+int count_uses(int sock);
+
+int main()
+{
+   int sock;
+
+   sock = scop_open("localhost", "method_client");
+   
+   printf("%g deg C = %g deg F.\n", 0.0, cent_to_faren(sock, 0.0));
+   printf("%g deg C = %g deg F.\n", 20.0, cent_to_faren(sock, 20.0));
+   printf("%g deg F = %g deg C.\n", 60.0, faren_to_cent(sock, 60.0));
+   printf("The server has been accessed %d times.\n", count_uses(sock));
+      
+   close(sock);
+   return 0;
+}
+
+double cent_to_faren(int sock, double c)
+{
+   vertex *v, *w;
+   double f;
+   
+   v = pack(c);
+   w = scop_rpc(sock, "method_server", v, "ctof");
+   delete v;
+   f = w->extract_double();
+   delete w;
+   return f;
+}
+
+double faren_to_cent(int sock, double f)
+{
+   vertex *v, *w;
+   double c;
+   
+   v = pack(f);
+   w = scop_rpc(sock, "method_server", v, "ftoc");
+   delete v;
+   c = w->extract_double();
+   delete w;
+   return c;
+}
+
+int count_uses(int sock)
+{
+   vertex *v, *w;
+   int n;
+   
+   v = pack(0); // Dummy argument
+   w = scop_rpc(sock, "method_server", v, "stats");
+   n = w->extract_int();
+   delete v;
+   delete w;
+   return n;
+}
+\end{verbatim}
+\normalsize
+\codebar
+\small
+\begin{verbatim}
+// method_server.cpp - DMI - 7-9-02
+
+#include <scop.h>
+#include <scopxml.h>
+
+int invocations = 0;
+
+double cent_to_faren(double c);
+double faren_to_cent(double f);
+
+int main()
+{
+   int sock;
+   vertex *v, *w, *args;
+   char *method;
+   
+   sock = scop_open("localhost", "method_server");
+   while(1)
+   {
+      v = scop_get_request(sock);
+      method = v->extract_method();
+      args = v->extract_args();
+      if(!strcmp(method, "ctof"))
+         w = pack(cent_to_faren(args->extract_double()));
+      else if(!strcmp(method, "ftoc"))
+         w = pack(faren_to_cent(args->extract_double()));         
+      else if(!strcmp(method, "stats"))
+         w = pack(invocations);
+      else
+         exit(1);
+      delete v;
+      scop_send_reply(sock, w);
+      delete w;
+   }
+   
+   close(sock);
+   return 0;
+}
+
+double cent_to_faren(double c)
+{
+   invocations++;
+   return (9.0 * c / 5.0) + 32.0;
+}
+
+double faren_to_cent(double f)
+{
+   invocations++;
+   return (f - 32.0) * 5.0 / 9.0;
+}
+\end{verbatim}
+\normalsize
+\codebar
+
+\subsection{XML Cookies}
+\label{xml_cookies}
+
+\code{%
+vertex *scop\_get\_cookie(int sock, const char *name);\\
+void scop\_set\_cookie(int sock, vertex *data);
+}
+
+\subsection{Conversion functions}
+
+These are internal functions which you should never need to call
+directly (documented only for the curious):
+
+\code{%
+char *vertex\_to\_string(vertex *v);\\
+vertex *string\_to\_vertex(const char *s);\\
+char *vertex\_to\_string(vertex *v, const char *method);
+}
+
+The latter call is a convenience function to support RPC method names.
+
+\subsection{Debugging}
+
+\code{%
+char *pretty\_print(vertex *v);
+}
+
+\section{API Level 3 - Reflection}
+
+This level is not implemented yet. To be forward compatible with it,
+you (hopefully!) only need to observe a convention for the data stored
+in cookies. These should always be formatted using the XML routines,
+and consist at the top-level of a two-element list. The first branch of
+the list is reserved for system data, whereas the second is available for
+free-form user data.
+
+\end{document}
