@@ -1,0 +1,162 @@
+SCOP Changelog
+==============
+
+24th September 2006
+-------------------
+
+Minor documentation tweaks
+Added more error checking to the 'scop' client
+
+11th September 2006 Released 1.5
+--------------------------------
+
+> New error returns:
+
+Added explicit error returns to some functions in the C library binding to
+indicate when the server has disconnected. This concerns the following:
+
+scop_send_message - now returns -1 on disconnect.
+   Returns 0 otherwise or something >= 0 if verify is requested.
+scop_emit - now returns -1 on disconnect.
+   Returns 0 otherwise or something >= 0 if verify is requested.
+scop_send_struct - return value now int instead of void.
+   Returns -1 on disconnect, 0 otherwise.
+scop_rpc - both the plain text and XML versions now return NULL on
+   server disconnect (they already returned NULL for other errors).
+scop_send_reply - both the plain text and XML versions now have an
+   int return value instead of void. This will be -1 on disconnect,
+   otherwise 0.
+
+> Automatic reconnection for stream and listen clients:
+
+Added an option "-p" (persistent) to the listen client, which instructs
+it to try periodically reconnecting to scopserver if the server dies,
+rather than aborting the program. It can also wait for scopserver to
+start if it isn't running initially.
+
+The algorithm at present tries reconnecting once per second for a
+minute, then once every 2 seconds for 2 minutes, then once every
+4 seconds for 4 minutes and so on. After trying once every 32
+seconds for 32 minutes the program retries every 64 seconds indefinitely.
+
+Also added a "-p" option to the stream client, to enable similar
+behaviour for that. Whilst the scopserver is down the stream program
+will still keep reading from stdin to prevent a stall in the pipeline,
+but it will discard the incoming messages until scopserver reappears.
+
+Note that a more sophisticated system would probably offer the option
+of buffering the messages and replaying them after scopserver is
+restarted in order not to lose any information. We can't do this in a
+straightforward way because it's unlikely the listeners would have
+restarted as soon as the scopserver is back, hence the replayed
+messages would probably be dropped by scopserver for want of a receiver
+anyway. A correct implementation of buffered messages would also have
+to execute "scop query" until the required listener[s] were back before
+initiating message replay.
+
+These changes enable one to create very reliable streams which
+automatically restart without failing when the scopserver process is
+killed (or, more probably, someone reboots the machine it is on). If
+you have cron jobs on the respective machines to restart the
+scopserver, the stream source and the listener then you know everything
+will correctly restart itself regardless of the type of failure
+experienced.
+
+> Bug fixes:
+
+Log messages from both scopserver and the C++ library now include
+   timestamps when sent to a file (rather than syslog, in which
+   case they always had timestamps, courtesy of syslog itself).
+Fixed a minor bug which caused the "Detected another scopserver"
+   message not to be logged when trying to run two scopservers and
+   when not root (the mutual exclusion was working properly though).
+
+2nd August 2006
+---------------
+
+Added the "stream" utility program (documented in the SCOP intro document).
+   This is a command-line tool for directing a stream of events (from stdin)
+   to SCOP.
+Added documentation for scopserver's existing --allhosts flag
+Added "-p" flag to start scopserver on a different port
+Allowed all the tools and API's to override the port number used to
+   contact scopserver on, by enhancing the remote hostname syntax to
+   allow "hostname:port".
+Changed the default destination for log messages (errors etc) when
+   the SCOP_LOGFILE environment variable isn't set to be the file ~/.scoplog
+   if the process isn't running as root. If it is running as root then the
+   default is still to use syslog unless SCOP_LOGFILE is set. This change
+   gives better "zero-configuration, out of the box" behaviour for ordinary
+   users who install SCOP and can't read the system log file but forget
+   to set the environment variable, and are hence rather mystified.
+
+22nd November 2003 Released 1.4.1
+---------------------------------
+
+Fix for compile-time error on some systems
+
+12th November 2003 Released 1.4
+-------------------------------
+
+Added Python language binding
+
+30th September 2003 Released 1.3
+--------------------------------
+
+You can now specify NULL/null (C++/Java) for "args" in scop_rpc() and
+   scop_send_struct() if you have set the "method" parameter. This
+   makes it easier to call particular methods which don't require any
+   further arguments - previously it was necessary to create a dummy
+   argument to keep SCOP happy in this case.
+Made it possible to send lists of length zero (in both C++ and Java) -
+   this case used to cause a crash.
+Fixed some small but fatal compile problems with newer compilers
+   (tested on gcc 3.2.2).
+Minor documentation tweaks.
+
+27th December 2002 Released 1.2
+-------------------------------
+
+Added JAVA language binding
+Minor documentation corrections and tweaks
+Fixed failure if group "nobody" doesn't exist and scopserver not running
+   as root
+
+11th September 2002 Released 1.1
+--------------------------------
+
+Added PDF version of the manual
+Fixed tiny compile bug affecting some systems (explicit cast required in
+   line 727 of scopserver)
+Added performance test program rtt_client.cpp to examples directory
+Added typical performance figures to the documentation
+Converted many char * into const char * in the API
+SIGHUP now instructs scopserver to re-read authorised hosts file
+   (warning - signal handler potentially unsafe at the moment though)
+Added new option --allhosts to scopserver to disable access control
+   (not recommended though - use as last resort inside firewalls only)
+Added "terminate" to the protocol (instructs scopserver to shutdown)
+Added "reconfigure" to the protocol (instructs scopserver to re-read
+   authorised hosts file; much safer than SIGHUP)
+Added library commands scop_terminate and scop_reconfigure;
+   bumped minor version number due to changed protocol and updated docs
+Added terminate and reconfigure modes to the scop client
+If the magic name "localhost" is mentioned in the authorised hosts
+   file, scopserver now compares the IP address of incoming connections
+   with the IP address of the machine it is running on, and
+   automatically allows them if they match. This solves problems where
+   genuine local connections appeared to have slightly different names,
+   e.g. "localhost.localdomain" and were therefore rejected on direct
+   comparison with "localhost".
+Considerably clarified and improved the "Configuration", "Testing it"
+   and "Programming model" sections of the documentation
+Minor corrections to the Level 1 "General semantics" section of
+   the documentation
+Added explanation of scop_get_message
+Documented exotic -e option to listen
+Added a section called "Networked usage" to the documentation
+
+9th Sept 2002 Released 1.0
+--------------------------
+
+First official release

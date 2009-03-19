@@ -1,0 +1,17 @@
+SCOP 1.5
+========
+
+See the "docs" subdirectory for complete documentation including
+reference and tutorial information.
+
+You can create the postscript manual by changing to that directory and
+typing "make; make f; make f" (latex has to be run three times to
+generate correct references). You can also do "make pdf" to get
+a PDF version.
+
+Alternatively, you can grab a ready-made postscript version of the manual
+by downloading it from http://www.srcf.ucam.org/~dmi1000/scop
+
+I hope you enjoy SCOP!
+
+(C) David Ingram 2002-6.

@@ -1,0 +1,185 @@
+\documentclass[12pt,a4paper,twoside]{article}
+\usepackage{fancyhdr}
+
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{2ex plus1ex minus 0.5ex}
+
+\addtolength{\evensidemargin}{-2.5cm}
+\addtolength{\oddsidemargin}{-0.5cm}
+\addtolength{\textwidth}{3cm}
+
+\addtolength{\headheight}{0.2cm}
+\addtolength{\topmargin}{-1cm}
+\addtolength{\textheight}{2.5cm}
+% \addtolength{\footskip}{0.5cm}
+
+\renewcommand{\_}{\texttt{\symbol{95}}}
+\addtolength{\fboxsep}{0.1cm}
+\newcommand{\param}[1]{\textit{\textrm{\textmd{#1}}}}
+\newcommand{\codebar}{\rule{\textwidth}{0.3mm}}
+
+\newlength{\codelen}
+\newcommand{\code}[1]
+{\begin{center}\fbox{\parbox{16cm}{\texttt{#1}}}\end{center}}
+
+\fancyhead{}
+\fancyhead[RO,LE]{\thepage}
+\fancyhead[LO,RE]{SCOP Protocol Definition}
+\fancyfoot{}
+\pagestyle{fancy}
+
+\input{macros}
+\begin{document}
+
+\centerline{\textbf{\LARGE SCOP Protocol Definition}}
+\vspace{0.5cm}
+\centerline{Version 1.5, 11th September 2006}
+\centerline{David Ingram (\texttt{dmi1000@cam.ac.uk})}
+
+{ \parskip 1mm plus 1pt \tableofcontents }
+
+\section{API Level 0 - Protocol Definition}
+
+This document describes the low-level SCOP protocol. It will
+be of interest to those who need to port the library, for example
+to create a new programming language binding. Of course the source
+code for the existing bindings is also very useful.
+
+\subsection{Header format}
+
+All transmissions sent via the SCOP protocol are preceded by a
+standard header,
+\textit{except} for replies from the server to
+\texttt{verify}, \texttt{emit} and \texttt{query}
+directives (in fact it would be better if future revisions
+added the header to these too).
+The header has the following format (note the trailing space):
+
+``\texttt{sCoP XXYYZZ AABBCCDD }''
+
+\texttt{XX} is the major protocol version number represented as two
+hex digits (currently \texttt{01}),
+\texttt{YY} is the minor version number (currently \texttt{02})
+and \texttt{ZZ} is the release number (currently \texttt{00}).
+If the major or minor versions have changed you should assume
+that the protocol is incompatible. If only the release number
+is different it is guaranteed that the protocol hasn't changed.
+
+The next eight hex digits store the length of the transmission body.
+This representation is called \texttt{8hexint} format, and is also used
+in the body of certain transmissions to encode other integers. Since
+numbers in \texttt{8hexint} format are stored as an ASCII string
+containing 8 hex digits they may be 32 bits in length.
+Transmission bodies are \textit{not} NULL-terminated (they don't need to be,
+since their length is stored in the header).
+
+Future protocol revisions will add at least password authentication.
+
+\subsection{Message passing}
+
+\begin{verbatim}
+client->scopserver              client<-scopserver
+======                                  ==========
+
+message <endpoint>! <msg-string>         ---
+
+verify <endpoint>! <msg-string>          ---
+---                                     <ack-8hexint>
+
+register <name>                         ---
+---                                     <msg-string>...
+
+listen <interest>                       ---
+---                                     <msg-string>...
+
+set-source-hint <endpoint>              ---
+
+emit <msg-string>                       ---
+---                                     <ack-8hexint>
+\end{verbatim}
+
+\subsection{Admin}
+
+\begin{verbatim}
+client->scopserver              client<-scopserver
+======                                  ==========
+
+clear <endpoint>                        ---
+
+log 0|1                                 ---
+
+terminate                               ---
+
+reconfigure                             ---
+
+list                                    ---
+---                                     <name>!<interest>!<src-hint>!\
+                                        <name>!<interest>!<src-hint>!...
+
+query <endpoint>                        ---
+---                                     <count-8hexint>
+\end{verbatim}
+
+Note: it's a bad idea to send \texttt{list} or \texttt{query}
+(or call RPC's or read cookies) if other applications may be
+sending you messages on the same connection at the same time,
+due to the crosstalk possibility (responses are all handled
+in-band and can't be reordered).
+
+It's therefore best to design your application to use a different
+socket connection to \texttt{scopserver} for these kinds of
+``information gathering'' commands from those which receive events.
+This guarantees safety. Even so, you currently can't protect against
+\textit{malicious} exploitation of this.
+
+\subsection{Cookies}
+
+\begin{verbatim}
+client->scopserver              client<-scopserver
+======                                  ==========
+
+set-cookie <text>                       ---
+
+get-cookie <name>                       ---
+---                                     <text>
+\end{verbatim}
+
+\subsection{RPC}
+
+\begin{verbatim}
+client->scopserver             scopserver->server               server
+======                         ==========                       ======
+
+call <endpoint>! <args-string>  ---                              ---
+---                            scop-rpc-call <args-string>      ---
+
+
+client            client<-scopserver                scopserver<-server
+======                    ==========                            ======
+
+---                       ---                   reply <results-string>
+---                       <results-string>                         ---
+\end{verbatim}
+
+\section{XML data format}
+
+Simplified XML-RPC format:
+
+\begin{verbatim}
+<int>...</int>
+<double>...</double>
+<binary n>...</binary>
+<string n>...</string>
+<list n>...</list>
+\end{verbatim}
+
+Rationale: \texttt{bool} unnecessary, \texttt{struct == array == list}.
+\texttt{String} and \texttt{list} lengths not strictly XML but avoid the need
+for \verb"\<" and \verb"\\" escapes and make parsing easier.
+
+Pretty-printing: 3 spaces indentation per level. Newline after
+every tag. Whitespace ignored when read except inside strings.
+Binary coded as hex digits (double space overhead).
+Newline every 16 bytes (32 digits) in binary dumps.
+
+\end{document}

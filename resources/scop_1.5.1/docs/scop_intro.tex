@@ -1,0 +1,552 @@
+\documentclass[12pt,a4paper,twoside]{article}
+\usepackage{fancyhdr}
+
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{2ex plus1ex minus 0.5ex}
+
+\addtolength{\evensidemargin}{-2.5cm}
+\addtolength{\oddsidemargin}{-0.5cm}
+\addtolength{\textwidth}{3cm}
+
+\addtolength{\headheight}{0.2cm}
+\addtolength{\topmargin}{-1cm}
+\addtolength{\textheight}{2.5cm}
+% \addtolength{\footskip}{0.5cm}
+
+\renewcommand{\_}{\texttt{\symbol{95}}}
+\addtolength{\fboxsep}{0.1cm}
+\newcommand{\param}[1]{\textit{\textrm{\textmd{#1}}}}
+\newcommand{\codebar}{\rule{\textwidth}{0.3mm}}
+
+\newlength{\codelen}
+\newcommand{\code}[1]
+{\begin{center}\fbox{\parbox{16cm}{\texttt{#1}}}\end{center}}
+
+\fancyhead{}
+\fancyhead[RO,LE]{\thepage}
+\fancyhead[LO,RE]{SCOP Overview and Installation Guide}
+\fancyfoot{}
+\pagestyle{fancy}
+
+\input{macros}
+\begin{document}
+
+\centerline{\textbf{\LARGE SCOP Overview and Installation Guide}}
+\vspace{0.5cm}
+\centerline{Version 1.5, 11th September 2006}
+\centerline{David Ingram (\texttt{dmi1000@cam.ac.uk})}
+
+{ \parskip 1mm plus 1pt \tableofcontents }
+
+\section{Overview}
+
+\subsection{What does it do?}
+
+SCOP consists of a user library and server process designed to make
+writing distributed applications (particularly in C, C++, Python and
+Java) very easy. It allows different processes (which may be written in
+different languages, on different machines and architectures --- or the
+same machine of course) to communicate by means of sending each other
+\textit{messages} or \textit{events}, with very little effort from the
+programmer.
+
+\subsection{Why is it better than XYZ?}
+
+UNIX/Linux lacks a standard, built-in events system and this has been
+detrimental to the development of large scale integrated projects such
+as desktop environments and component embedding. Pipes and scripts do a
+good job for largely sequential command-line utilities; but there is no
+easy way to apply the UNIX philosophy of sharing data, automating and
+combining smaller tools to concurrent, possibly distributed, graphical
+programs.
+
+There are plenty of existing events systems which you can install, but
+these tend to be either (i) huge and clunky, such as CORBA (frustration
+with which motivated this project), (ii) unpolished research projects,
+or (iii) special-purpose, for example almost every window system and
+graphics toolkit has an internal events system. SCOP is small, complete
+and general-purpose. The acronym stands rather arbitrarily for Systems
+COmmunication Protocol (by analogy with KDE's DCOP, which does
+something similar in the context of a desktop environment). It is
+pronounced ``es-cop''.
+
+\subsection{Features}
+
+The functionality offered by SCOP includes:
+
+\begin{bulletlist}
+\item Message passing
+\item Events
+\item Resource discovery
+\item RPC
+\end{bulletlist}
+
+Of course message passing and event delivery can be handled by the same
+mechanism, and indeed I shall make no further distinction between
+them. Resource discovery is facilitated by the ability to query which
+clients are connected to the server, and retrieve some state (a cookie)
+associated with each active connection. There are no problems with
+state left over from dead connections, unlike some file locking
+solutions.
+
+RPC (Remote Procedure Call) is supported to the extent of
+allowing messages to have replies, and providing separate XML-based
+routines to package up (marshal) arguments and results. There is quite
+deliberately no IDL or automatic stub generation, so no
+preprocessing or machine-generated code is involved. I feel that the
+advantages of understanding exactly what is going on and not having a
+special build process imposed upon your project outweighs the alleged
+disadvantage of remote function calls not looking exactly like local
+ones. The extra work required to manually wrap up arguments is quite
+modest, and forces the programmer to think about efficiency a little
+bit whilst they are doing it. Although the system does not therefore
+provide \textit{distribution transparency}, it is in another sense
+quite transparent by making it obvious to the reader of the code
+exactly when, where and what messages are being sent over the network
+and which format they are in.
+
+\subsection{Good things}
+
+Here are some good things about SCOP:
+
+\begin{bulletlist}
+\item Very simple to learn and use.
+\item Cleanly layered APIs allow you to use more rudimentary low-level
+interfaces if you don't want extra fancy high level features.
+\item Plain text wire format (with a basic XML subset if you are
+using the typed API), so if you don't know what is going on you
+can always inspect the messages being sent, and parse them yourself
+if you like.
+\item Memory management nightmares with C/C++ are avoided (without
+introducing error-prone pseudo-garbage-collection features)
+through a clearly defined and straightforward allocation/deallocation
+rule.
+\item Integrates with other file and socket based I/O through
+the standard \texttt{select} call.
+\item Doesn't take over your thread of control by imposing an
+event loop.
+\item No additional threads created (unless you do so explicitly
+yourself).
+\end{bulletlist}
+
+Don't be put off by the length of this manual, because simple
+things are still very, very simple to do. For example, here's how
+to multicast a message to a bunch of other processes:
+
+\begin{verbatim}
+int sock = scop_open("localhost", "myclient");
+scop_send_message(sock, "groupname", "Hello, world!");
+\end{verbatim}
+
+Fantastic \texttt{:-)}
+
+\subsection{Performance}
+
+SCOP is very lightweight, so although speed wasn't the main design
+goal, performance is reasonably good. My intuition is that the overhead
+due to the use of ASCII messages compares pretty well with the complex
+type system processing incorporated in most binary alternatives.
+
+Typical figures for same-machine communication are a round trip
+time of 150$\mu$s on a 800 Mhz Pentium III (around 6700 sequential
+RPC's per second). Inter-machine communication was measured as 450$\mu$s
+per round trip, giving 2300 sequential RPC's per second.
+
+\subsection{Bad things}
+
+A current weakness of SCOP is that it has rather primitive security, and
+very little error checking. It's easy to crash the clients through
+incorrect use of the protocol, if you want to. It's almost certainly
+possible to crash the server likewise, although the design is supposed
+to make this less likely. The server is single-threaded so denial of
+service attacks are trivial. Of course, the source code is available so
+anyone can strengthen the security if this becomes necessary. Otherwise
+it is advisable to run it inside a firewall.
+
+The two security features which \textit{are} provided are privilege
+reduction and hostname access control. If you run \texttt{scopserver}
+as root it will automatically change itself to user and group
+\texttt{nobody} (assuming they exist on your system) as soon as it
+starts, which helps by limiting the mischief a runaway server could do
+quite a bit. \texttt{scopserver} will only allow access from clients
+running on hosts which are listed in its authorised host file. This
+means that any user on any permitted machine has unconstrained access
+to SCOP, but hosts you haven't explicitly included cannot connect at
+all.
+
+\section{Getting started}
+\label{installation}
+
+\subsection{Requirements}
+
+Nothing specific, other than \texttt{gcc} and GNU \texttt{make}.
+
+SCOP has been developed on Linux, but should be portable to UNIX
+environments with a little effort. It has been tested successfully on
+Slackware, Mandrake and Redhat Linux systems, on FreeBSD and on Solaris.
+I would be interested to hear what changes need to be made to get it to
+build on other UNIX variants.
+
+\subsection{Where to get SCOP}
+
+You can download it from
+
+\verb=http://www.srcf.ucam.org/~dmi1000/scop/=
+
+\subsection{Compilation}
+
+\begin{verbatim}
+tar xzvf scop.tar.gz
+cd scop
+make
+\end{verbatim}
+
+\subsection{Installation as root}
+
+If you have root access on your chosen machine, you should
+install SCOP like this. It is perfectly possible to install
+it without being root, but slightly less convenient in use.
+
+\begin{verbatim}
+su -c make install
+su -c echo >>/etc/services "scop 51234/tcp"
+\end{verbatim}
+
+Note: you can choose a different port number in the last line if you
+like, as long as you pick the same one for each machine which needs to
+communicate. The services entry must exist even on machines which
+only run clients and don't need the server process installed.
+
+\subsection{Non-root installation}
+
+If you don't have root access to the machine, SCOP can be
+installed like this.
+
+\begin{verbatim}
+mkdir ~/include ~/lib ~/bin
+make userinstall
+\end{verbatim}
+
+You should also add the following to your shell startup script
+(\texttt{.bashrc}, for example):
+
+\begin{verbatim}
+export PATH=$PATH:~/bin
+export SCOP_LOGFILE=~/.scoplog
+\end{verbatim}
+
+Since you can't update \texttt{/etc/services}, scop will use the
+standard port number (51234) when it finds it can't look up the service
+entry. This value can be changed at compile time by editing the
+constant \texttt{FALLBACK\_PORT} in \texttt{scop.h}
+
+\subsection{Configuration}
+
+The only configuration task is to define the set of machines which
+should be allowed to connect to SCOP. This is done by editing the host
+access control file, \texttt{/etc/scophosts} (root installations) or
+\verb=~/.scophosts= (non-root installations). The format consists of
+fully-qualified host names, e.g. \texttt{machinename.foo.bar.com} or
+whatever, one per line.
+
+The default file just contains the special name \texttt{localhost},
+which allows connections from the same machine that you are going to
+run the \texttt{scopserver} process on. If you have trouble connecting
+to the server you might need to add the name of your machine explicitly
+(not doing this is a common cause of mysterious failure). The SCOP
+server process only reads this file when it starts up, so you must kill
+and then restart the server if you subsequently modify the list of
+authorised hosts.
+
+\subsection{Starting the server}
+\label{starting}
+
+If necessary add \texttt{/usr/local/sbin} to your \verb=$PATH=,
+then simply run
+
+\texttt{scopserver}
+
+In a non-root installation, run this instead:
+
+\verb=scopserver -f ~/.scophosts=
+
+The server will detach and run in the background automatically. You
+probably want to add this command to the system's
+\texttt{/etc/rc.d/rc.local} file so the server starts automatically at
+boot time, for root installations. It is not possible to run more than
+one copy of the server per machine. In fact neither message sources nor
+sinks need a locally running server, since they can be directed to
+route via a server running on a third machine.
+
+Check the server is running by looking for \texttt{scopserver} in the
+system's process list. If it doesn't seem to have started correctly,
+you should look for error messages in the SCOP log (see the next
+section). All problems are reported there, and not to the console.
+
+\subsubsection*{Log file location}
+
+If you have set the \texttt{SCOP\_LOGFILE} environment variable,
+log messages are appended to the file you specified.
+
+If \texttt{SCOP\_LOGFILE} isn't set, an \texttt{scopserver} running as
+root will use the \texttt{syslog} facility to issue log messages
+instead. They will therefore generally appear in a system log file such
+as \texttt{/var/log/messages}. You can change \texttt{/etc/syslog.conf}
+if this isn't the case.
+
+In cases where \texttt{SCOP\_LOGFILE} isn't set but \texttt{scopserver}
+is running as a normal user (not root), messages are logged to a
+default location which is \texttt{~/.scoplog} instead. The reason we
+don't use \texttt{syslog} for non-root installations is that it
+typically isn't readable by ordinary users. Don't forget you can
+override all this by setting \texttt{SCOP\_LOGFILE} yourself (perhaps
+to \texttt{/tmp/scoplog}, for example).
+
+\subsubsection*{Server options}
+
+As well as the use of \texttt{scopserver -f <hostfile>} to specify
+the location of the access-control file, there are two other options
+you can pass to \texttt{scopserver}:
+
+\texttt{scopserver --allhosts} deactivates access control altogether,
+allowing incoming connections from any machine.
+
+\texttt{scopserver -p <port-number>} tells the server to listen
+for incoming connections on the port specified. This overrides
+any \texttt{/etc/services} entry and the default port number.
+
+\subsection{Testing it}
+\label{testing}
+
+Once the server is running, you can easily test your installation using
+the command line tools \texttt{scop} and \texttt{listen}, which will
+also have been installed. These clients should be run as a normal
+user; they don't require any special privilege. You are encouraged
+to work through the following tests since they also help illustrate
+SCOP's capabilities.
+
+If you get ``\texttt{Broken pipe}'' error messages or
+things don't seem to be working, look at the SCOP log file, as
+described in \S\ref{starting}. Any problems discovered in the SCOP
+library cause explanatory messages to be logged there, so it provides a
+single place to look for errors both from \texttt{scopserver} and the
+client programs.
+
+Incidentally, you can instruct the server to be more verbose
+in its logging (typically this means logging successful commands
+as well as errors) by issuing the command \texttt{scop log 1}.
+You need to do this after \texttt{scopserver} has started,
+but before the behaviour you wish to monitor. It will generate a
+lot of output if your system is handling a high rate of events.
+A return to normal log verbosity is achieved with \texttt{scop log 0}.
+
+For a quick and effective demonstration of multiple endpoints, you
+should open several shell windows on the machine which is running the
+server; lets say five windows for this test. Resize and shuffle them
+around until you can see all of them. In this section commands to be
+typed are prefixed by the window number into which you should type
+them. Then proceed as follows (don't be concerned if some of the
+commands appear to pause indefinitely -- they are waiting for events):
+
+\begin{verbatim}
+1: scop --help
+1: scop list
+2: listen --help
+2: listen magic
+3: listen spell
+4: listen magic
+1: scop list
+1: scop send spell "hello world"
+1: scop send magic "foo"
+1: scop send rhubarb "foo"
+1: scop verify magic "bar"
+1: scop verify rhubarb "bar"
+1: scop rpc spell "backwards"
+1: ping localhost | stream magic
+5: scop list
+5: listen -u magic
+1: CTRL-C
+1: scop list
+1: scop clear spell
+1: scop list
+5: CTRL-C
+1: scop list
+\end{verbatim}
+
+Pay attention to the output you see in each window; it should be
+self-explanatory. The communication endpoints we set up in this example
+are called ``magic'' and ``spell''. Note that multicast is performed
+automatically if several clients connect with the same name, and
+messages sent to non-existant endpoints are silently dropped. The
+\texttt{ping} command is used as an example stream source because on
+most systems it will generate a new line of output every second.
+
+\subsection{Networked usage}
+
+When you wish to communicate between several different machines,
+you should only run \texttt{scopserver} on one of them
+(separate instances of \texttt{scopserver} are separate
+worlds with their own endpoint namespaces, which don't talk
+to each other).
+
+You must tell the clients which are running on the other machines
+where the \texttt{scopserver} is located. You can do this with
+the \texttt{-r <hostname>} option to \texttt{scop} and \texttt{listen}.
+If you miss out the \texttt{-r} argument it is as if you said
+\texttt{-r localhost}, which is the standard alias expanding
+to the name of the machine the process is running on.
+
+\subsection{Linking your application with SCOP}
+
+Shared library support is being added to future versions, but
+currently the library has to be statically linked (fortunately it is
+rather small). Here's how to do it.
+
+In your source code, include the line
+
+\begin{verbatim}
+#include <scop.h>
+\end{verbatim}
+
+Then build your application with a Makefile like this one:
+\begin{verbatim}
+foo: foo.cpp
+   g++ -o foo foo.cpp -lscop
+\end{verbatim}
+
+What could be easier? \texttt{:-)}
+
+If SCOP has \textit{not} been installed as root you need some extra flags,
+so use a Makefile like this instead:
+\begin{verbatim}
+foo: foo.cpp
+   g++ -I ${HOME}/include -L ${HOME}/lib -o foo foo.cpp -lscop
+\end{verbatim}
+
+\section{API Level 4 - Command Line Interface}
+
+SCOP provides several layers of API, the highest of which is the
+command line interface (``layer 4''). Here is a brief summary of
+the shell commands available, for reference.
+
+\subsection{listen}
+
+\begin{verbatim}
+Usage: listen [option...] <interest>
+
+Options: -r <hostname>   remote scopserver
+         -u              unique endpoint
+         -p              persistent
+         -e <command>    execute command with message arguments
+\end{verbatim}
+
+The \texttt{listen} program displays the messages sent to an
+endpoint which you specify on the command line.
+For the sake of example it tries to guess if they are in XML
+format (pretty-printing them if so), and illustrates
+replying to RPCs by reversing the argument, treated as a
+string. More realistic servers would of course know what
+format messages to expect!
+
+The \texttt{-e} option is intended to support quick and dirty
+remote-control functionality via shell scripts (not recommended
+for serious work --- use the C API instead!) If you run
+
+\verb=listen -e "shell command" <endpoint>=
+
+Then whenever a message with content \verb=foo bar= is sent to
+\texttt{<endpoint>}, listen will execute the following as if
+you had typed it into the shell:
+
+\verb=$ shell command foo bar=
+
+The \texttt{-p} option allows \texttt{listen} to continue running if the
+\texttt{scopserver} it is connected to exits. The \texttt{listen} process will
+then periodically attempt to reconnect to \texttt{scopserver}. It can also wait
+for \texttt{scopserver} to start if it isn't running initially.
+
+The algorithm at present tries reconnecting once per second for a
+minute, then once every 2 seconds for 2 minutes, then once every
+4 seconds for 4 minutes and so on. After trying once every 32
+seconds for 32 minutes the program retries every 64 seconds indefinitely.
+
+This feature together with the \texttt{-p} option for \texttt{stream}, below,
+enable one to create very reliable streams which automatically restart without
+failing when the \texttt{scopserver} process is killed (or, more probably,
+someone reboots the machine it is on). If you have cron jobs on the respective
+machines to restart the \texttt{scopserver}, the \texttt{stream} source and the
+\texttt{listen} process then you know everything will correctly restart itself
+regardless of the type of failure experienced.
+
+\subsection{stream}
+
+\begin{verbatim}
+Usage: stream [option...] <endpoint>
+Options: -r <hostname>   remote scopserver
+         -p              persistent
+\end{verbatim}
+
+The \texttt{stream} program reads lines of text from standard input,
+and sends each one in turn as a message to the endpoint specified.
+Piping the output of another command into \texttt{stream}
+is a very quick and easy way of converting an external event source into
+SCOP events.
+
+The \texttt{-p} option works the same way as for the \texttt{listen} client,
+above. Whilst \texttt{scopserver} is down, \texttt{stream} will still keep
+reading from \texttt{stdin} to prevent a stall in the pipeline, but it will
+discard the incoming messages until \texttt{scopserver} reappears.
+
+Note that a more sophisticated system would probably offer the option of
+buffering the messages and replaying them after \texttt{scopserver} is
+restarted in order not to lose any information. We can't do this in a
+straightforward way because it's unlikely the listeners would have restarted as
+soon as the \texttt{scopserver} is back, hence the replayed messages would
+probably be dropped by \texttt{scopserver} for want of a receiver anyway. A
+correct implementation of buffered messages would also have to execute
+\texttt{scop query} on the endpoint in question until the required listener[s]
+were back, before initiating message replay.
+
+\subsection{scop}
+
+\begin{verbatim}
+Usage: scop [<opts>] send {<endpoint> <message>}+
+       scop [<opts>] verify <endpoint> <message>
+       scop [<opts>] list
+       scop [<opts>] log 0|1
+       scop [<opts>] query <endpoint>
+       scop [<opts>] clear <endpoint>
+       scop [<opts>] rpc <name> <message>
+       scop [<opts>] xmlrpc <name> <method or "-"> <arg>+
+       scop [<opts>] xmlsend <name> <method or "-"> <arg>+
+       scop [<opts>] terminate
+       scop [<opts>] reconfigure
+
+Options: -r <hostname>
+\end{verbatim}
+
+\texttt{scop} is a general-purpose command line client. It is
+mainly used for sending messages and listing the active
+connections. See the walkthrough in \S \ref{testing} for some
+examples of its use.
+
+\appendix
+\section{License notice}
+
+Copyright (C) David Ingram, 2001-02, \texttt{dmi1000@cam.ac.uk}.
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+\end{document}

@@ -1,67 +1,79 @@
 from Tkinter import *
 from math import sin, cos, pi
 from Vector import *
+import scop
+import select
+
 
 class Arena(Frame):
     """This class provides the user interface for an arena of turtles."""
 
-    def __init__(self, parent, width=800, height=800, **options):
+    def __init__(self, parent, sock1, sock2, width=800, height=800, **options):
         Frame.__init__(self, parent, **options)
         self.width, self.height = width, height
         self.canvas = Canvas(self, width=width, height=height)
         self.canvas.pack()
         parent.title("UC Bereley CS9H Turtle Arena")
-
-        Button(self, text='accel', command=self.Accelerate).pack(side=LEFT)
-        Button(self, text='decel', command=self.Decelerate).pack(side=LEFT)
-        Button(self, text='left', command=self.TurnLeft).pack(side=LEFT)
-        Button(self, text='right', command=self.TurnRight).pack(side=LEFT)
-        Button(self, text='startstop', command=self.Pause).pack(side=LEFT)
+        self.parent = parent
+        self.sock1 = sock1
+        self.sock2 = sock2
 
         self.turtles = []
         self.items = {}
         self.running = 0
         self.period = 20 # milliseconds
-	
+
         self.canvas.bind('<ButtonPress>', self.press)
         self.canvas.bind('<Motion>', self.motion)
         self.canvas.bind('<ButtonRelease>', self.release)
-	
-	#Player 1
-	parent.bind('a', lambda x : self.TurnLeft(0))
-	parent.bind('d', lambda x : self.TurnRight(0))
-	parent.bind('w', lambda x : self.Accelerate(0))
-	parent.bind('s', lambda x : self.Decelerate(0))
-
-	#Player 2
-	parent.bind('<Left>', lambda x : self.TurnLeft(1))
-	parent.bind('<Right>', lambda x : self.TurnRight(1))
-	parent.bind('<Up>', lambda x : self.Accelerate(1))
-	parent.bind('<Down>', lambda x : self.Decelerate(1))
-
-	parent.bind('<space>', self.Pause)
-
+    
+        parent.after(40, self.checkmsg)
         self.dragging = None
 
-    def Accelerate(self, playerno=0):
-        self.turtles[playerno].Accelerate()
 
-    def Decelerate(self, playerno=0):
-        self.turtles[playerno].Decelerate()
+    def checkmsg(self):
+        while True:
+            read_fds = [self.sock1, self.sock2]
+            r, w, e = select.select(read_fds, [], [], 0)
+            if not r:   break
+            for fd in r:
+                msg, rpc_flag = scop.scop_get_message(fd)
+                
+                player = -1
+                if fd == self.sock1:    player = 1
+                elif fd == self.sock2:  player = 2
+                
+                #print "Received <" + msg + "> from player " + str(player)
+                
+                if player > 0:
+                    if msg == "a":    self.Accelerate(player-1)
+                    elif msg == "d":    self.Decelerate(player-1)
+                    elif msg == "l":    self.TurnLeft(player-1)
+                    elif msg == "r":    self.TurnRight(player-1)
+                    elif msg == "s":    self.Pause(player-1)
+        
+        self.parent.after(40, self.checkmsg)
+        
 
-    def TurnLeft(self, playerno=0):
-        self.turtles[playerno].TurnLeft()
+    def Accelerate(self, turtleno=0):
+        self.turtles[turtleno].Accelerate()
 
-    def TurnRight(self, playerno=0):
-        self.turtles[playerno].TurnRight()
+    def Decelerate(self, turtleno=0):
+        self.turtles[turtleno].Decelerate()
+
+    def TurnLeft(self, turtleno=0):
+        self.turtles[turtleno].TurnLeft()
+
+    def TurnRight(self, turtleno=0):
+        self.turtles[turtleno].TurnRight()
 
     def Pause(self, event=None):
-	if self.running:
-	    self.running = 0
-	    self.stop()
-	else:
-	    self.running = 1
-	    self.run()	
+        if self.running:
+            self.running = 0
+            self.stop()
+        else:
+            self.running = 1
+            self.run()  
 
     def press(self, event):
         dragstart = Vector(event.x, event.y)

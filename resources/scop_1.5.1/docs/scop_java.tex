@@ -1,0 +1,281 @@
+\documentclass[12pt,a4paper,twoside]{article}
+\usepackage{fancyhdr}
+
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{2ex plus1ex minus 0.5ex}
+
+\addtolength{\evensidemargin}{-2.5cm}
+\addtolength{\oddsidemargin}{-0.5cm}
+\addtolength{\textwidth}{3cm}
+
+\addtolength{\headheight}{0.2cm}
+\addtolength{\topmargin}{-1cm}
+\addtolength{\textheight}{2.5cm}
+% \addtolength{\footskip}{0.5cm}
+
+\renewcommand{\_}{\texttt{\symbol{95}}}
+\addtolength{\fboxsep}{0.1cm}
+\newcommand{\param}[1]{\textit{\textrm{\textmd{#1}}}}
+\newcommand{\codebar}{\rule{\textwidth}{0.3mm}}
+
+\newlength{\codelen}
+\newcommand{\code}[1]
+{\begin{center}\fbox{\parbox{16cm}{\texttt{#1}}}\end{center}}
+
+\fancyhead{}
+\fancyhead[RO,LE]{\thepage}
+\fancyhead[LO,RE]{SCOP Java Binding}
+\fancyfoot{}
+\pagestyle{fancy}
+
+\input{macros}
+\begin{document}
+
+\centerline{\textbf{\LARGE SCOP Manual Annex --- Java Binding}}
+\vspace{0.5cm}
+\centerline{Version 1.4, 12th November 2003}
+\centerline{David Ingram (\texttt{dmi1000@cam.ac.uk})}
+
+{ \parskip 1mm plus 1pt \tableofcontents }
+
+\section{Introduction}
+
+This annex to the SCOP manual describes the Java language binding. If
+your project is written in Java note that some of the SCOP
+functionality can and probably should be replaced by object
+serialization and Java RMI. SCOP Java is most useful as an events
+system, and for interoperability. Nevertheless the Java binding
+provides access to the \textit{complete} SCOP API. The port is
+implemented in pure Java (not as a wrapper around the C++ functions).
+
+The API works in a very similar way to the C++ one. You should
+therefore refer to the main manual for details of what each method
+does. In general the Java binding is a little easier to use because
+it is simplified by some features of the Java language.
+
+\subsection{Performance}
+
+Using interpreted Java (Sun's SDK 1.4) local-case performance was
+measured on an 800 Mhz Pentium III as peaking at 1000 RPC's per second
+(about seven times slower than with the C++ binding). Of course the
+\texttt{scopserver} process is still implemented in C++.
+
+\section{General semantics}
+
+The socket file descriptor is replaced by an instance of class
+\texttt{SCOP} for each connection to \texttt{scopserver}. All SCOP
+functions are methods in this class, which do not need the
+\texttt{scop\_} prefix or the \texttt{sock} parameter.
+\texttt{scop\_open} is replaced by the \texttt{SCOP} class
+constructor. You can call \texttt{connection\_ok} after creating
+a new \texttt{SCOP} object to discover if the connection to
+\texttt{scopserver} was made successfully.
+
+There is of course no need to free anything because buffers
+are dealt with by the garbage collector. The connection itself
+must be closed with the \texttt{close} method, however.
+Character arrays are obviously replaced by \texttt{String}'s
+and \texttt{boolean} values are used instead of \texttt{int}'s
+where appropriate.
+
+The source code for the Java binding can be found in
+\texttt{java/SCOP.java} within the main distribution.
+The \texttt{Makefile} located in that directory will
+compile this to a single Java bytecode class file,
+\texttt{SCOP.class}.
+
+Note that there is a new method \texttt{reply\_required}, which can be
+checked after a \texttt{get\_message} or \texttt{get\_struct}
+to see if the message was an RPC.
+
+\subsection{Restrictions}
+
+The following restrictions apply, compared to the C++ binding:
+\begin{bulletlist}
+\item Log data cannot be written using \texttt{syslog}, nor is the
+\texttt{SCOP\_LOGFILE} environment variable used. The value
+\verb=~/.scoplog= is hard-coded for the log file name.
+\item The port number cannot be read from \texttt{/etc/services}
+(the default number is hard-coded instead).
+\end{bulletlist}
+
+\subsection{Example programs}
+
+Java versions of the C++ example programs described in this manual can
+be found in the directory \texttt{java/examples}. They behave in an
+identical manner to their C++ counterparts. You can of course talk to
+the C++ versions of the servers with the Java clients, and vice-versa.
+The source code for the examples should make it clear how to use the
+Java API. Don't forget to set your classpath so that Java can find the
+library, for example:
+
+\texttt{java -cp .:.. Receiver}
+
+The examples provided are
+\texttt{Sender}, \texttt{Receiver},
+\texttt{EventSource}, \texttt{EventListener}, \texttt{MultiListener},
+\texttt{Client}, \texttt{Server}, \texttt{SOS}, \texttt{RTTClient},
+\texttt{XMLSender}, \texttt{XMLReceiver},
+\texttt{XMLClient}, \texttt{XMLServer},
+\texttt{MethodClient} and \texttt{MethodServer}.
+
+There is one additional Java example, \texttt{Status}, which simply shows how
+to exercise the \texttt{list} function (the \texttt{scop} utility itself
+serves this purpose for the C++ binding).
+
+The Java version of the \texttt{SOS} program has little point
+because we cannot easily access \texttt{syslog}. The example
+provided just echoes the messages it receives to \texttt{stdout},
+making it a standard listener (with error checking).
+
+The undocumented C++ example consisting of \texttt{multiplex} and
+\texttt{multiplex\_listener} has no Java equivalent because it is
+just a wrapper for C's \texttt{select()} function.
+
+\subsection{Multiplexing connections}
+
+For a long time Java had no equivalent to the \texttt{select()} function, which
+made non-blocking and multiplexed calls impossible without multiple
+threads. The NIO API does provide a \texttt{Selector} class now, however.
+A \texttt{channel()} method has been added to the SCOP API to retrieve the
+underlying \texttt{SocketChannel} object, so that NIO can be used.
+
+NIO is meant to allow handling of \textit{all} I/O in a non-blocking
+fashion, and unfortunately it doesn't support the SCOP
+library's slightly weaker semantics (selecting on multiple inputs until one
+becomes active, then issuing blocking I/O calls to read from it)
+very well. Essentially the problem is that a socket channel has to be in either
+blocking or non-blocking mode; one can't perform blocking calls in
+non-blocking mode or do a select in blocking mode, changing to blocking
+mode requires that the socket first be deregistered from the \texttt{Selector},
+and to do a select it must of course be registered.
+
+A Java version of the \texttt{MultiListener} example (with \texttt{select()}
+calls replaced by a \texttt{Selector}) is provided but because of this
+restriction has to be implemented in a cumbersome (and slow) manner at present.
+
+\section{Level 1 API}
+
+\begin{verbatim}
+public class SCOP
+{
+   // Connection setup and teardown:
+   public SCOP(String host, String name);
+   public SCOP(String host, String name, boolean unique);
+   boolean connection_ok();
+   SocketChannel channel();
+   void listen(String interest);
+   void listen(String interest, boolean unique);
+   void close();   
+
+   // Messaging:
+   void send_message(String endpoint, String message);
+   int send_message(String endpoint, String message, boolean verify);
+   String get_message();
+   
+   // RPC:
+   boolean reply_required();
+   String rpc(String endpoint, String args);
+   void send_reply(String reply);
+
+   // Predefined event sources:
+   void set_source_hint(String endpoint); 
+   void emit(String message);
+   int emit(String message, boolean verify);
+
+   // Admin:
+   int query(String endpoint);
+   void clear(String endpoint);
+   void set_log(int log_level);
+   void terminate();
+   void reconfigure();
+
+   // Cookies:   
+   void set_plain_cookie(String text);
+   String get_plain_cookie(String name);
+}
+\end{verbatim}
+
+\section{Level 2 API}
+
+\subsection{Marshalling and Unpacking}
+
+\begin{verbatim}
+public class Vertex
+{
+   /* Marshalling: */
+
+   static Vertex pack(int n);
+   static Vertex pack(String s);
+   static Vertex pack(double x);
+   static Vertex pack(byte[] buf);
+   
+   static Vertex mklist();
+   static Vertex append(Vertex list, Vertex v);
+   static Vertex pack(Vertex[] vert_array);
+
+   // Convenience functions for making short lists:
+   static Vertex pack(Vertex v1, Vertex v2);
+   static Vertex pack(Vertex v1, Vertex v2, Vertex v3);
+   static Vertex pack(Vertex v1, Vertex v2, Vertex v3, Vertex v4);
+   static Vertex pack(Vertex v1, Vertex v2, Vertex v3, Vertex v4, Vertex v5);
+   static Vertex pack(Vertex v1, Vertex v2, Vertex v3, Vertex v4, Vertex v5,
+         Vertex v6);
+
+   /* Unpacking */
+
+   int extract_int();
+   double extract_double();
+   String extract_string();
+   byte[] extract_bytes();
+   int count_bytes();
+
+   int extract_int(int item);
+   double extract_double(int item);
+   String extract_string(int item);
+   byte[] extract_bytes(int item);
+   int count_bytes(int item);
+
+   Vertex extract_item(int item);
+   int count_items();
+
+   Vertex[] extract_array();
+
+   String extract_method(); // Convenience
+   Vertex extract_args();   // Convenience
+
+   /* Parsing: */
+
+   static String vertex_to_string(Vertex v);
+   static Vertex string_to_vertex(String s);
+   static String vertex_to_string(Vertex v, String method); // Convenience
+
+   /* Debugging: */
+
+   static String pretty_print(Vertex v);
+}
+\end{verbatim}
+
+\subsection{XML transport functions}
+
+\begin{verbatim}
+public class SCOPXML extends SCOP
+{
+   // XML messages:
+   void send_struct(String endpoint, Vertex args);
+   void send_struct(String endpoint, Vertex args, String method);
+   Vertex get_struct();
+   
+   // XML RPC:
+   Vertex rpc(String endpoint, Vertex args);
+   Vertex rpc(String endpoint, Vertex args, String method);
+   Vertex get_request();
+   void send_reply(Vertex reply);
+   
+   // XML Cookies:
+   Vertex get_cookie(String name);
+   void set_cookie(Vertex data);
+}
+\end{verbatim}
+
+\end{document}
