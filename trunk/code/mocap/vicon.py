@@ -78,7 +78,10 @@ def merge(*args):
         return ret	
 
 if __name__ == '__main__':
-	vicon = DataParserR()		
+	vicon = DataParserR()	
+
+	import pprint
+	p = pprint.PrettyPrinter()
 	data = vicon.getData("/home/cheryl/project/testing/TrainingData/Accelerate/001a.csv")
-	print data
+	p.pprint(data)
 

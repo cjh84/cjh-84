@@ -26,7 +26,7 @@ class Trainer:
 
 	def preprocess(self, gesturedir, label):
 		#Load a set of gestures and label
-		#Preprocess: subtract belt position from lefthand and righthand
+
 		gestures = [(os.path.join(gesturedir, g)) for g in os.listdir(gesturedir) if os.path.isfile(os.path.join(gesturedir, g))]
 		
 		for gesture in gestures:
