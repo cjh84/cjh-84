@@ -1,0 +1,15 @@
+
+= Preparation =
+
+Add your content here.
+
+
+= Brief =
+
+Principally, this chapter should describe the work which was undertaken before code was written, hardware built or theories worked on. It should show how the project proposal was further refined and clarified, so that the Implementation stage could go smoothly rather than by trial and error.
+
+Throughout this chapter and indeed the whole dissertation, it is essential to demonstrate that a proper professional approach was employed.
+
+The nature of this chapter will vary greatly from one dissertation to another but, underlining the professional approach, this chapter will very likely include a section headed ``Requirements Analysis'' and incorporate other references to the techniques of Software Engineering.
+
+The chapter will cite any new programming languages and systems which had to be learnt and will mention complicated theories or algorithms which required understanding. 
