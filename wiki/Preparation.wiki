@@ -1,7 +1,22 @@
-
 = Preparation =
 
-Add your content here.
+== Requirements Analysis ==
+
+== Languages and Tools ==
+
+ * svn
+ * Google Code Project Hosting
+ * Java
+ * Python
+
+=== Artificial Neural Networks ===
+
+ * Joone
+ * JavaNNS
+
+=== Hidden Markov Models ===
+ 
+ * Jahmm
 
 
 = Brief =
