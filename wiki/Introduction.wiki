@@ -1,7 +1,10 @@
-
 = Introduction =
 
+== Gesture recognition ==
 
+=== Artificial Neural Networks ===
+
+=== Hidden Markov Models ===
 
 = Brief =
 
