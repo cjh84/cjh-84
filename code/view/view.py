@@ -1,3 +1,5 @@
+'''Listen to SCOP streams for commands and render some turtles.'''
+
 from Tkinter import *
 from Arena import Arena
 from WalkingTurtle import WalkingTurtle
