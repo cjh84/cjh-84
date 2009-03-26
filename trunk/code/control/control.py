@@ -1,5 +1,5 @@
 from Tkinter import *
-from Arena import Arena
+from Controls import Controls
 import scop
 
 sock = scop.scop_open("www.srcf.ucam.org", "control")
@@ -11,8 +11,6 @@ else:
 	scop.scop_set_source_hint(sock, "p1ctrl")
 
 tk = Tk()
-arena = Arena(tk, sock, player)
-arena.pack()
-#arena.add(WalkingTurtle(Vector(200,300), 0, 1, fill='turquoise'))
-#arena.add(WalkingTurtle(Vector(600,300), 0, 1, fill='purple'))
+controls = Controls(tk, sock, player)
+controls.pack()
 tk.mainloop()

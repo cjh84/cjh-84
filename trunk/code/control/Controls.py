@@ -2,8 +2,8 @@ from Tkinter import *
 import scop
 
 
-class Arena(Frame):
-    """This class provides the user interface for an arena of turtles."""
+class Controls(Frame):
+    """This class provides mousebutton and arrow key support for emitting basic controls (a,d,l,r,s) to an SCOP socket."""
 
     def __init__(self, parent, sock, player, width=800, height=800, **options):
         Frame.__init__(self, parent, **options)
