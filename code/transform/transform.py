@@ -27,39 +27,6 @@ class Frame():
 class SixDOF():
     pass
 
-class Features():
-    def __init__(self, frames):
-        self.leftarm = Ranges()
-        self.rightarm = Ranges()
-        for frame in frames:
-            self.leftarm.update(frame.leftarm)
-            self.rightarm.update(frame.rightarm)
-
-    def dump(self):
-        print 'Left Arm:'
-        self.leftarm.dump()
-        print 'Right Arm:'
-        self.rightarm.dump()
-
-class Ranges():
-    def __init__(self):
-        self.minx = self.miny = self.minz = 9999.0
-        self.maxx = self.maxy = self.maxz = -9999.0
-
-    def update(self, bodypart):
-        self.minx = min(self.minx, bodypart.tx)
-        self.maxx = max(self.maxx, bodypart.tx)
-        self.miny = min(self.miny, bodypart.ty)
-        self.maxy = max(self.maxy, bodypart.ty)
-        self.minz = min(self.minz, bodypart.tz)
-        self.maxz = max(self.maxz, bodypart.tz)
-
-    def dump(self):
-        dx = self.maxx - self.minx
-        dy = self.maxy - self.miny
-        dz = self.maxz - self.minz
-        print 'dx = %f, dy = %f, dz = %f' % (dx,dy,dz)
-
 def structure(data):
     '''Converts a list of lists into a list of Frames.'''
     frames = []
@@ -131,16 +98,19 @@ def rotate_point(ax,ay,az,x0,y0,z0):
         x0,y0,z0 is point to be rotated
         Inefficient if rotating multiple points by same angle-axis vector '''
 
-    theta = math.sqrt(ax*ax + ay*ay + az*az)
-    if theta < EPSILON:
+    magnitude = math.sqrt(ax*ax + ay*ay + az*az)
+
+    if magnitude < EPSILON:
         return x0,y0,z0
-    ax /= theta
-    ay /= theta
-    az /= theta
+
+    ax /= magnitude
+    ay /= magnitude
+    az /= magnitude
+
     if DEBUG:
-        print 'ax=%f, ay=%f, az=%f, theta=%f' % (ax,ay,az,theta)
-    s = math.sin(theta)
-    c = math.cos(theta)
+        print 'ax=%f, ay=%f, az=%f, magnitude=%f' % (ax,ay,az,magnitude)
+    s = math.sin(magnitude)
+    c = math.cos(magnitude)
     t = 1 - c
 
     ''' Graphics Gems (Glassner, Academic Press, 1990) '''
@@ -203,6 +173,7 @@ if __name__ == '__main__':
 
     import sys
     import GestureReader
+    import features
 
     if len(sys.argv) != 2:
         usage()
@@ -213,10 +184,10 @@ if __name__ == '__main__':
     data = gestureRdr.getData(filename)
     frames = structure(data)
     # rotatetest()
-    headingtest(frames)
-    sys.exit(0)
-    feat = Features(frames)
+    #headingtest(frames)
+    #sys.exit(0)
+    feat = features.Features(frames)
     feat.dump()
     process(frames)
-    feat = Features(frames)
+    feat = features.Features(frames)
     feat.dump()
