@@ -1,0 +1,222 @@
+Cover
+=====
+
+Proforma & Declaration of Originality
+=====================================
+
+Contents Page
+=============
+
+Introduction
+============
+
+New paradigms are becoming a reality. Amongst consumer goods, new ways of interaction are forcing a rethink beyond the keyboard and mouse. The
+Apple iPhone is the first touchscreen cellular phone to be widely adopted, while the Nintendo Wii brings accelerometer based control to
+home gaming. The Opera browser uses mouse gestures for navigational input, while the Microsoft Surface is aimed towards diverse markets such as 
+corporate events and restaurants.
+
+The philosophy which is common to these systems is defined by the term "ubiquitous computing". The aim is to allow intuitive, natural interaction so 
+that anybody (in theory) can use them without training, but instead by mirroring or mimicking behaviour of the real world.
+
+Conversely, robots have generally been operated by skilled engineers and researchers. The motivation was to bring the power of human intuition, 
+using techniques from machine learning, to the human-machine interface. The medium that we chose to investigate and exploit is gesture recognition, a 
+specialization of pattern recognition.
+
+One of the limitations of the project is that while machine vision was an option, it does not provide the accuracy of motion capture systems, such as 
+the Vicon system. Another restriction is that rather than allowing users full freedom of gestures, we chose to train on a finite set of predefined 
+gestures, converting these into commands that are used to drive the robot. 
+
+The two computational models used internally for this translation are Artificial Neural Networks and Hidden Markov Models. Gesture recognition is really 
+a two-phase problem; the training with prerecorded datasets and the run-time interpretation. 
+
+An application for the system in the form of a two-player game demonstrates the system's real time capabilities.
+
+Preparation
+===========
+
+Requirements Analysis
+---------------------
+
+Costing
+Funding
+
+Hardware
+--------
+
+Robots
+Laptops
+
+Command module
+How it all fits together
+{diagram}
+
+Motion Capture System
+---------------------
+
+TARSUS
+Cecily's Java client
+
+Neural Networks
+---------------
+
+Hidden Markov Models
+--------------------
+
+Tools
+-----
+
+Robot Control Library
+SVN
+Google Code
+SCOP
+
+Languages
+---------
+
+Python
+Java
+
+Implementation
+==============
+
+System Overview
+---------------
+
+System Diagram
+{diagram}
+
+There are independant components, with message passing done via an SCOP server on the SRCF. It was felt that this was the best way to provide inter-
+language communication, especially as we pass relatively small amounts of data (gesture data is 100 frames per second but is handled by a localhost 
+server, and commands are single characters (a,d,l,r,s) at no more than 2 or 3 per second).
+
+Component Interfaces
+--------------------
+
+Protocols & Data formats
+
+Breakdown of components
+-----------------------
+
+Class diagrams
+{diagram}
+
+Motion capture
+--------------
+
+Since gestures were to be the main input of the system, both the choice of markers defining objects and the choice of gestures used were critical to the 
+likelihood of succesful recognition. 
+
+The constraints on the choice of markers were: sufficient rigidity to define as objects (rather than 
+using raw marker data); avoiding jitter (ruling out fine-grained hand or face gestures); and some way of determining the position of the person (hat or 
+belt), so that gestures could be made relative to the person. From experimental runs, we determined that using arm gestures gave the best balance of 
+naturalness of control with correctness of evaluation, and so each user wears a top with approximately twelve markers spread over:
+* left lower arm
+* right lower arm
+* body (chest and top of back)
+
+In order to simplify data processing while providing adequate control over the robot, most of the preset gestures were constrained to one arm 
+movement within two dimensions (x-z or y-z planes in a z-up world):
+* accelerate
+* decelerate
+* turn left
+* turn right
+* start/stop - a test case for a more complex gesture, in this case a single clap at chest level.
+{diagram}
+
+The Vicon Tarsus system handles driving the cameras and reconstructing the objects into 6 datapoints per frame; 3 absolute 
+positions in mm (denoted <T-X>, <T-Y>, <T-Z> with T indicating Translation) and 3 rotations in radians (denoted <A-X>, <A-Y>, <A-Z>, where A stands for Axis-Angles, 
+also known as Exponential Coordinates). With the Axis Angle triplets, the x, y and z values define a vector whose direction is the axis of 
+rotation and magnitude is the amount of rotation.
+
+With three objects per user and six datapoints per object, the Tarsus server sends eighteen or thirty six (for two players) values per frame via TCP/IP 
+on port 800. The Capture class, written in Java, uses DataParserR.java, a Java client provided by Cecily Morrison, to select on the requested channels. 
+It uses SCOP to pass these eighteen data values to the next logical component, the gesture recognition phase.
+
+Training data
+-------------
+
+Preprocessing
+-------------
+
+The data requires significant preprocessing to convert the feature vector from world coordinates to body coordinates. Using the body as the origin 
+{ blah blah matrix multiplication }
+
+The technique of dimension reduction encodes information more succintly for the next stage of gesture recognition, in order to reduce the processing 
+in the next stage. In addition, feature extraction further reduces search space of the input data, which increases the probability that the gestures 
+will be successfully recognized. The gestures are characterised by simple measures such as the range of values and whether both arms are moving.
+
+Gesture segmentation
+--------------------
+
+Sliding windows
+
+Feature extraction
+------------------
+
+Recognition
+-----------
+
+Heuristic recogniser
+
+Neural network recogniser
+
+Hidden Markov model recogniser
+
+GUI
+---
+
+Control
+
+View
+
+Networking
+----------
+
+Decoupling various components allows message passing between different languages, which was important to allow the Java client to communicate with the 
+Python robotics control. SCOP, a lightweight middleware framework written by Dr David Ingram, allows particularly simple events, messaging and RPC 
+written in C++ with ports to C, Java, Python and Scheme. SCOP hides the client and server setup and silently discards data streams if there are no listeners. 
+This makes it particularly simple to create and run such a distributed system by passing gesture data from the Java client through Python processing 
+with Java libraries to the Python robot library.
+
+Robot control
+-------------
+
+Relay
+	Transformation from angles to turning radii
+Tunnel
+
+Evaluation
+==========
+
+Comparison of gesture recognition methods
+-----------------------------------------
+
+Accuracy
+--------
+
+Body part tagging - hat, body, belt
+
+Stationary vs. moving user
+
+Trained vs. untrained
+
+Accuracy vs. amount of training data (compare HMM and ANN)
+
+Choice of gesture
+
+Optimal number of hidden nodes (ANNs) and hidden states (HMMs)
+--------------------------------------------------------------
+
+Conclusions
+===========
+
+Bibliography
+============
+
+Appendices
+==========
+
+Sample code
+
+Project Proposal
+================
