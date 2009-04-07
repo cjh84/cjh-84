@@ -4,23 +4,6 @@ import java.io.*;
 import java.util.*;
 import javax.vecmath.*;
 
-class Point
-{
-	double x, y, z;
-	
-	Point(double x, double y, double z)
-	{
-		this.x = x;
-		this.y = y;
-		this.z = z;
-	}
-	
-	Point()
-	{
-		x = y = z = 0.0;
-	}
-};
-
 class Transform
 {
 	static final double EPSILON = 1.0e-5;
@@ -63,7 +46,7 @@ class Transform
 			System.out.printf("%5.1f   ", theta);
 
 			Point p = rotatePoint(frame.body.ax, frame.body.ay, frame.body.az,
-					frame.body.angle,	0.0, 1.0, 0.0);
+					frame.body.angle, 0.0, 1.0, 0.0);
 			theta = Math.atan2(p.y, p.x) * 180.0 / Math.PI;
 			System.out.printf("%5.1f\n", theta);
 			// System.out.printf("%7.2f%7.2f%7.2f", p.x, p.y, p.z);
@@ -94,7 +77,7 @@ class Transform
 		/* ax,ay,az,angle is angle-axis rotation
 			x0,y0,z0 is point to be rotated
 			Inefficient if rotating multiple points by same angle-axis vector */
-		
+
 		double magnitude, s, c, t;
 		Point p = new Point();
 		
