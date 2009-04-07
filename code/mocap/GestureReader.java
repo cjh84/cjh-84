@@ -1,8 +1,187 @@
-Cheryl, can you swap with anybody? <br><br>If that is not an option, I could do the 5.25.<br><br>Simone<br><br><div><span class="gmail_quote">On 3/2/09, <b class="gmail_sendername">Cheryl</b> &lt;<a href="mailto:cjh84@cam.ac.uk">cjh84@cam.ac.uk</a>&gt; wrote:</span><blockquote class="gmail_quote" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; margin-left: 0.80ex; border-left-color: #cccccc; border-left-width: 1px; border-left-style: solid; padding-left: 1ex">
-Hi Simone,<br><br> Sorry, I can&#39;t make this time. Would you be able to do some time between 11 and 12 at the lab, or at 5:25 in X17a instead?<br><br> Cheryl<br><br> Simone Teufel wrote:<br><blockquote class="gmail_quote" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0.80ex; border-left-color: #cccccc; border-left-width: 1px; border-left-style: solid; padding-left: 1ex">
-<span class="q"> Hi guys,<br><br> can you all make Wednesday afternoon for a quick meeting?<br> The idea is to discuss supervision reports, project progress and examination preparation.<br><br> Several of you have asked me to do it at King&#39;s, so let&#39;s. My office is X17a.<br>
-<br> Cheryl       -- 2.00-2.20<br> Nathan      -- 2.20-2.40<br> Neil           -- 2.40-3.00<br> Inhar         -- 3.20-3.40<br> Richard     -- 3.40-3.55<br> Long         -- 3.55-4.10<br> Alexander -- 4.10-4.25<br> David       -- 4.25-4.40<br>
- Fred         -- 4.40-4.55<br> Matt         -- 4.55-5.10<br><br><br> Thanks!<br> -- Simone<br><br></span><span class="q"> On 2/2/09, *Simone Teufel* &lt;<a href="mailto:simone.teufel@googlemail.com" target="_blank" onclick="return top.js.OpenExtLink(window,event,this)">simone.teufel@googlemail.com</a> &lt;mailto:<a href="mailto:simone.teufel@googlemail.com" target="_blank" onclick="return top.js.OpenExtLink(window,event,this)">simone.teufel@googlemail.com</a>&gt;&gt; wrote:<br>
-<br>     Dear students,<br><br>     I would like to meet you all (but individually or in supervision<br>     pairs), one day sometime soon, to hear how you&#39;re doing. Which<br>     morning/afternoon works for you (i.e no lectures, no practicals)?<br>
-<br>     How about Wednesdays? Thursday mornings?<br><br>     Wont&#39; take long -- Once we found a day that works, I will give you<br>     20 minute slots.<br><br>     Thanks,<br><br>     Simone<br><br><br></span></blockquote>
-<br></blockquote></div><br>
+// A virtual Vicon system to read in recorded training data
+
+import java.io.*;
+import java.util.*;
+
+class SixDOF
+{
+	double ax, ay, az, tx, ty, tz, angle;
+
+	static final double EPSILON = 1.0e-5;
+
+	SixDOF()
+	{
+		angle = 1.0;
+	}
+		
+	void dump()
+	{
+		System.out.printf("%7.2f,%7.2f,%7.2f,%7.0f,%7.0f,%7.0f",
+				ax, ay, az, tx, ty, tz);
+	}
+	
+	void normalise()
+	{
+		angle *= Math.sqrt(ax * ax + ay * ay + az * az);
+		if(angle >= EPSILON)
+		{
+			ax /= angle;
+			ay /= angle;
+			az /= angle;
+		}
+		else
+			angle = 0.0;
+	}
+};
+
+class Frame
+{
+	SixDOF body, left, right;
+	
+	void dump()
+	{
+		body.dump();
+		System.out.print(",");
+		left.dump();
+		System.out.print(",");
+		right.dump();
+		System.out.println();
+	}
+	
+	static void headings()
+	{
+		System.out.println("BodyAx BodyAy BodyAz  LArmTx LArmTy LArmTz" +
+				"  RArmTx RArmTy RArmTz");
+	}
+};
+
+class GestureReader
+{
+	static void usage()
+	{
+		System.out.println("Usage: java GestureReader <filename.csv>");
+		System.exit(0);
+	}
+	
+	static void dump(ArrayList<Frame> data)
+	{
+		for(Frame f: data)
+			f.dump();
+	}
+	
+	private static void error(String msg)
+	{
+		System.out.println(msg);
+		System.exit(0);
+	}
+	
+	public static void main(String[] argv)
+	{
+		String filename;
+		ArrayList<Frame> data;
+	
+		if(argv.length != 1)
+			usage();
+		filename = argv[0];
+		
+		data = getData(filename);
+		dump(data);
+	}
+	
+	static SixDOF parse(String s)
+	{
+		String[] values;
+		SixDOF sixdof = new SixDOF();
+		
+		values = s.split(",");
+		if(values.length != 7)
+		{
+			System.out.println("Parse error on line <" + s + "> (" +
+					values.length + " values)");
+			System.exit(0);
+		}
+		sixdof.ax = Double.valueOf(values[1]) * Math.PI / 180.0;
+		sixdof.ay = Double.valueOf(values[2]) * Math.PI / 180.0;
+		sixdof.az = Double.valueOf(values[3]) * Math.PI / 180.0;
+		sixdof.tx = Double.valueOf(values[4]);
+		sixdof.ty = Double.valueOf(values[5]);
+		sixdof.tz = Double.valueOf(values[6]);
+		sixdof.ax *= Math.PI / 180.0;
+		sixdof.normalise();
+		return sixdof;
+	}
+	
+	static ArrayList<Frame> getData(String filename)
+	{
+		ArrayList<Frame> data = new ArrayList<Frame>();
+		String line;
+		int bodypart = 0, frameno = 0;
+		int startpart;
+		SixDOF sixdof;
+		char c;
+		
+		try
+		{
+			BufferedReader in = new BufferedReader(new FileReader(filename));
+			while((line = in.readLine()) != null)
+			{
+				if(line.length() == 0)
+					continue;
+				startpart = 0;
+				c = line.charAt(0);
+				if(c >= '0' && c <= '9')
+				{
+					sixdof = parse(line);
+					if(bodypart > 1 && frameno >= data.size())
+						error("Too many data points");
+					if(bodypart == 1)
+					{
+						Frame f = new Frame();
+						f.body = sixdof;
+						data.add(f);
+					}
+					else if(bodypart == 2)
+						data.get(frameno).left = sixdof;
+					else if(bodypart == 3)
+						data.get(frameno).right = sixdof;
+					else
+						error("Frame data received for unknown body part");
+					frameno++;
+				}
+				else if(line.startsWith("Belt") || line.startsWith("Hat") ||
+						line.startsWith("BeltP1") || line.startsWith("BeltP2") ||
+						line.startsWith("BodyP1"))
+					startpart = 1;
+				else if(line.startsWith("LeftHand") ||
+						line.startsWith("LeftArm") ||
+						line.startsWith("LeftArmP1") ||
+						line.startsWith("LeftArmP2"))
+					startpart = 2;
+				else if(line.startsWith("RightHand") ||
+						line.startsWith("RightArm") ||
+						line.startsWith("RightArmP1") ||
+						line.startsWith("RightArmP2"))
+					startpart = 3;
+				else
+					error("Invalid line in data file.");
+				
+				if(startpart > 0)
+				{
+					assert bodypart == startpart - 1: "Unexpected body part";
+					bodypart++;
+					frameno = 0;
+					if((line = in.readLine()) == null)
+						error("Unexpected end of file.");
+				}
+			}
+			in.close();
+		}
+		catch(IOException e)
+		{
+			System.out.println("Cannot read from <" + filename + ">");
+			System.exit(0);
+		}
+		assert bodypart == 3: "Wrong number of body parts";
+		return data;
+	}
+};

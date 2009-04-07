@@ -24,7 +24,7 @@ class Point
 class Transform
 {
 	static final double EPSILON = 1.0e-5;
-	static double fudge = 1.0;
+	static double fudge = -1.0;
 
 	static void usage()
 	{
