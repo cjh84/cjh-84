@@ -10,24 +10,15 @@ Contents Page
 Introduction
 ============
 
-New paradigms are becoming a reality. Amongst consumer goods, new ways of interaction are forcing a rethink beyond the keyboard and mouse. The
-Apple iPhone is the first touchscreen cellular phone to be widely adopted, while the Nintendo Wii brings accelerometer based control to
-home gaming. The Opera browser uses mouse gestures for navigational input, while the Microsoft Surface is aimed towards diverse markets such as 
-corporate events and restaurants.
+New paradigms are becoming a reality. Amongst consumer goods, new ways of interaction are forcing a rethink beyond the keyboard and mouse. The Apple iPhone is the first touchscreen cellular phone to be widely adopted, while the Nintendo Wii brings accelerometer based control to home gaming. The Opera browser uses mouse gestures for navigational input, while the Microsoft Surface is aimed towards diverse markets such as corporate events and restaurants.
 
-The philosophy which is common to these systems is defined by the term "ubiquitous computing". The aim is to allow intuitive, natural interaction so 
-that anybody (in theory) can use them without training, but instead by mirroring or mimicking behaviour of the real world.
+The philosophy which is common to these systems is defined by the term "ubiquitous computing". The aim is to allow intuitive, natural interaction so that anybody (in theory) can use them without training, but instead by mirroring or mimicking behaviour of the real world.
 
-Conversely, robots have generally been operated by skilled engineers and researchers. The motivation was to bring the power of human intuition, 
-using techniques from machine learning, to the human-machine interface. The medium that we chose to investigate and exploit is gesture recognition, a 
-specialization of pattern recognition.
+Conversely, robots have generally been operated by skilled engineers and researchers. The motivation was to bring the power of human intuition, using techniques from machine learning, to the human-machine interface. The medium that we chose to investigate and exploit is gesture recognition, a specialization of pattern recognition.
 
-One of the limitations of the project is that while machine vision was an option, it does not provide the accuracy of motion capture systems, such as 
-the Vicon system. Another restriction is that rather than allowing users full freedom of gestures, we chose to train on a finite set of predefined 
-gestures, converting these into commands that are used to drive the robot. 
+One of the limitations of the project is that while machine vision was an option, it does not provide the accuracy of motion capture systems, such as the Vicon system. Another restriction is that rather than allowing users full freedom of gestures, we chose to train on a finite set of predefined gestures, converting these into commands that are used to drive the robot. 
 
-The two computational models used internally for this translation are Artificial Neural Networks and Hidden Markov Models. Gesture recognition is really 
-a two-phase problem; the training with prerecorded datasets and the run-time interpretation. 
+The two computational models used internally for this translation are Artificial Neural Networks and Hidden Markov Models. Gesture recognition is really a two-phase problem; the training with prerecorded datasets and the run-time interpretation. 
 
 An application for the system in the form of a two-player game demonstrates the system's real time capabilities.
 
@@ -37,27 +28,136 @@ Preparation
 Requirements Analysis
 ---------------------
 
-Costing
-Funding
-
 Hardware
 --------
 
-Robots
-Laptops
+The main requirements of the hardware were:
 
-Command module
-How it all fits together
-{diagram}
+* It should  have a range of commands it is willing to accept, in order to allow training of multiple gestures. A simple vehicle sufficed for this purpose.
+* It should have wireless capabilities for independant movement, and sensors and webcam for the collision based game.
+* A high level API or library is preferred, for ease of development.
+* Commercially available robots makes purchasing for multiuser applications easier.
+* High battery life and low power consumption, for testing purposes.
+* Low cost (see budgeting for more)
+
+The main alternatives considered were:
+* Lego Mindstorms, already owned by the Computer Laboratory and including a C++ API, with purchased modules for wireless and touch sensors. This was dismissed as building a vehicle and testing for range of movement etc. would take excessive development time.
+* iRobot Roomba, a low cost vacuum cleaning robot with bump sensors, with third party peripherals for wireless and webcam. Reaching the serial ports on the Roomba would require removal of hardware and deconstruction of the vacuum innards.
+* iRobot Create, an educational robot similar to the Roomba, without vacuum parts. A device for wireless could be attached by serial cable. A setup based on the OLPC Telepresence {reference: OLPC Telepresence} also provided a Python library for interfacing with both the laptop's webcam and robot's motors and bump sensors.
+{Command module?}
+
+{diagram: robot}
+
+The budget was £500, funded equally by the Computer Laboratory Outreach programme and King's College. The final expenditure came to £585.
 
 Motion Capture System
 ---------------------
 
-TARSUS
-Cecily's Java client
+The Vicon Motion Capture system in the Rainbow Group is controlled by Tarsus. This software collates the data from the ten infra-red cameras to reconstruct the three dimensional marker positions in real time, and further combines these into either user-defined objects or full skeletons. A Java client written by Cecily Morrison was used for access to this data stream at 100fps. There were two choices to be considered; the objects (body parts), and the gestures to be recognised.
+
+The objects needed firstly for input to a gesture, and secondly representing the user's position so that gestures can be calculated invariant to tranlation, rotation and spatial displacement. For the gesture input, one or two hands or arms were considered; two gives a wider range of movement (and thus a larger input space) and forearms have more rigidity than hands, giving better recognition rates from the Vicon system. Options for positional data were belt, hat and body. The belt was easily occluded and confused by the arm markers, while the hat gave poor rotational data due to the independant movement of the head. The final configuration chosen was twelve markers spread across two arms and body (upper chest and back).
+
+{diagram: markers}
+
+The data outputted is six data values per object; an AxisAngle triplet for rotation and a triplet for global translation in mm.
+
+In order to simplify data processing while providing adequate control over the robot, most of the preset gestures were constrained to one arm movement within two dimensions (x-z or y-z planes in a z-up world):
+* accelerate
+* decelerate
+* turn left
+* turn right
+* start/stop - a test case for a more complex gesture, in this case a single clap at chest level.
+{diagram: gestures}
+
+AxisAngles
+----------
+
+Axis angles are also known as exponential coordinates or rotation vectors. This parameterizes orientation by a three dimensional Cartesion vector, describing a directed axis and the magnitude of rotation. The following rotation matrix is used to rotate around an arbitary axis where (x,y,z) is a unit vector on the axis of rotation, and theta is the angle of rotation.
+
+{reference: Graphics Gems}
+
+{latex:
+
+(x,y,z)
+
+theta = sqrt(x^2 + y^2 + z^2)
+
+c = cos(theta)
+s = sin(theta)
+t = 1-c 
+
+R = [	tx^2+c	txy+sz	txz-sy
+		txy-sz	ty^2+c	tyz+sx
+		txz+sy	tyz-sx	tz^2+c	]
+
+}
+
 
 Neural Networks
 ---------------
+
+An artifical neural network is an interconnected set of nodes which individually perform simple processing, but exhibits complex behaviour as a whole system. This is the connectionist approach to pattern recognition from large sets of data; it was inspired by the biological neural network. Each unit combines the inputs by means of an activation function, which fires non-linearly given sufficient input. Common choices for the activation function are the tanh function or the sigmoid function, which have the property of being differentiable:
+
+{latex:
+phi(vi) = 1/(1+e^(-vi) 
+}
+
+{diagram: single neuron}
+
+{latex:
+wji connects node i to node j
+aij is the activation for node, the weighted sum of the inputs
+g is the activation function. 
+zj = g(aj)
+bias input = 1
+}
+
+The most common model is the multilayer perceptron, where the overall structure is feedforward and there are three layers of nodes; an input layer, a hidden layer and an output layer. 
+
+{diagram: multilayer perceptron}
+
+Since this is a supervised learning technique, the first phase is to present training data. The goal is to adjust the weights w so as to minimise the overall error, denoted E(w). The training sequence is a vector of labelled inputs:
+
+{latex:
+s = ((x1,y1), ... , (xm, ym))
+}
+
+The backpropagation algorithm is an application of gradient descent for minimization of error. The first stage is to initialize w to a random set of weights. Calculate E(w); if this is greater than a theshold value, calculate the gradient dE(w)/dw of E(w) at each point wi and adjust the weight vector to lower the error:
+
+{latex:
+wi+1 = wi - a d(E(w)/dw) | wi
+}
+
+The forward propagation stage is to calculate aj and zj for all nodes, given an input example p.
+
+{latex:
+dEp(w)/dwji = dEp(w)/daj * daj/dwji = djzi
+
+where dj = dEp(w)/daj
+and daj/dwji = d/dwij ( sum {zk * wjk} ) = zi
+}
+
+There are two cases for calculating dj:
+
+1. j is an output node
+
+{latex:
+dj = dEp(w)/daj
+ = dEp(w)/dzj * dzj/daj
+ = dEp(w)/dzj * g'(aj)
+}
+
+2. j is not an output node
+
+{latex:
+dj = dEp(w)/daj
+ = sum { dEp(w)/dak dak/daj }
+ = g'(aj) sum {dk wkj}
+ 
+since 
+dak/daj = d/daj sum { wki * g(ai) }
+ = wkj g'(aj)
+}
 
 Hidden Markov Models
 --------------------
@@ -65,16 +165,18 @@ Hidden Markov Models
 Tools
 -----
 
-Robot Control Library
-SVN
-Google Code
-SCOP
+Subversion was used for versioning control, through Google Code Project Hosting. The libraries used were:
+
+Joone: Java Object Oriented Neural Engine
+Jahmm: Java Hidden Markov Model
+SCOP: Server COmmunication Protocol
+PyRobot: robot and laptop control, motors, sensors and webcam
+Tarsus: motion capture and object reconstruction
 
 Languages
 ---------
 
-Python
-Java
+The robot control library, PyRobot, is written in SCOP. Cecily Morrison's client and both pattern recognition engines are Java. Message passing between languages of simple strings is handled by SCOP.
 
 Implementation
 ==============
@@ -83,100 +185,85 @@ System Overview
 ---------------
 
 System Diagram
-{diagram}
+{diagram: system diagram}
 
-There are independant components, with message passing done via an SCOP server on the SRCF. It was felt that this was the best way to provide inter-
-language communication, especially as we pass relatively small amounts of data (gesture data is 100 frames per second but is handled by a localhost 
-server, and commands are single characters (a,d,l,r,s) at no more than 2 or 3 per second).
+This high level overview shows how components are decoupled for reusability. During training, the training sequences are read from disk and preprocessed to form data for training the pattern recognition modules. When live, the data capture subsystem sends double arrays of raw data values to the SCOP server. The preprocessing module additionally listens to the event stream for gesture data. The output from all three services is interpreted as one of five commands by Control and is sent to the SCOP server on a different stream. For testing purposes, a GUI provides alternative input methods of mouse and keystrokes.
 
-Component Interfaces
---------------------
+The relay program on the XO laptop converts this into drive commands and the PyRobot library handles low level opcodes. The monitor shows the output for a turtle program which responds to the same commands, again for test purposes.
 
+Message passing provides inter-language communication via an SCOP server running on the SRCF. Relatively small amounts of data is passed (gesture data is 100 frames per second but is handled by a local server, and commands are single characters {a,d,l,r,s} at no more than 2 or 3 per second).
+
+* Component Interfaces *
+
+{diagram: data flow diagram}
 Protocols & Data formats
 
-Breakdown of components
------------------------
+* Breakdown of components *
 
 Class diagrams
-{diagram}
+{diagram: class diagram}
 
 Motion capture
 --------------
 
-Since gestures were to be the main input of the system, both the choice of markers defining objects and the choice of gestures used were critical to the 
-likelihood of succesful recognition. 
+{diagram: mocap class diagram}
 
-The constraints on the choice of markers were: sufficient rigidity to define as objects (rather than 
-using raw marker data); avoiding jitter (ruling out fine-grained hand or face gestures); and some way of determining the position of the person (hat or 
-belt), so that gestures could be made relative to the person. From experimental runs, we determined that using arm gestures gave the best balance of 
-naturalness of control with correctness of evaluation, and so each user wears a top with approximately twelve markers spread over:
-* left lower arm
-* right lower arm
-* body (chest and top of back)
-
-In order to simplify data processing while providing adequate control over the robot, most of the preset gestures were constrained to one arm 
-movement within two dimensions (x-z or y-z planes in a z-up world):
-* accelerate
-* decelerate
-* turn left
-* turn right
-* start/stop - a test case for a more complex gesture, in this case a single clap at chest level.
-{diagram}
-
-The Vicon Tarsus system handles driving the cameras and reconstructing the objects into 6 datapoints per frame; 3 absolute 
-positions in mm (denoted <T-X>, <T-Y>, <T-Z> with T indicating Translation) and 3 rotations in radians (denoted <A-X>, <A-Y>, <A-Z>, where A stands for Axis-Angles, 
-also known as Exponential Coordinates). With the Axis Angle triplets, the x, y and z values define a vector whose direction is the axis of 
-rotation and magnitude is the amount of rotation.
-
-With three objects per user and six datapoints per object, the Tarsus server sends eighteen or thirty six (for two players) values per frame via TCP/IP 
-on port 800. The Capture class, written in Java, uses DataParserR.java, a Java client provided by Cecily Morrison, to select on the requested channels. 
-It uses SCOP to pass these eighteen data values to the next logical component, the gesture recognition phase.
+With three objects per user and six datapoints per object, the Tarsus server sends eighteen or thirty six (for two players) values per frame via TCP/IP on port 800. The Capture.java class, uses DataParserR.java, a Java client provided by Cecily Morrison, to select on the requested channels. It uses SCOP to pass these eighteen data values to the next logical component, the gesture recognition phase.
 
 Training data
 -------------
 
+Training data consists of five sequences for each of five gestures, giving a total of twenty five gestures taken from each session, recorded by two people. The total number of input vectors used for training was 75.
+
+In addition, an extra set was recorded for calibration, consisting of stationary data at the origin, axis aligned translations, and 90 degree rotations.
+
 Preprocessing
 -------------
 
-The data requires significant preprocessing to convert the feature vector from world coordinates to body coordinates. Using the body as the origin 
-{ blah blah matrix multiplication }
+The data requires significant preprocessing to convert the feature vector from world coordinates to body coordinates. This is performed by the Transform.java class, which implements the conversion to rotation matrix.
 
-The technique of dimension reduction encodes information more succintly for the next stage of gesture recognition, in order to reduce the processing 
-in the next stage. In addition, feature extraction further reduces search space of the input data, which increases the probability that the gestures 
-will be successfully recognized. The gestures are characterised by simple measures such as the range of values and whether both arms are moving.
-
-Gesture segmentation
---------------------
+* Gesture segmentation *
 
 Sliding windows
 
-Feature extraction
-------------------
+* Feature extraction *
+
+Performing feature extraction reduces the search space for the recogniser, in order to increase the probability of successful matching. Choosing the minimal features which extracted the most information to distinguish the gestures was an important step; using the entire data for each gesture (6 data points * 3 objects * ~300 frames = 5400 data values, for each example) would be equivalent to template matching and would require excessive processing times. Since the gestures were chosen to be axis aligned, the distinguishing features are the use of one or both arms, and the range of values that the gesture takes.
+
+Features.java contains two utility classes; Ranges, containing six values for the minimum and maximum of x, y and z, and Features, which holds two Ranges for left and right arms.
+
+{diagram: Features.java}
 
 Recognition
 -----------
 
-Heuristic recogniser
+* Heuristic recogniser *
 
-Neural network recogniser
+* Neural network recogniser *
 
-Hidden Markov model recogniser
+* Hidden Markov model recogniser *
 
 GUI
 ---
 
-Control
+Two GUI was created which simulated input (via mouse and keyboard) and output (turtle graphics) respectively for testing purposes. These were completely decoupled and communicated only via the SRCF.
 
-View
+{reference: Berkley}
+
+{diagram: screenshot of control keys for P1 and P2}
+{diagram: screenshot of turtle graphics showing two turtles}
 
 Networking
 ----------
 
-Decoupling various components allows message passing between different languages, which was important to allow the Java client to communicate with the 
-Python robotics control. SCOP, a lightweight middleware framework written by Dr David Ingram, allows particularly simple events, messaging and RPC 
-written in C++ with ports to C, Java, Python and Scheme. SCOP hides the client and server setup and silently discards data streams if there are no listeners. 
-This makes it particularly simple to create and run such a distributed system by passing gesture data from the Java client through Python processing 
-with Java libraries to the Python robot library.
+Decoupling various components allows message passing between different languages, which was important to allow the Java client to communicate with the Python robotics control. SCOP, a lightweight middleware framework written by Dr David Ingram, allows particularly simple events, messaging and RPC written in C++ with ports to C, Java, Python and Scheme. SCOP hides the client and server setup and silently discards data streams if there are no listeners. This makes it particularly simple to create and run such a distributed system by passing gesture data from the Java client through Python processing with Java libraries to the Python robot library.
+
+SCOP assigns a name to each resource and an optional source hint to each stream. In order to listen to both players' commands, Transform.java, control.py and view.py open two sockets to listen to two independant streams. Relay.py only listens to the stream of its user, either p1ctrl or p2ctrl.
+
+p1coords and p2coords represent the raw input streams from two users.
+p1ctrl and p2ctrl are the {a,d,l,r,s} commands as interpreted from the two users.
+
+The SRCF was used to provide a SCOP server running on a domain name, so that all units can reach it irrespective of whether they were wired or wireless and without knowing IP addresses. When testing on the King's College wifi network, it was found that broadcasting on non-standard ports is refused, including 51234. To compensate for this, tunnel.sh sets up port forwarding to the SRCF, so that sockets opened on the OLPC XO appear as if connected from the SRCF's port 51234.
 
 Robot control
 -------------
@@ -187,6 +274,12 @@ Tunnel
 
 Evaluation
 ==========
+
+Training data
+--------------
+
+Jitter in axis angles
+
 
 Comparison of gesture recognition methods
 -----------------------------------------
