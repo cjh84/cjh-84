@@ -3,58 +3,6 @@
 import java.io.*;
 import java.util.*;
 
-class SixDOF
-{
-	double ax, ay, az, tx, ty, tz, angle;
-
-	static final double EPSILON = 1.0e-5;
-
-	SixDOF()
-	{
-		angle = 1.0;
-	}
-		
-	void dump()
-	{
-		System.out.printf("%7.2f,%7.2f,%7.2f,%7.0f,%7.0f,%7.0f",
-				ax, ay, az, tx, ty, tz);
-	}
-	
-	void normalise()
-	{
-		angle *= Math.sqrt(ax * ax + ay * ay + az * az);
-		if(angle >= EPSILON)
-		{
-			ax /= angle;
-			ay /= angle;
-			az /= angle;
-		}
-		else
-			angle = 0.0;
-	}
-};
-
-class Frame
-{
-	SixDOF body, left, right;
-	
-	void dump()
-	{
-		body.dump();
-		System.out.print(",");
-		left.dump();
-		System.out.print(",");
-		right.dump();
-		System.out.println();
-	}
-	
-	static void headings()
-	{
-		System.out.println("BodyAx BodyAy BodyAz  LArmTx LArmTy LArmTz" +
-				"  RArmTx RArmTy RArmTz");
-	}
-};
-
 class GestureReader
 {
 	static void usage()
@@ -67,6 +15,51 @@ class GestureReader
 	{
 		for(Frame f: data)
 			f.dump();
+	}
+	
+	/* Print average arm positions every 10 frames, relative to start, in cm: */
+	static void summarise(ArrayList<Frame> data)
+	{
+		final int bunch = 10;
+		final int cm = 10; // 10mm per cm
+		int count = 0;
+		double lx, ly, lz, rx, ry, rz, heading, shoulders;
+		double lx0, ly0, lz0, rx0, ry0, rz0;
+		boolean first = true;
+		
+		System.out.println("LA-Tx,LA-Ty,LA-Tz,RA-Tx,RA-Ty,RA-Tz,Body-A,Shld-A");
+		lx = ly = lz = rx = ry = rz = heading = shoulders = 0.0;
+		lx0 = ly0 = lz0 = rx0 = ry0 = rz0 = 0.0;
+		for(Frame f: data)
+		{
+			lx += f.left.tx / cm;
+			ly += f.left.ty / cm;
+			lz += f.left.tz / cm;
+			rx += f.right.tx / cm;
+			ry += f.right.ty / cm;
+			rz += f.right.tz / cm;
+			/* Don't average heading and shoulders, because arithmetic mean
+				doesn't work for angles */
+			heading = f.body.calcHeading() * 180.0 / Math.PI;
+			shoulders = f.shoulderAngle() * 180.0 / Math.PI;
+			count++;
+			if(first)
+			{
+				lx0 = lx; ly0 = ly; lz0 = lz;
+				rx0 = rx; ry0 = ry; rz0 = rz;
+				first = false;
+			}
+			if(count == bunch)
+			{
+				System.out.printf("%5.0f,%5.0f,%5.0f,%5.0f,%5.0f,%5.0f" +
+						",%6.1f,%6.1f\n",
+						lx / bunch - lx0, ly / bunch - ly0, lz / bunch - lz0,
+						rx / bunch - rx0, ry / bunch - ry0, rz / bunch - rz0,
+						heading, shoulders);
+				lx = ly = lz = rx = ry = rz = 0.0;
+				count = 0;
+			}
+		}
 	}
 	
 	private static void error(String msg)
@@ -111,14 +104,19 @@ class GestureReader
 		return sixdof;
 	}
 	
+	static final int Body = 0;
+	static final int LeftArm = 1;
+	static final int RightArm = 2;
+	
 	static ArrayList<Frame> getData(String filename)
 	{
 		ArrayList<Frame> data = new ArrayList<Frame>();
 		String line;
-		int bodypart = 0, frameno = 0;
-		int startpart;
+		int frameno = 0;
 		SixDOF sixdof;
 		char c;
+		
+		int bodypart = -1, startpart;
 		
 		try
 		{
@@ -127,22 +125,18 @@ class GestureReader
 			{
 				if(line.length() == 0)
 					continue;
-				startpart = 0;
+				startpart = -1;
 				c = line.charAt(0);
 				if(c >= '0' && c <= '9')
 				{
 					sixdof = parse(line);
-					if(bodypart > 1 && frameno >= data.size())
-						error("Too many data points");
-					if(bodypart == 1)
-					{
-						Frame f = new Frame();
-						f.body = sixdof;
-						data.add(f);
-					}
-					else if(bodypart == 2)
+					while(frameno > data.size() - 1)
+						data.add(new Frame());
+					if(bodypart == Body)
+						data.get(frameno).body = sixdof;
+					else if(bodypart == LeftArm)
 						data.get(frameno).left = sixdof;
-					else if(bodypart == 3)
+					else if(bodypart == RightArm)
 						data.get(frameno).right = sixdof;
 					else
 						error("Frame data received for unknown body part");
@@ -151,24 +145,24 @@ class GestureReader
 				else if(line.startsWith("Belt") || line.startsWith("Hat") ||
 						line.startsWith("BeltP1") || line.startsWith("BeltP2") ||
 						line.startsWith("BodyP1"))
-					startpart = 1;
+					startpart = Body;
 				else if(line.startsWith("LeftHand") ||
 						line.startsWith("LeftArm") ||
 						line.startsWith("LeftArmP1") ||
 						line.startsWith("LeftArmP2"))
-					startpart = 2;
+					startpart = LeftArm;
 				else if(line.startsWith("RightHand") ||
 						line.startsWith("RightArm") ||
 						line.startsWith("RightArmP1") ||
 						line.startsWith("RightArmP2"))
-					startpart = 3;
+					startpart = RightArm;
 				else
 					error("Invalid line in data file.");
 				
-				if(startpart > 0)
+				if(startpart >= 0)
 				{
-					assert bodypart == startpart - 1: "Unexpected body part";
-					bodypart++;
+					// Start new body part:
+					bodypart = startpart;
 					frameno = 0;
 					if((line = in.readLine()) == null)
 						error("Unexpected end of file.");
@@ -181,7 +175,9 @@ class GestureReader
 			System.out.println("Cannot read from <" + filename + ">");
 			System.exit(0);
 		}
-		assert bodypart == 3: "Wrong number of body parts";
+		Frame last = data.get(data.size() - 1);
+		if(last.body == null || last.left == null || last.right == null)
+			error("Different number of frames for different body parts.");
 		return data;
 	}
 };
