@@ -17,9 +17,9 @@ class Features
 	
 	void dump()
 	{
-		System.out.println("Left Arm:");
+		System.out.print("Left  Arm: ");
 		leftarm.dump();
-		System.out.println("Right Arm:");
+		System.out.print("Right Arm: ");
 		rightarm.dump();
 	}
 };
@@ -46,9 +46,11 @@ class Ranges
 
 	void dump()
 	{
-		double dx = maxx - minx;
-		double dy = maxy - miny;
-		double dz = maxz - minz;
-		System.out.printf("dx = %f, dy = %f, dz = %f\n", dx, dy, dz);
+		int cm = 10;
+		
+		double dx = (maxx - minx) / cm;
+		double dy = (maxy - miny) / cm;
+		double dz = (maxz - minz) / cm;
+		System.out.printf("dx = %4.0f, dy = %4.0f, dz = %4.0f\n", dx, dy, dz);
 	}
 };
