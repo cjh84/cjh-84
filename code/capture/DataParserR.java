@@ -20,32 +20,17 @@ public class DataParserR {
 	//FileOutputStream out = new FileOutputStream("trial6_drawing.txt");
 	
 	int[] varMatch;
-//CC -- changes these names to match whatever you have named your objects
 	String[] channels;
 	
 	String[] chanFinder = {
-	        "BeltP1:BeltP1 <A-X>", "BeltP1:BeltP1 <A-Y>", "BeltP1:BeltP1 <A-Z>",  
-	        "BeltP1:BeltP1 <T-X>", "BeltP1:BeltP1 <T-Y>", "BeltP1:BeltP1 <T-Z>",  
+	        "BodyP1:BodyP1 <A-X>", "BodyP1:BodyP1 <A-Y>", "BodyP1:BodyP1 <A-Z>",  
+	        "BodyP1:BodyP1 <T-X>", "BodyP1:BodyP1 <T-Y>", "BodyP1:BodyP1 <T-Z>",  
 	        "LeftArmP1:LeftArmP1 <A-X>", "LeftArmP1:LeftArmP1 <A-Y>", "LeftArmP1:LeftArmP1 <A-Z>",  
 	        "LeftArmP1:LeftArmP1 <T-X>", "LeftArmP1:LeftArmP1 <T-Y>", "LeftArmP1:LeftArmP1 <T-Z>",  
 	        "RightArmP1:RightArmP1 <A-X>", "RightArmP1:RightArmP1 <A-Y>", "RightArmP1:RightArmP1 <A-Z>",  
 	        "RightArmP1:RightArmP1 <T-X>", "RightArmP1:RightArmP1 <T-Y>", "RightArmP1:RightArmP1 <T-Z>",
             };
 	        
-	/*
-	String[] chanFinder = {
-			"HipP1:HipP1 <A-X>", "HipP1:HipP1 <A-Y>", "HipP1:HipP1 <A-Z>",
-			"HipP2:HipP2 <A-X>", "HipP2:HipP2 <A-Y>", "HipP2:HipP2 <A-Z>",
-			"HipP3:HipP3 <A-X>", "HipP3:HipP3 <A-Y>", "HipP3:HipP3 <A-Z>",
-			"HipP1:HipP1 <T-X>", "HipP1:HipP1 <T-Y>",
-			"HipP2:HipP2 <T-X>", "HipP2:HipP2 <T-Y>",
-			"HipP3:HipP3 <T-X>", "HipP3:HipP3 <T-Y>",  
-			"HandP1:HandP1 <A-X>", "HandP1:HandP1 <A-Y>", "HandP1:HandP1 <A-Z>",
-			"HandP2:HandP2 <A-X>", "HandP2:HandP2 <A-Y>", "HandP2:HandP2 <A-Z>",
-			"HandP3:HandP3 <A-X>", "HandP3:HandP3 <A-Y>", "HandP3:HandP3 <A-Z>",
-			};
-	*/
-	
 //Constructor opens the socket and creates a DataInputStream and a DataOutputStream
 	public DataParserR() throws IOException{
 		Socket socket = null;

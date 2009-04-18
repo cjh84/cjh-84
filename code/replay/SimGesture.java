@@ -10,6 +10,7 @@ class RecordedGesture
 class SimGesture
 {
 	static String gesture_dir;
+	static final int FRAME_RATE = 100;
 	
 	static void usage()
 	{
@@ -66,14 +67,25 @@ class SimGesture
 		{
 			f = gesture.data.get(i);
 			scop.emit(f.toString());
-			delay(10);
+			delay(1000 / FRAME_RATE);
 		}
 	}
 
 	static void interpolate_gestures(SCOP scop, RecordedGesture from_gesture,
-			RecordedGesture to_gesture)
+			RecordedGesture to_gesture, int duration)
 	{
-		;
+		int num_frames;
+		Frame from, to, f;
+		
+		from = from_gesture.data.get(from_gesture.data.size() - 1);
+		to = to_gesture.data.get(0);
+		num_frames = (duration * FRAME_RATE) / 1000;
+		for(int i = 0; i < num_frames; i++)
+		{
+			;
+			scop.emit(f.toString());
+			delay(1000 / FRAME_RATE);
+		}
 	}
 		
 	public static void main(String[] argv)
@@ -83,7 +95,7 @@ class SimGesture
 		final String scopserver = "localhost";
 		// final String scopserver = "www.srcf.ucam.org";
 		Random random;
-		int current_gesture, next_gesture;
+		int current_gesture, next_gesture, duration;
 		
 		parse_args(argv);
 		gestures = read_gestures(gesture_dir);		
@@ -98,10 +110,16 @@ class SimGesture
 		
 		random = new Random(System.currentTimeMillis());
 		
+		current_gesture = random.nextInt(gestures.size());
 		while(true)
 		{
-			current_gesture = random.nextInt(gestures.size());
 			replay_gesture(scop, gestures.get(current_gesture));
+			next_gesture = random.nextInt(gestures.size());
+			// Inter-gesture time min 0.1s, max 3s:
+			duration = 100 + random.nextInt(2900);
+			interpolate_gestures(scop, gestures.get(current_gesture),
+					gestures.get(next_gesture), duration);
+			current_gesture = next_gesture;
 		}
 	}
 	
