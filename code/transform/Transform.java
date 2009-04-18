@@ -15,7 +15,7 @@ class Transform
 		System.out.println("Usage: java Transform [options...] <filename.csv>");
 		System.out.println("Options: process   - convert arms to body " +
 				"coordinate system");
-		System.out.println("         features  - display features instead" +
+		System.out.println("         features  - display features instead " +
 				"of frame data");
 		System.out.println("Default: display untransformed frame data");
 		System.exit(0);
