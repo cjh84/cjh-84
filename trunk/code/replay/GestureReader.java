@@ -20,7 +20,7 @@ class GestureReader
 	/* Print average arm positions every 10 frames, relative to start, in cm: */
 	static void summarise(ArrayList<Frame> data)
 	{
-		final int bunch = 10;
+		final int bunch = 1;
 		final int cm = 10; // 10mm per cm
 		int count = 0;
 		double lx, ly, lz, rx, ry, rz, heading, shoulders;
@@ -43,7 +43,7 @@ class GestureReader
 			heading = f.body.calcHeading() * 180.0 / Math.PI;
 			shoulders = f.shoulderAngle() * 180.0 / Math.PI;
 			count++;
-			if(first)
+			if(first && false)
 			{
 				lx0 = lx; ly0 = ly; lz0 = lz;
 				rx0 = rx; ry0 = ry; rz0 = rz;
