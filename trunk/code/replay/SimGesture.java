@@ -130,11 +130,9 @@ class SimGesture
 		{
 			f = interpolate_frames(from, to,
 					(double)(i + 1) / (double)(num_frames + 1));
-			f.dump();
 			scop.emit(f.toString());
 			delay(1000 / FRAME_RATE);
 		}
-		System.exit(0); // XXXXX
 	}
 		
 	public static void main(String[] argv)

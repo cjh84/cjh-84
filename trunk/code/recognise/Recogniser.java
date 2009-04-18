@@ -259,6 +259,8 @@ class Person
 
 class Heuristic extends Recogniser
 {
+	static final double CLOSED_THRESHOLD = 100;
+	
 	public static Gesture recognise(Person person, Features features)
 	{
 		int command = Gesture.NoMatch;
@@ -284,6 +286,9 @@ class Heuristic extends Recogniser
 		
 		for(int axis = 0; axis < 3; axis++)
 		{
+			if(features.relocation > CLOSED_THRESHOLD)
+				return false;
+			
 			left_delta = features.leftarm.get_delta(axis);
 			if(left_range.get_min(axis) > left_delta ||
 					left_range.get_max(axis) < left_delta)
