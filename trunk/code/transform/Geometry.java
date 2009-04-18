@@ -13,7 +13,20 @@ class SixDOF
 	{
 		angle = 1.0;
 	}
+	
+	public String toString()
+	{
+		double ax1, ay1, az1;
+		String s;
 		
+		ax1 = ax * angle * 180.0 / Math.PI;
+		ay1 = ay * angle * 180.0 / Math.PI;
+		az1 = az * angle * 180.0 / Math.PI;
+		s = ax1 + " " + ay1 + " " + az1 + " ";
+		s = s + tx + " " + ty + " " + tz;
+		return s;
+	}
+	
 	void dump()
 	{
 		System.out.printf("%6.2f,%6.2f,%6.2f,%5.0f,%5.0f,%5.0f,%5.0f",
@@ -23,7 +36,7 @@ class SixDOF
 	void normalise()
 	{
 		angle *= Math.sqrt(ax * ax + ay * ay + az * az);
-		if(angle >= EPSILON)
+		if(Math.abs(angle) >= EPSILON)
 		{
 			ax /= angle;
 			ay /= angle;
@@ -31,27 +44,31 @@ class SixDOF
 		}
 		else
 		{
+			/* Convert negligible rotations to zero rotations around the
+				Z-axis (copes with drop-outs, which report a (0,0,0) angle-
+				axis vector) */
 			angle = 0.0;
-			if(ax < EPSILON)
-			{
-				/* Dropouts are reported as ax=ay=az=0. Make sure at least
-					one co-ord is non-zero to avoid any non-unit vectors: */
-				ax = 1.0;
-				ay = az = 0.0;
-			}
+			ax = ay = 0.0;
+			az = 1.0;
 		}
 	}
 
 	void rotate(double bearing)
 	{
-		double c = Math.cos(bearing);
-		double s = Math.sin(bearing);
+		double newx, newy;
 		
-		tx = c*tx - s*ty;
-		ty = s*tx + c*ty;
+		double c = Math.cos(-bearing);
+		double s = Math.sin(-bearing);
 		
-		ax = c*ax - s*ay;
-		ay = s*ax + c*ay;
+		newx = c*tx - s*ty;
+		newy = s*tx + c*ty;
+		tx = newx;
+		ty = newy;
+		
+		newx = c*ax - s*ay;
+		newy = s*ax + c*ay;
+		ax = newx;
+		ay = newy;
 	}
 	
 	double calcHeading()
@@ -79,7 +96,12 @@ class Frame
 	{
 		body = left = right = null;
 	}
-		
+
+	public String toString()
+	{
+		return body.toString() + " " + left.toString() + " " + right.toString();
+	}
+			
 	void dump()
 	{
 		body.dump();
@@ -114,7 +136,6 @@ class Frame
 class Point
 {
 	static final double EPSILON = 1.0e-5;
-	static final double FUDGE = -1.0;
 	
 	double x, y, z;
 	
@@ -140,12 +161,11 @@ class Point
 		double magnitude, s, c, t;
 		Point p = new Point();
 		
-		if(angle < EPSILON)
+		if(Math.abs(angle) < EPSILON)
 			return new Point(x0, y0, z0);
-		angle *= FUDGE;
 		
-		s = Math.sin(angle);
-		c = Math.cos(angle);
+		s = Math.sin(-angle);
+		c = Math.cos(-angle);
 		t = 1 - c;
 		
 		/* Graphics Gems (Glassner, Academic Press, 1990)
