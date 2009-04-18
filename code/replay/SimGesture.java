@@ -62,7 +62,8 @@ class SimGesture
 	{
 		Frame f;
 
-		System.out.println("Gesture: " + gesture.filename);		
+		System.out.println("Replaying gesture " + gesture.filename +
+				" (" + gesture.data.size() + " frames)");		
 		for(int i = 0; i < gesture.data.size(); i++)
 		{
 			f = gesture.data.get(i);
@@ -71,21 +72,69 @@ class SimGesture
 		}
 	}
 
+	static double interpolate_angle(double from, double to, double w)
+	{
+		double v = 1 - w;
+		double x1, y1, x2, y2, x, y;
+		double theta;
+		
+		x1 = Math.sin(from) * v;
+		y1 = Math.cos(from) * v;
+		x2 = Math.sin(to) * w;
+		y2 = Math.cos(to) * w;
+		x = x1 + x2;
+		y = y1 + y2;
+		theta = Math.atan2(y, x);
+		return theta;
+	}
+	
+	static SixDOF interpolate_sixdof(SixDOF from, SixDOF to, double w)
+	{
+		// "w" is the weighting for the "to" body part (0.0 - 1.0)
+		SixDOF sixdof = new SixDOF();
+		double v = 1 - w;
+		
+		sixdof.ax = v * from.ax + w * to.ax;
+		sixdof.ay = v * from.ay + w * to.ay;
+		sixdof.az = v * from.az + w * to.az;
+		sixdof.angle = interpolate_angle(from.angle, to.angle, w);
+		
+		sixdof.tx = v * from.tx + w * to.tx;
+		sixdof.ty = v * from.ty + w * to.ty;
+		sixdof.tz = v * from.tz + w * to.tz;
+		return sixdof;
+	}
+	
+	static Frame interpolate_frames(Frame from, Frame to, double weight)
+	{
+		// "weight" is the weighting for the "to" frame (0.0 - 1.0)
+		Frame f = new Frame();
+		
+		f.body = interpolate_sixdof(from.body, to.body, weight);
+		f.left = interpolate_sixdof(from.left, to.left, weight);
+		f.right = interpolate_sixdof(from.right, to.right, weight);
+		return f;
+	}
+	
 	static void interpolate_gestures(SCOP scop, RecordedGesture from_gesture,
 			RecordedGesture to_gesture, int duration)
 	{
 		int num_frames;
 		Frame from, to, f;
 		
+		System.out.println("Interpolating for " + duration + " ms");
 		from = from_gesture.data.get(from_gesture.data.size() - 1);
 		to = to_gesture.data.get(0);
 		num_frames = (duration * FRAME_RATE) / 1000;
 		for(int i = 0; i < num_frames; i++)
 		{
-			;
+			f = interpolate_frames(from, to,
+					(double)(i + 1) / (double)(num_frames + 1));
+			f.dump();
 			scop.emit(f.toString());
 			delay(1000 / FRAME_RATE);
 		}
+		System.exit(0); // XXXXX
 	}
 		
 	public static void main(String[] argv)
