@@ -44,6 +44,7 @@ class Transform
 
 		parse_args(argv);	
 		data = GestureReader.getData(filename);
+		System.out.println(data.size() + " frames");
 		
 		if(do_processing)
 			process(data);
@@ -58,17 +59,20 @@ class Transform
 	
 	static void process(ArrayList<Frame> data)
 	{
+		for(Frame frame: data)
+			process(frame);
+	}
+	
+	static void process(Frame f)
+	{
 		double theta;
 		
-		for(Frame frame: data)
-		{
-			frame.left.translate(frame.body);
-			frame.right.translate(frame.body);
+		f.left.translate(f.body);
+		f.right.translate(f.body);
 
-			theta = frame.body.calcHeading() - (Math.PI / 2.0);
+		theta = f.body.calcHeading() - (Math.PI / 2.0);
 
-			frame.left.rotate(theta);
-			frame.right.rotate(theta);
-		}
+		f.left.rotate(theta);
+		f.right.rotate(theta);
 	}
 };

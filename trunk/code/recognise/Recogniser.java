@@ -28,7 +28,6 @@ class Gesture
 		}
 		return "u"; //Unknown gesture
 	}
-			
 	
 	public String toString()
 	{
@@ -51,25 +50,174 @@ class Gesture
 	}
 };
 
+class User
+{
+	static final int CHERYL = 0;
+	static final int DAVID = 1;
+	
+	static final int num_users = 2;
+	
+	private int userid;
+	
+	User()
+	{
+		set(CHERYL);
+	}
+
+	User(int who)
+	{
+		set(who);
+	}
+
+	String name()
+	{
+		switch(userid)
+		{
+			case CHERYL: return "Cheryl";
+			case DAVID:  return "David";
+		}
+		return null; // Never occurs
+	}
+		
+	void set(int who)
+	{
+		if(who < 0 || who >= num_users)
+			Utils.error("User ID out of range");
+		userid = who;
+	}
+		
+	Person get_person()
+	{
+		switch(userid)
+		{
+			case CHERYL: return Person.create_cheryl();
+			case DAVID:  return Person.create_david();
+		}
+		return null; // Never occurs
+	}
+};
+
+class Classifier
+{
+	static final int HEURISTIC = 0;
+	static final int NEURAL = 1;
+	static final int MARKOV = 2;
+	static final int HYBRID = 3;
+	
+	static final int num_classifiers = 4;
+	
+	private int id;
+	
+	Classifier()
+	{
+		set(HEURISTIC);
+	}
+	
+	Classifier(int which)
+	{
+		set(which);
+	}
+	
+	String name()
+	{
+		switch(id)
+		{
+			case HEURISTIC: return "Heuristic";
+			case NEURAL:    return "Neural";
+			case MARKOV:    return "Markov";
+			case HYBRID:    return "Hybrid";
+		}
+		return null; // Never occurs
+	}
+	
+	void set(int which)
+	{
+		if(which < 0 || which >= num_classifiers)
+			Utils.error("Classifier ID out of range");
+		id = which;
+	}
+	
+	Gesture recognise(Person person, Features features)
+	{
+		switch(id)
+		{
+			case HEURISTIC: return Heuristic.recognise(person, features);
+			case NEURAL:    return Neural.recognise(person, features);
+			case MARKOV:    return Markov.recognise(person, features);
+			case HYBRID:    return Hybrid.recognise(person, features);
+		}
+		return new Gesture(Gesture.NoMatch); // Never occurs
+	}
+};
+
 class Recogniser
 {
 	static Gesture recognise(Person person, Features features) { return null; }
 	
-	static String filename, person;
+	static String filename;
+	static User user;
+	static Classifier classifier;
 	
 	static void usage()
 	{
-		System.out.println("Usage: java Recogniser [person] <filename.csv>");
+		User u;
+		Classifier c;
+		
+		System.out.println("Usage: java Recogniser [classifier] [person] " +
+				"<filename.csv>");
+		System.out.print("People: ");
+		u = new User();
+		for(int i = 0; i < User.num_users; i++)
+		{
+			u.set(i);
+			System.out.print(u.name() + " ");
+		}
+		System.out.println("");
+		System.out.print("Classifiers: ");
+		c = new Classifier();
+		for(int i = 0; i < Classifier.num_classifiers; i++)
+		{
+			c.set(i);
+			System.out.print(c.name() + " ");
+		}
+		System.out.println("");
 		System.exit(0);
 	}
 	
 	static void parse_args(String[] argv)
 	{
-		person = "cheryl";
-		if(argv.length == 2)
-			person = argv[0];
-		else if(argv.length != 1)
+		User testuser = new User();
+		Classifier testclassifier = new Classifier();
+		boolean consumed;
+		
+		user = new User();
+		classifier = new Classifier();
+		if(argv.length < 1)
 			usage();
+		for(int i = 0; i < argv.length - 1; i++)
+		{
+			consumed = false;
+			for(int id = 0; id < User.num_users; id++)
+			{
+				testuser.set(id);
+				if(testuser.name().equals(argv[i]))
+				{
+					user.set(id);
+					consumed = true;
+				}
+			}
+			for(int id = 0; id < Classifier.num_classifiers; id++)
+			{
+				testclassifier.set(id);
+				if(testclassifier.name().equals(argv[i]))
+				{
+					classifier.set(id);
+					consumed = true;
+				}
+			}
+			if(consumed == false)
+				usage();
+		}
 
 		filename = argv[argv.length - 1];
 	}
@@ -84,28 +232,19 @@ class Recogniser
 		// String scopserver = "www.srcf.ucam.org";
 
 		parse_args(argv);
+		System.out.println("Using user " + user.name() +
+				" and classifier " + classifier.name());
 		
 		scop = new SCOP(scopserver, "recognisep1");
 		if(scop.connection_ok() == false)
-		{
-			System.out.println("Can't connect to scopserver");
-			System.exit(0);
-		}
+			Utils.error("Can't connect to scopserver");
 		scop.set_source_hint("p1ctrl");
 		
 		data = GestureReader.getData(filename);		
 		Transform.process(data);
 		Features feat = new Features(data);
-		if(person.equals("cheryl"))
-			p = Person.create_cheryl();
-		else if(person.equals("david"))
-			p = Person.create_david();
-		else
-		{
-			System.out.println("Unknown person '" + person + "'");
-			System.exit(0);
-		}
-		gesture = Heuristic.recognise(p, feat);
+		p = user.get_person();
+		gesture = classifier.recognise(p, feat);
 		System.out.println(filename + ": " + gesture.toString());
 		scop.emit(gesture.toAction());
 	}
@@ -300,5 +439,29 @@ class Heuristic extends Recogniser
 				return false;
 		}
 		return true;
+	}
+};
+
+class Neural extends Recogniser
+{
+	public static Gesture recognise(Person person, Features features)
+	{
+		return new Gesture(Gesture.NoMatch);
+	}
+};
+
+class Hybrid extends Recogniser
+{
+	public static Gesture recognise(Person person, Features features)
+	{
+		return new Gesture(Gesture.NoMatch);
+	}
+};
+
+class Markov extends Recogniser
+{
+	public static Gesture recognise(Person person, Features features)
+	{
+		return new Gesture(Gesture.NoMatch);
 	}
 };
