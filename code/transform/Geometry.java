@@ -14,6 +14,17 @@ class SixDOF
 		angle = 1.0;
 	}
 	
+	SixDOF(double[] a, int offset)
+	{
+		ax = a[offset + 0] * Math.PI / 180.0;
+		ay = a[offset + 1] * Math.PI / 180.0;
+		az = a[offset + 2] * Math.PI / 180.0;
+		tx = a[offset + 3];
+		ty = a[offset + 4];
+		tz = a[offset + 5];
+		normalise();
+	}
+	
 	public String toString()
 	{
 		double ax1, ay1, az1;
@@ -97,6 +108,23 @@ class Frame
 		body = left = right = null;
 	}
 
+	Frame(String s)
+	{
+		String[] values;
+		double[] a;
+		
+		values = s.split(" ");
+		if(values.length != 18)
+			Utils.error("Expected 18 doubles");
+		a = new double[18];
+		for(int i = 0; i < 18; i++)
+			a[i] = Double.valueOf(values[i]);
+		
+		body = new SixDOF(a, 0);
+		left = new SixDOF(a, 6);
+		right = new SixDOF(a, 12);
+	}
+	
 	public String toString()
 	{
 		return body.toString() + " " + left.toString() + " " + right.toString();

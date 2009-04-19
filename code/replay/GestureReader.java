@@ -62,12 +62,6 @@ class GestureReader
 		}
 	}
 	
-	private static void error(String msg)
-	{
-		System.out.println(msg);
-		System.exit(0);
-	}
-	
 	public static void main(String[] argv)
 	{
 		String filename;
@@ -139,7 +133,7 @@ class GestureReader
 					else if(bodypart == RightArm)
 						data.get(frameno).right = sixdof;
 					else
-						error("Frame data received for unknown body part");
+						Utils.error("Frame data received for unknown body part");
 					frameno++;
 				}
 				else if(line.startsWith("Belt") || line.startsWith("Hat") ||
@@ -157,7 +151,7 @@ class GestureReader
 						line.startsWith("RightArmP2"))
 					startpart = RightArm;
 				else
-					error("Invalid line in data file.");
+					Utils.error("Invalid line in data file.");
 				
 				if(startpart >= 0)
 				{
@@ -165,7 +159,7 @@ class GestureReader
 					bodypart = startpart;
 					frameno = 0;
 					if((line = in.readLine()) == null)
-						error("Unexpected end of file.");
+						Utils.error("Unexpected end of file.");
 				}
 			}
 			in.close();
@@ -177,7 +171,7 @@ class GestureReader
 		}
 		Frame last = data.get(data.size() - 1);
 		if(last.body == null || last.left == null || last.right == null)
-			error("Different number of frames for different body parts.");
+			Utils.error("Different number of frames for different body parts.");
 		return data;
 	}
 };
