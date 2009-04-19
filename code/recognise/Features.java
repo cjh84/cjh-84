@@ -5,6 +5,38 @@ class Features
 	Ranges leftarm, rightarm;
 	double relocation;
 	
+	Features(CircularBuffer buf, int windowsize)
+	{
+		Frame f;
+		leftarm = new Ranges();
+		rightarm = new Ranges();
+		for(int i = 0; i < windowsize; i++)
+		{
+			f = buf.get(windowsize, i);
+			leftarm.update(f.left);
+			rightarm.update(f.right);
+		}
+		
+		Frame first, last;
+		first = buf.get(windowsize, 0);
+		last = buf.get(windowsize, windowsize - 1);
+		relocation = calc_relocation(first, last);
+	}
+	
+	double calc_relocation(Frame first, Frame last)
+	{
+		double relocation = 0.0;
+		
+		relocation += Math.abs(last.left.tx - first.left.tx);
+		relocation += Math.abs(last.left.ty - first.left.ty);
+		relocation += Math.abs(last.left.tz - first.left.tz);
+		relocation += Math.abs(last.right.tx - first.right.tx);
+		relocation += Math.abs(last.right.ty - first.right.ty);
+		relocation += Math.abs(last.right.tz - first.right.tz);
+		
+		return relocation;
+	}
+	
 	Features(ArrayList<Frame> data)
 	{
 		leftarm = new Ranges();
@@ -18,13 +50,7 @@ class Features
 		Frame first, last;
 		first = data.get(0);
 		last = data.get(data.size() - 1);
-		relocation = 0.0;
-		relocation += Math.abs(last.left.tx - first.left.tx);
-		relocation += Math.abs(last.left.ty - first.left.ty);
-		relocation += Math.abs(last.left.tz - first.left.tz);
-		relocation += Math.abs(last.right.tx - first.right.tx);
-		relocation += Math.abs(last.right.ty - first.right.ty);
-		relocation += Math.abs(last.right.tz - first.right.tz);
+		relocation = calc_relocation(first, last);
 	}
 	
 	void dump()
