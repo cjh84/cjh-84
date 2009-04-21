@@ -11,6 +11,8 @@ class SimGesture
 {
 	static String gesture_dir;
 	static final int FRAME_RATE = 100;
+	static int framecounter = 0;
+	static long start_of_stream;
 	
 	static void usage()
 	{
@@ -102,7 +104,7 @@ class SimGesture
 		return f;
 	}
 	
-	static int interpolate_gestures(SCOP scop, RecordedGesture from_gesture,
+	static void interpolate_gestures(SCOP scop, RecordedGesture from_gesture,
 			RecordedGesture to_gesture, int duration)
 	{
 		int num_frames;
@@ -117,13 +119,27 @@ class SimGesture
 			f = interpolate_frames(from, to,
 					(double)(i + 1) / (double)(num_frames + 1));
 			scop.emit(f.toString());
-			Utils.delay(1000 / FRAME_RATE);
+			framesync();
 		}
-		return num_frames;
 	}
+
+	static void framesync()
+	{
+		framecounter++;
 		
-	static int replay_gesture(SCOP scop, RecordedGesture gesture,
-			int framecounter)
+		long target_time = framecounter * 1000 / FRAME_RATE + start_of_stream;
+		long current_time = System.currentTimeMillis();
+		
+		if(current_time >= target_time)
+		{
+			if(current_time > target_time + 100)
+				System.out.println("Warning: SimGesture overload, lagging >10ms");
+			return;
+		}
+		Utils.delay((int)(target_time - current_time));
+	}
+			
+	static void replay_gesture(SCOP scop, RecordedGesture gesture)
 	{
 		Frame f;
 
@@ -134,9 +150,8 @@ class SimGesture
 		{
 			f = gesture.data.get(i);
 			scop.emit(f.toString());
-			Utils.delay(1000 / FRAME_RATE);
+			framesync();
 		}
-		return gesture.data.size();
 	}
 
 	public static void main(String[] argv)
@@ -147,8 +162,8 @@ class SimGesture
 		// final String scopserver = "www.srcf.ucam.org";
 		Random random;
 		int current_gesture, next_gesture, duration;
-		int framecounter = 0, lastfps = 0;
-		long start_of_stream, start_time, current_time, elapsed_time;
+		int lastfps = 0;
+		long start_time, current_time, elapsed_time;
 		
 		parse_args(argv);
 		gestures = read_gestures(gesture_dir);		
@@ -164,11 +179,10 @@ class SimGesture
 		random = new Random(System.currentTimeMillis());
 		
 		current_gesture = random.nextInt(gestures.size());
-		start_time = System.currentTimeMillis();
+		start_of_stream = start_time = System.currentTimeMillis();
 		while(true)
 		{
-			framecounter += replay_gesture(scop, gestures.get(current_gesture),
-					framecounter);
+			replay_gesture(scop, gestures.get(current_gesture));
 			if(framecounter - lastfps > 1000)
 			{
 				current_time = System.currentTimeMillis();
@@ -181,8 +195,7 @@ class SimGesture
 			next_gesture = random.nextInt(gestures.size());
 			// Inter-gesture time min 0.1s, max 3s:
 			duration = 100 + random.nextInt(2900);
-			framecounter += interpolate_gestures(scop,
-					gestures.get(current_gesture),
+			interpolate_gestures(scop, gestures.get(current_gesture),
 					gestures.get(next_gesture), duration);
 			current_gesture = next_gesture;
 		}
