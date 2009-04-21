@@ -1,11 +1,11 @@
 #!/usr/bin/python
 
 import scop, sys, select, time, os
-#from pyrobot import *
+from pyrobot import *
 
 # Constants:
 MAXSPEED = 5
-TURNTIME = 1.0; # Turn for one second per turn instruction
+TURNTIME = 0.5; # Turn for this number of seconds per turn instruction
 ROBOTS = {'mort': 1, 'princess': 2}
 
 def update(speed, turn):
@@ -14,10 +14,10 @@ def update(speed, turn):
 	if speed == 0:
 		if turn > 0:
 			radius = -1
-			vel = (VELOCITY_MAX * 3) / MAXSPEED
+			vel = (VELOCITY_MAX * 2) / MAXSPEED
 		elif turn < 0:
 			radius = 1
-			vel = (VELOCITY_MAX * 3) / MAXSPEED
+			vel = (VELOCITY_MAX * 2) / MAXSPEED
 		else:
 			vel = 0
 			radius = RADIUS_STRAIGHT
@@ -115,7 +115,7 @@ while 1:
 		update(speed, turn)
 		
 	elif msg == "d":
-		print "Deccelerate"
+		print "Decelerate"
 		if speed > -MAXSPEED:
 			speed = speed - 1
 		update(speed, turn)
