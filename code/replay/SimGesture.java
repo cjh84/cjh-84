@@ -11,7 +11,7 @@ class SimGesture
 {
 	static String player = "1";
 	static String gesture_dir;
-	static final int FRAME_RATE = 100;
+	static int FRAME_RATE;
 	static int framecounter = 0;
 	static long start_of_stream;
 	
@@ -166,8 +166,7 @@ class SimGesture
 	{
 		ArrayList<RecordedGesture> gestures;
 		SCOP scop;
-		final String scopserver = "localhost";
-		// final String scopserver = "www.srcf.ucam.org";
+		String scopserver;
 		Random random;
 		int current_gesture, next_gesture, duration;
 		int lastfps = 0;
@@ -175,6 +174,8 @@ class SimGesture
 		String endpoint;
 		
 		parse_args(argv);
+		FRAME_RATE = Integer.valueOf(Config.lookup("framerate"));
+		scopserver = Config.lookup("coordserver");
 		gestures = read_gestures(gesture_dir);
 		System.out.println("Read in " + gestures.size() + " gestures");
 		scop = new SCOP(scopserver, "simulatep" + player);

@@ -6,7 +6,7 @@ class SlidingWindow
 	static User user;
 	static Person p;
 	static Classifier classifier;
-	static SCOP scop;
+	static SCOP scopin, scopout;
 	static String player;
 	
 	static void init()
@@ -16,11 +16,19 @@ class SlidingWindow
 		System.out.println("Using user " + user.name() +
 				" and classifier " + classifier.name());
 		
-		scop = new SCOP("localhost", "windowP" + player);
-		if(scop.connection_ok() == false)
-			Utils.error("Can't connect to scopserver");
-		scop.listen("p" + player + "coords");
-		scop.set_source_hint("p" + player + "ctrl");		
+		String scopinserver, scopoutserver;
+		scopinserver = Config.lookup("coordserver");
+		scopoutserver = Config.lookup("ctrlserver");
+		
+		scopin = new SCOP(scopinserver, "windowp" + player);
+		if(scopin.connection_ok() == false)
+			Utils.error("Can't connect to scopserver <" + scopinserver + ">");
+		scopin.listen("p" + player + "coords");
+		
+		scopout = new SCOP(scopoutserver, "windowp" + player);
+		if(scopout.connection_ok() == false)
+			Utils.error("Can't connect to scopserver <" + scopoutserver + ">");
+		scopout.set_source_hint("p" + player + "ctrl");		
 	}
 	
 	static void usage()
@@ -79,7 +87,7 @@ class SlidingWindow
 		
 		parse_args(args);
 		init();
-		msg = scop.get_message();
+		msg = scopin.get_message();
 		f = new Frame(msg);
 		Transform.process(f);
 		buf = new CircularBuffer(BUFFER_SIZE, f);
@@ -88,7 +96,7 @@ class SlidingWindow
 		while(true)
 		{
 			before_block = System.nanoTime();
-			msg = scop.get_message();
+			msg = scopin.get_message();
 			after_block = System.nanoTime();
 			blocked_time += after_block - before_block;
 			if(msg == null)
@@ -145,7 +153,7 @@ class SlidingWindow
 		if(gesture.command != Gesture.NoMatch &&
 				gesture.command != Gesture.MultiMatch)
 		{
-			scop.emit(gesture.toAction());
+			scopout.emit(gesture.toAction());
 			System.out.println("Recognised " + gesture.toString() +
 					" between frames " + (framecounter - windowsize) +
 					" and " + framecounter);

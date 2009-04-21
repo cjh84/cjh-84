@@ -437,13 +437,17 @@ class Person
 
 class Heuristic extends Recogniser
 {
-	static final double CLOSED_THRESHOLD = 3000;
+	static double CLOSED_THRESHOLD = -1;
+	
+	// static final double CLOSED_THRESHOLD = 3000;
 	// static final double CLOSED_THRESHOLD = 100;
 	
 	public static Gesture recognise(Person person, Features features)
 	{
 		int command = Gesture.NoMatch;
 
+		if(CLOSED_THRESHOLD < 0)
+			CLOSED_THRESHOLD = Double.valueOf(Config.lookup("closedthreshold"));
 		for(int i = 0; i < Gesture.num_gestures; i++)
 		{
 			if(match(person, features, i))
