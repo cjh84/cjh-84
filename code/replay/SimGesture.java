@@ -9,23 +9,11 @@ class RecordedGesture
 
 class SimGesture
 {
+	static String player = "1";
 	static String gesture_dir;
 	static final int FRAME_RATE = 100;
 	static int framecounter = 0;
 	static long start_of_stream;
-	
-	static void usage()
-	{
-		System.out.println("Usage: java SimGesture <gesture-dir>");
-		System.exit(0);
-	}
-	
-	static void parse_args(String[] argv)
-	{
-		if(argv.length != 1)
-			usage();
-		gesture_dir = argv[0];
-	}
 	
 	static ArrayList<RecordedGesture> read_gestures(String gesture_dir)
 	{
@@ -154,6 +142,26 @@ class SimGesture
 		}
 	}
 
+	static void usage()
+	{
+		System.out.println("Usage: java SimGesture [2] <gesture-dir>");
+		System.exit(0);
+	}
+	
+	static void parse_args(String[] argv)
+	{
+		if(argv.length < 1)
+			usage();
+		for(int i = 0; i < argv.length - 1; i++)
+		{
+			if(argv[i].equals("2"))
+				player = argv[i];
+			else
+				usage();
+		}
+		gesture_dir = argv[argv.length - 1];
+	}
+	
 	public static void main(String[] argv)
 	{
 		ArrayList<RecordedGesture> gestures;
@@ -164,17 +172,20 @@ class SimGesture
 		int current_gesture, next_gesture, duration;
 		int lastfps = 0;
 		long start_time, current_time, elapsed_time;
+		String endpoint;
 		
 		parse_args(argv);
-		gestures = read_gestures(gesture_dir);		
+		gestures = read_gestures(gesture_dir);
 		System.out.println("Read in " + gestures.size() + " gestures");
-		scop = new SCOP(scopserver, "simulatep1");
+		scop = new SCOP(scopserver, "simulatep" + player);
 		if(scop.connection_ok() == false)
 		{
 			System.out.println("Can't connect to scopserver");
 			System.exit(0);
 		}
-		scop.set_source_hint("p1coords");
+		endpoint = "p" + player + "coords";
+		scop.set_source_hint(endpoint);
+		System.out.println("Sending stream to endpoint " + endpoint);
 		
 		random = new Random(System.currentTimeMillis());
 		

@@ -1,11 +1,12 @@
 #!/usr/bin/python
 
-import scop, sys, select, time
-from pyrobot import *
+import scop, sys, select, time, os
+#from pyrobot import *
 
 # Constants:
 MAXSPEED = 5
 TURNTIME = 1.0; # Turn for one second per turn instruction
+ROBOTS = {'mort': 1, 'princess': 2}
 
 def update(speed, turn):
 	if robotmode == False:
@@ -31,21 +32,36 @@ def update(speed, turn):
 	r.Drive(vel, radius)
 
 robotmode = True
-endpoint = "p1ctrl"
-scophost = "localhost"
+scophost = "www.srcf.ucam.org"
+host = os.getenv("HOST")
+
+if host is None:
+    print "Robot host name is not set."
+    print "Valid names are:",
+    for k in ROBOTS.keys(): print k,
+    sys.exit()
+
+if host in ROBOTS:
+    playerno = ROBOTS[host]
+else:
+    print "HOST environment variable must be one of:",
+    for k in ROBOTS.keys(): print k,
+    sys.exit()
+
+# p1ctrl or p2ctrl
+endpoint = "p" + str(playerno) + "ctrl"
+print("Using endpoint " + endpoint)
 
 for i in range(1, len(sys.argv)):
 	if sys.argv[i] == "norobot":
 		robotmode = False
-	elif sys.argv[i] == "2":
-		endpoint = "p2ctrl"
-	elif sys.argv[i] == "srcf":
-	    scophost = "www.srcf.ucam.org"
+	elif sys.argv[i] == "localscop":
+	    scophost = "localhost"
 	else:
-		print "Usage: relay [norobot] [2] [srcf]"
+		print "Usage: relay [norobot] [localscop]"
 		sys.exit()
 
-sock = scop.scop_open(scophost, "mort")
+sock = scop.scop_open(scophost, host)
 if sock == None:
 	print "Cannot connect to scopserver"
 	sys.exit()

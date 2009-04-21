@@ -116,7 +116,7 @@ class User
 		for(int id = 0; id < num_users; id++)
 		{
 			testuser.set(id);
-			if(testuser.name().equals(name))
+			if(testuser.name().equalsIgnoreCase(name))
 			{
 				return id;
 			}
@@ -197,7 +197,7 @@ class Classifier
 		for(int id = 0; id < num_classifiers; id++)
 		{
 			testclassifier.set(id);
-			if(testclassifier.name().equals(name))
+			if(testclassifier.name().equalsIgnoreCase(name))
 			{
 				return id;
 			}
@@ -214,6 +214,7 @@ class Recogniser
 	static String filename;
 	static User user;
 	static Classifier classifier;
+	static boolean emitresults = false;
 	
 	static void usage()
 	{
@@ -260,18 +261,22 @@ class Recogniser
 		ArrayList<Frame> data;
 		Person p = null;
 		Gesture gesture;
-		SCOP scop;
+		SCOP scop = null;
 		String scopserver = "localhost";
 		// String scopserver = "www.srcf.ucam.org";
 
 		parse_args(argv);
 		System.out.println("Using user " + user.name() +
 				" and classifier " + classifier.name());
-		
-		scop = new SCOP(scopserver, "recognisep1");
-		if(scop.connection_ok() == false)
-			Utils.error("Can't connect to scopserver");
-		scop.set_source_hint("p1ctrl");
+
+		if(emitresults)
+		{
+			// Not normally used; hardcodes to player 1
+			scop = new SCOP(scopserver, "recognisep1");
+			if(scop.connection_ok() == false)
+				Utils.error("Can't connect to scopserver");
+			scop.set_source_hint("p1ctrl");
+		}
 		
 		data = GestureReader.getData(filename);		
 		Transform.process(data);
@@ -279,7 +284,8 @@ class Recogniser
 		p = user.get_person();
 		gesture = classifier.recognise(p, feat);
 		System.out.println(filename + ": " + gesture.toString());
-		scop.emit(gesture.toAction());
+		if(emitresults)
+			scop.emit(gesture.toAction());
 	}
 };
 
