@@ -95,6 +95,34 @@ class User
 		}
 		return null; // Never occurs
 	}
+	
+	static String all_usernames()
+	{
+		StringBuilder sb = new StringBuilder();
+		User u = new User();
+		
+		for(int i = 0; i < num_users; i++)
+		{
+			u.set(i);
+			sb.append(u.name() + " ");
+		}
+		return sb.toString();
+	}
+	
+	static int lookup(String name)
+	{
+		User testuser = new User();
+		
+		for(int id = 0; id < num_users; id++)
+		{
+			testuser.set(id);
+			if(testuser.name().equals(name))
+			{
+				return id;
+			}
+		}
+		return -1;
+	}
 };
 
 class Classifier
@@ -148,6 +176,35 @@ class Classifier
 		}
 		return new Gesture(Gesture.NoMatch); // Never occurs
 	}
+
+	static String all_classifiers()
+	{
+		StringBuilder sb = new StringBuilder();
+		Classifier c = new Classifier();
+		
+		for(int i = 0; i < num_classifiers; i++)
+		{
+			c.set(i);
+			sb.append(c.name() + " ");
+		}
+		return sb.toString();
+	}	
+
+	static int lookup(String name)
+	{
+		Classifier testclassifier = new Classifier();
+		
+		for(int id = 0; id < num_classifiers; id++)
+		{
+			testclassifier.set(id);
+			if(testclassifier.name().equals(name))
+			{
+				return id;
+			}
+		}
+		return -1;
+	}	
+	
 };
 
 class Recogniser
@@ -160,35 +217,18 @@ class Recogniser
 	
 	static void usage()
 	{
-		User u;
 		Classifier c;
 		
 		System.out.println("Usage: java Recogniser [classifier] [person] " +
 				"<filename.csv>");
-		System.out.print("People: ");
-		u = new User();
-		for(int i = 0; i < User.num_users; i++)
-		{
-			u.set(i);
-			System.out.print(u.name() + " ");
-		}
-		System.out.println("");
-		System.out.print("Classifiers: ");
-		c = new Classifier();
-		for(int i = 0; i < Classifier.num_classifiers; i++)
-		{
-			c.set(i);
-			System.out.print(c.name() + " ");
-		}
-		System.out.println("");
+		System.out.println("People: " + User.all_usernames());
+		System.out.println("Classifiers: " + Classifier.all_classifiers());
 		System.exit(0);
 	}
 	
 	static void parse_args(String[] argv)
 	{
-		User testuser = new User();
-		Classifier testclassifier = new Classifier();
-		boolean consumed;
+		int id;
 		
 		user = new User();
 		classifier = new Classifier();
@@ -196,29 +236,22 @@ class Recogniser
 			usage();
 		for(int i = 0; i < argv.length - 1; i++)
 		{
-			consumed = false;
-			for(int id = 0; id < User.num_users; id++)
+			id = User.lookup(argv[i]);
+			if(id != -1)
 			{
-				testuser.set(id);
-				if(testuser.name().equals(argv[i]))
-				{
-					user.set(id);
-					consumed = true;
-				}
+				user.set(id);
+				continue;
 			}
-			for(int id = 0; id < Classifier.num_classifiers; id++)
-			{
-				testclassifier.set(id);
-				if(testclassifier.name().equals(argv[i]))
-				{
-					classifier.set(id);
-					consumed = true;
-				}
-			}
-			if(consumed == false)
-				usage();
-		}
 
+			id = Classifier.lookup(argv[i]);
+			if(id != -1)
+			{
+				classifier.set(id);
+				continue;
+			}
+
+			usage();
+		}
 		filename = argv[argv.length - 1];
 	}
 	
@@ -398,7 +431,8 @@ class Person
 
 class Heuristic extends Recogniser
 {
-	static final double CLOSED_THRESHOLD = 100;
+	static final double CLOSED_THRESHOLD = 3000;
+	// static final double CLOSED_THRESHOLD = 100;
 	
 	public static Gesture recognise(Person person, Features features)
 	{

@@ -1,0 +1,50 @@
+Using user Cheryl and classifier Heuristic
+
+accel1.csv: Accelerate
+accel2.csv: Accelerate
+accel3.csv: Accelerate
+accel4.csv: Accelerate
+accel5.csv: No match ******
+accel6.csv: Accelerate
+decel1.csv: Decelerate
+decel2.csv: No match ******
+decel3.csv: Decelerate
+decel4.csv: Decelerate
+decel5.csv: No match ******
+decel6.csv: Decelerate
+startstop2.csv: Start/Stop
+startstop3.csv: Start/Stop
+startstop4.csv: Start/Stop
+startstop5.csv: Start/Stop
+startstop6.csv: Start/Stop
+turnleft1.csv: Turn left
+turnleft2.csv: Turn left
+turnleft3.csv: No match ******
+turnleft4.csv: Turn left
+turnleft5.csv: No match ******
+turnleft6.csv: Turn left
+turnright1.csv: Turn right
+turnright2.csv: Turn right
+turnright3.csv: Turn right
+turnright4.csv: Turn right
+turnright5.csv: No match ******
+turnright6.csv: Turn right
+
+doubleturn1.csv: No match
+doubleturn2.csv: No match
+leftpoint1.csv: No match
+leftpoint2.csv: No match
+leftpoint3.csv: No match
+missing1.csv: No match
+missing2.csv: No match
+neutral1.csv: No match
+neutral2.csv: No match
+neutral3.csv: No match
+neutral4.csv: No match
+neutral5.csv: No match
+neutral6.csv: No match
+panic1.csv: No match
+panic2.csv: No match
+rightpoint1.csv: Turn right
+rightpoint2.csv: No match
+rightpoint3.csv: No match
