@@ -1,0 +1,4 @@
+framerate=100
+coordserver=www.srcf.ucam.org
+ctrlserver=www.srcf.ucam.org
+closedthreshold=3000
