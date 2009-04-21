@@ -6,8 +6,8 @@ from WalkingTurtle import WalkingTurtle
 from Vector import *
 import scop
 
-sock1 = scop.scop_open("www.srcf.ucam.org", "view1")
-sock2 = scop.scop_open("www.srcf.ucam.org", "view2")
+sock1 = scop.scop_open("www.srcf.ucam.org", "viewp1")
+sock2 = scop.scop_open("www.srcf.ucam.org", "viewp2")
 
 scop.scop_listen(sock1, "p1ctrl")
 scop.scop_listen(sock2, "p2ctrl")
