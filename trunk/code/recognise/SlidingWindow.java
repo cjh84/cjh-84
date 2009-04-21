@@ -7,6 +7,7 @@ class SlidingWindow
 	static Person p;
 	static Classifier classifier;
 	static SCOP scop;
+	static String player;
 	
 	static void init()
 	{
@@ -15,19 +16,20 @@ class SlidingWindow
 		System.out.println("Using user " + user.name() +
 				" and classifier " + classifier.name());
 		
-		scop = new SCOP("localhost", "windowP1");
+		scop = new SCOP("localhost", "windowP" + player);
 		if(scop.connection_ok() == false)
 			Utils.error("Can't connect to scopserver");
-		scop.listen("p1coords");
-		scop.set_source_hint("p1ctrl");		
+		scop.listen("p" + player + "coords");
+		scop.set_source_hint("p" + player + "ctrl");		
 	}
 	
 	static void usage()
 	{
 		Classifier c;
 		
-		System.out.println("Usage: java SlidingWindow [classifier] " +
-				"[person [person2]]");
+		System.out.println("Usage: java SlidingWindow <playernum> " +
+				"[person] [classifier]");
+		System.out.println("<playernum> = 1 or 2");
 		System.out.println("People: " + User.all_usernames());
 		System.out.println("Classifiers: " + Classifier.all_classifiers());
 		System.exit(0);
@@ -36,21 +38,20 @@ class SlidingWindow
 	static void parse_args(String[] argv)
 	{
 		int id;
-		User user2;
 		
-		user = user2 = null;
+		user = new User();
 		classifier = new Classifier();
-		for(int i = 0; i < argv.length; i++)
+		if(argv.length < 1)
+			usage();
+		if(!(argv[0].equals("1")) && !(argv[0].equals("2")))
+			usage();
+		player = argv[0];
+		for(int i = 1; i < argv.length; i++)
 		{
 			id = User.lookup(argv[i]);
 			if(id != -1)
 			{
-				if(user == null)
-					user = new User(id);
-				else if(user2 == null)
-					user2 = new User(id);
-				else
-					usage();
+				user.set(id);
 				continue;
 			}
 
@@ -63,10 +64,6 @@ class SlidingWindow
 
 			usage();
 		}
-		if(user == null)
-			user = new User();
-		if(user2 == null)
-			user2 = new User();
 	}
 	
 	public static void main(String[] args)
