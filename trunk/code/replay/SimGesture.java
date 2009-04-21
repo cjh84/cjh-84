@@ -117,7 +117,7 @@ class SimGesture
 			f = interpolate_frames(from, to,
 					(double)(i + 1) / (double)(num_frames + 1));
 			scop.emit(f.toString());
-			delay(1000 / FRAME_RATE);
+			Utils.delay(1000 / FRAME_RATE);
 		}
 		return num_frames;
 	}
@@ -134,7 +134,7 @@ class SimGesture
 		{
 			f = gesture.data.get(i);
 			scop.emit(f.toString());
-			delay(1000 / FRAME_RATE);
+			Utils.delay(1000 / FRAME_RATE);
 		}
 		return gesture.data.size();
 	}
@@ -148,7 +148,7 @@ class SimGesture
 		Random random;
 		int current_gesture, next_gesture, duration;
 		int framecounter = 0, lastfps = 0;
-		long start_time, current_time, elapsed_time;
+		long start_of_stream, start_time, current_time, elapsed_time;
 		
 		parse_args(argv);
 		gestures = read_gestures(gesture_dir);		
@@ -186,11 +186,5 @@ class SimGesture
 					gestures.get(next_gesture), duration);
 			current_gesture = next_gesture;
 		}
-	}
-	
-	static void delay(int ms)
-	{
-		try { Thread.sleep(ms); }
-		catch (InterruptedException e) {}
 	}
 };

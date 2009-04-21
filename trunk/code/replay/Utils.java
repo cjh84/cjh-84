@@ -10,6 +10,12 @@ class Utils
 	{
 		return d * d;
 	}
+	
+	static void delay(int ms)
+	{
+		try { Thread.sleep(ms); }
+		catch (InterruptedException e) {}
+	}
 };
 
 class CircularBuffer
