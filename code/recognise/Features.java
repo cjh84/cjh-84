@@ -27,12 +27,20 @@ class Features
 	{
 		double relocation = 0.0;
 		
+		relocation += Utils.square(last.left.tx - first.left.tx);
+		relocation += Utils.square(last.left.ty - first.left.ty);
+		relocation += Utils.square(last.left.tz - first.left.tz);
+		relocation += Utils.square(last.right.tx - first.right.tx);
+		relocation += Utils.square(last.right.ty - first.right.ty);
+		relocation += Utils.square(last.right.tz - first.right.tz);
+		/*
 		relocation += Math.abs(last.left.tx - first.left.tx);
 		relocation += Math.abs(last.left.ty - first.left.ty);
 		relocation += Math.abs(last.left.tz - first.left.tz);
 		relocation += Math.abs(last.right.tx - first.right.tx);
 		relocation += Math.abs(last.right.ty - first.right.ty);
 		relocation += Math.abs(last.right.tz - first.right.tz);
+		*/
 		
 		return relocation;
 	}

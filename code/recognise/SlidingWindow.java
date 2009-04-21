@@ -10,8 +10,6 @@ class SlidingWindow
 	
 	static void init()
 	{
-		user = new User();
-		classifier = new Classifier();
 		p = user.get_person();
 
 		System.out.println("Using user " + user.name() +
@@ -24,6 +22,53 @@ class SlidingWindow
 		scop.set_source_hint("p1ctrl");		
 	}
 	
+	static void usage()
+	{
+		Classifier c;
+		
+		System.out.println("Usage: java SlidingWindow [classifier] " +
+				"[person [person2]]");
+		System.out.println("People: " + User.all_usernames());
+		System.out.println("Classifiers: " + Classifier.all_classifiers());
+		System.exit(0);
+	}
+	
+	static void parse_args(String[] argv)
+	{
+		int id;
+		User user2;
+		
+		user = user2 = null;
+		classifier = new Classifier();
+		for(int i = 0; i < argv.length; i++)
+		{
+			id = User.lookup(argv[i]);
+			if(id != -1)
+			{
+				if(user == null)
+					user = new User(id);
+				else if(user2 == null)
+					user2 = new User(id);
+				else
+					usage();
+				continue;
+			}
+
+			id = Classifier.lookup(argv[i]);
+			if(id != -1)
+			{
+				classifier.set(id);
+				continue;
+			}
+
+			usage();
+		}
+		if(user == null)
+			user = new User();
+		if(user2 == null)
+			user2 = new User();
+	}
+	
 	public static void main(String[] args)
 	{
 		String msg;
@@ -31,21 +76,48 @@ class SlidingWindow
 		final int BUFFER_SIZE = 500;
 		final int MIN_WINDOW = 50, MAX_WINDOW = 350, WINDOW_STEP = 10;
 		CircularBuffer buf;
-		int framecounter = 0, lastrecognition = 0;
+		int framecounter = 0, lastrecognition = 0, laststatus = 0;
+		long start_time, current_time, elapsed_time;
+		long before_block, after_block, blocked_time = 0;
 		
+		parse_args(args);
 		init();
 		msg = scop.get_message();
 		f = new Frame(msg);
 		Transform.process(f);
 		buf = new CircularBuffer(BUFFER_SIZE, f);
+		start_time = System.currentTimeMillis();
 		
 		while(true)
 		{
+			before_block = System.nanoTime();
 			msg = scop.get_message();
+			after_block = System.nanoTime();
+			blocked_time += after_block - before_block;
+			if(msg == null)
+				Utils.error("Error reading message from SCOP");
+			
 			f = new Frame(msg);
 			Transform.process(f);
 			buf.add(f);
 			framecounter++;
+			if(framecounter % 1000 == 0)
+			{
+				double fps, cpu;
+				
+				current_time = System.currentTimeMillis();
+				elapsed_time = current_time - start_time;
+				cpu = (double)blocked_time / 1000000.0 / (double)elapsed_time;
+				cpu = 100.0 * (1.0 - cpu);
+				fps = (double)(framecounter - laststatus) / (double)elapsed_time
+						* 1000.0;
+				System.out.printf("FPS = %.1f, CPU utilisation = %.1f%%\n",
+						fps, cpu);
+				
+				start_time = current_time;
+				blocked_time = 0;
+				laststatus = framecounter;
+			}
 			if(framecounter % WINDOW_STEP == 0)
 			{
 				int availableframes = framecounter - lastrecognition;
@@ -53,7 +125,7 @@ class SlidingWindow
 				for(int windowsize = MIN_WINDOW; windowsize <= MAX_WINDOW &&
 						windowsize <= availableframes; windowsize += WINDOW_STEP)
 				{
-					if(recognise(buf, windowsize) == true)
+					if(recognise(buf, windowsize, framecounter) == true)
 					{
 						lastrecognition = framecounter;
 						break;
@@ -65,7 +137,8 @@ class SlidingWindow
 		// scop.close();
 	}
 	
-	static boolean recognise(CircularBuffer buf, int windowsize)
+	static boolean recognise(CircularBuffer buf, int windowsize,
+			int framecounter)
 	{
 		Gesture gesture;
 		
@@ -76,78 +149,11 @@ class SlidingWindow
 				gesture.command != Gesture.MultiMatch)
 		{
 			scop.emit(gesture.toAction());
-			System.out.println(gesture.toString());
+			System.out.println("Recognised " + gesture.toString() +
+					" between frames " + (framecounter - windowsize) +
+					" and " + framecounter);
 			return true;
 		}
 		return false;
-	}
-};
-
-class CircularBuffer
-{
-	Frame[] circ;
-	int ptr; // Position for next incoming item
-	int size;
-	
-	CircularBuffer(int size, Frame init)
-	{
-		this.size = size;
-		circ = new Frame[size];
-		for(int i = 0; i < size; i++)
-			circ[i] = init;
-		ptr = 0;
-	}
-	
-	void add(Frame f)
-	{
-		circ[ptr] = f;
-		ptr++;
-		if(ptr >= size)
-			ptr -= size;
-	}
-	
-	Frame get(int windowsize, int index)
-	{
-		int pos;
-		
-		if(windowsize < 0 || windowsize > size ||
-				index < 0 || index >= windowsize)
-			return null;
-		pos = ptr - windowsize + index;
-		if(pos < 0)
-			pos += size;
-		return circ[pos];
-	}
-	
-	void test()
-	{
-		Frame f;
-		int windowsize;
-				
-		for(int i = 0; i < size + 100; i++)
-		{
-			f = new Frame();
-			f.body = new SixDOF();
-			f.body.tx = (double)i;
-			add(f);
-		}
-		/* If size == 500, data layout should now be:
-			500...599,100..499 */
-		ptr = size / 2;
-		windowsize = 2 * size / 5;
-		for(int i = 0; i < windowsize; i++)
-		{
-			f = get(windowsize, i);
-			System.out.print(f.body.tx + ", ");
-		}
-		System.out.print("\n\n");
-		/* Should have displayed 550...599,100...249 */
-		windowsize = 3 * size / 5;
-		for(int i = 0; i < windowsize; i++)
-		{
-			f = get(windowsize, i);
-			System.out.print(f.body.tx + ", ");
-		}
-		/* Should have displayed 450...499,500...599,100...249 */
 	}
 };
