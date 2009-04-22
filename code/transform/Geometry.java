@@ -18,6 +18,8 @@ class SixDOF
 	
 	SixDOF(double[] a, int offset)
 	{
+		angle = 1.0;
+		dropout = false;
 		ax = a[offset + 0] * Math.PI / 180.0;
 		ay = a[offset + 1] * Math.PI / 180.0;
 		az = a[offset + 2] * Math.PI / 180.0;
@@ -117,8 +119,8 @@ class Frame
 		double[] a;
 		
 		values = s.split(" ");
-		if(values.length != 18)
-			Utils.error("Expected 18 doubles");
+		if(values.length != 19)
+			Utils.error("Expected 19 values");
 		a = new double[18];
 		for(int i = 0; i < 18; i++)
 			a[i] = Double.valueOf(values[i]);
@@ -126,6 +128,21 @@ class Frame
 		body = new SixDOF(a, 0);
 		left = new SixDOF(a, 6);
 		right = new SixDOF(a, 12);
+		
+		if(values[18].equals("dropout"))
+			body.dropout = true;
+		else if(!values[18].equals("ok"))
+			Utils.error("Unrecognised frame status");
+	}
+
+	Frame(double[] a, int offset)
+	{
+		if(a.length - offset < 18)
+			Utils.error("Expected at least 18 doubles");
+		
+		body = new SixDOF(a, offset + 0);
+		left = new SixDOF(a, offset + 6);
+		right = new SixDOF(a, offset + 12);
 	}
 
 	boolean dropout()
@@ -137,7 +154,14 @@ class Frame
 		
 	public String toString()
 	{
-		return body.toString() + " " + left.toString() + " " + right.toString();
+		String status;
+		
+		if(dropout())
+			status = "dropout";
+		else
+			status = "ok";
+		return body.toString() + " " + left.toString() + " " +
+				right.toString() + " " + status;
 	}
 			
 	void dump()

@@ -6,7 +6,7 @@ class SlidingWindow
 	static User user;
 	static Person p;
 	static Classifier classifier;
-	static SCOP scopin, scopout;
+	static SCOP scopin, scopout, scopstat;
 	static String player;
 	
 	static void init()
@@ -28,7 +28,15 @@ class SlidingWindow
 		scopout = new SCOP(scopoutserver, "windowp" + player);
 		if(scopout.connection_ok() == false)
 			Utils.error("Can't connect to scopserver <" + scopoutserver + ">");
-		scopout.set_source_hint("p" + player + "ctrl");		
+		scopout.set_source_hint("p" + player + "ctrl");
+		
+		scopstat = new SCOP("www.srcf.ucam.org", "windowp" + player);
+		if(scopstat.connection_ok() == false)
+		{
+			Utils.error("Can't connect to scopserver <" +
+					"www.srcf.ucam.org" + ">");
+		}
+		scopstat.set_source_hint("p" + player + "status");		
 	}
 	
 	static void usage()
@@ -84,6 +92,7 @@ class SlidingWindow
 		int framecounter = 0, lastrecognition = 0, laststatus = 0;
 		long start_time, current_time, elapsed_time;
 		long before_block, after_block, blocked_time = 0;
+		boolean dropped_out = false, dropout;
 		
 		parse_args(args);
 		init();
@@ -106,6 +115,20 @@ class SlidingWindow
 			Transform.process(f);
 			buf.add(f);
 			framecounter++;
+			
+			dropout = f.dropout();
+			if(dropout != dropped_out)
+			{
+				String status;
+				if(dropout)
+					status = "dropout";
+				else
+					status = "ok";
+				scopstat.emit(status);
+				System.out.println("New status: " + status);
+				dropped_out = dropout;
+			}
+			
 			if(framecounter % 1000 == 0)
 			{
 				double fps, cpu;

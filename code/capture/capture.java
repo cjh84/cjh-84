@@ -42,17 +42,11 @@ class capture
 		}
 	}
 	
-	public static void output(double[] data, int startpos, SCOP scop, String label)
+	public static void output(double[] data, int startpos, SCOP scop,
+			String label)
 	{
-		StringBuilder sb = new StringBuilder();
-		
-		for(int i = startpos; i < startpos + 18; i++)
-		{
-			sb.append(data[i]);
-			if(i != startpos + 18 - 1)
-				sb.append(' ');
-		}
-		String s = sb.toString();
+		Frame f = new Frame(data, startpos);
+		String s = f.toString();		
 		System.out.println(label + ": " + s);
 		scop.emit(s);
 	}
