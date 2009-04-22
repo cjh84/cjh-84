@@ -56,7 +56,6 @@ class Capture
 		while(true)
 		{
 			data = dataparser.getData();
-			framecounter++;
 			if(framecounter - lastfps > 1000)
 			{
 				current_time = System.currentTimeMillis();
@@ -77,6 +76,7 @@ class Capture
 			elapsed_time = current_time - init_time;
 			if(FRAME_RATE < 0 || elapsed_time > (framecounter * 1000) / FRAME_RATE)
 			{
+				framecounter++;
 				output(data, 0, scop1, "P1");
 				if(points == 36)
 					output(data, 18, scop2, "P2");
