@@ -6,12 +6,14 @@ import java.util.*;
 class SixDOF
 {
 	double ax, ay, az, angle, tx, ty, tz;
+	boolean dropout;
 
 	static final double EPSILON = 1.0e-5;
 
 	SixDOF()
 	{
 		angle = 1.0;
+		dropout = false;
 	}
 	
 	SixDOF(double[] a, int offset)
@@ -53,11 +55,12 @@ class SixDOF
 			ay /= angle;
 			az /= angle;
 		}
-		else
+		else if(ax < EPSILON && ay < EPSILON && az < EPSILON)
 		{
-			/* Convert negligible rotations to zero rotations around the
-				Z-axis (copes with drop-outs, which report a (0,0,0) angle-
-				axis vector) */
+			/* Dropouts report a (0,0,0) axis-angle vector: record
+				these with a flag and convert them to a harmless zero
+				rotation around the Z-axis: */
+			dropout = true;
 			angle = 0.0;
 			ax = ay = 0.0;
 			az = 1.0;
@@ -75,7 +78,7 @@ class SixDOF
 		newy = s*tx + c*ty;
 		tx = newx;
 		ty = newy;
-		
+
 		newx = c*ax - s*ay;
 		newy = s*ax + c*ay;
 		ax = newx;
@@ -124,7 +127,14 @@ class Frame
 		left = new SixDOF(a, 6);
 		right = new SixDOF(a, 12);
 	}
-	
+
+	boolean dropout()
+	{
+		if(body.dropout || left.dropout || right.dropout)
+			return true;
+		return false;
+	}
+		
 	public String toString()
 	{
 		return body.toString() + " " + left.toString() + " " + right.toString();

@@ -57,4 +57,3 @@ class capture
 		scop.emit(s);
 	}
 }           
-
