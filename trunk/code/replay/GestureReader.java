@@ -137,18 +137,11 @@ class GestureReader
 					frameno++;
 				}
 				else if(line.startsWith("Belt") || line.startsWith("Hat") ||
-						line.startsWith("BeltP1") || line.startsWith("BeltP2") ||
-						line.startsWith("BodyP1"))
+						line.startsWith("Body"))
 					startpart = Body;
-				else if(line.startsWith("LeftHand") ||
-						line.startsWith("LeftArm") ||
-						line.startsWith("LeftArmP1") ||
-						line.startsWith("LeftArmP2"))
+				else if(line.startsWith("Left"))
 					startpart = LeftArm;
-				else if(line.startsWith("RightHand") ||
-						line.startsWith("RightArm") ||
-						line.startsWith("RightArmP1") ||
-						line.startsWith("RightArmP2"))
+				else if(line.startsWith("Right"))
 					startpart = RightArm;
 				else
 					Utils.error("Invalid line in data file.");

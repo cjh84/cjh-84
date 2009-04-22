@@ -14,6 +14,7 @@ class SimGesture
 	static int FRAME_RATE;
 	static int framecounter = 0;
 	static long start_of_stream;
+	static boolean dropped_out = false; // DBG
 	
 	static ArrayList<RecordedGesture> read_gestures(String gesture_dir)
 	{
@@ -130,6 +131,7 @@ class SimGesture
 	static void replay_gesture(SCOP scop, RecordedGesture gesture)
 	{
 		Frame f;
+		boolean dropout; // DBG
 
 		System.out.println("Replaying gesture " + gesture.filename +
 				" (frames " + framecounter + " to " + (framecounter +
@@ -137,6 +139,16 @@ class SimGesture
 		for(int i = 0; i < gesture.data.size(); i++)
 		{
 			f = gesture.data.get(i);
+			
+			// DBG...
+			dropout = f.dropout();
+			if(dropout != dropped_out)
+			{
+				dropped_out = dropout;
+				System.out.println("Dropout status = " + dropout);
+			}
+			// ...DBG
+			
 			scop.emit(f.toString());
 			framesync();
 		}
