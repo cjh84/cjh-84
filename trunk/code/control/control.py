@@ -1,5 +1,5 @@
 from Tkinter import *
-from Controls import Controls
+from ControlGUI import Controls
 import scop
 
 def usage():
