@@ -10,11 +10,11 @@ class feedbackGUI(Frame):
         Frame.__init__(self, parent, **options)
         self.width, self.height = width, height
 
-        canvasp1 = Canvas(parent, width=width, height=height, background="red")
+        canvasp1 = Canvas(parent, width=100, height=100, background="green")
         canvasp1.pack(expand=YES, fill=BOTH, side=LEFT)
 
-        canvasp2 = Canvas(parent, width=width, height=height, background="green")
-        canvasp2.pack(expand=YES, fill=BOTH, side=LEFT)
+        canvasp2 = Canvas(parent, width=100, height=100, background="green")
+        canvasp2.pack(expand=YES, fill=BOTH, side=RIGHT)
 
         parent.title("Feedback")
         self.parent = parent
@@ -46,8 +46,6 @@ class feedbackGUI(Frame):
         
     def ok(self, playerno):
         self.canvases[playerno].config(bg="green")
-        #print "Player " + str(playerno) + " received ok"
         
     def dropout(self, playerno):
         self.canvases[playerno].config(bg="red")
-        #print "Player " + str(playerno) + " received dropout"
