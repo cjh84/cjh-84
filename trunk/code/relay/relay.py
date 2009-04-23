@@ -32,7 +32,7 @@ def update(speed, turn):
 	r.Drive(vel, radius)
 
 robotmode = True
-scophost = "www.srcf.ucam.org"
+scophost = os.getenv("SCOPCTRLSERVER", "www.srcf.ucam.org")
 host = os.getenv("HOST")
 
 if host is None:

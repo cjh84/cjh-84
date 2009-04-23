@@ -1,12 +1,12 @@
 from Tkinter import *
 from ControlGUI import Controls
-import scop
+import scop, os
 
 def usage():
     print("Usage: python control.py [2]")
     sys.exit()
 
-sock = scop.scop_open("www.srcf.ucam.org", "controlp1")
+scopserver = os.getenv("SCOPCTRLSERVER", "www.srcf.ucam.org")
 
 player = 1
 
@@ -18,7 +18,7 @@ for arg in argv:
     else:
         usage()
 
-sock = scop.scop_open("www.srcf.ucam.org", "controlp" + str(player))
+sock = scop.scop_open(scopserver, "controlp" + str(player))
 scop.scop_set_source_hint(sock, "p" + str(player) + "ctrl")
 
 tk = Tk()
