@@ -20,11 +20,11 @@ class Controls(Frame):
         self.running = 0
         self.period = 20 # milliseconds
 
-        parent.bind('<Left>', self.TurnLeft)
-        parent.bind('<Right>', self.TurnRight)
-        parent.bind('<Up>', self.Accelerate)
-        parent.bind('<Down>', self.Decelerate)
-        parent.bind('<space>', self.Pause)
+        parent.bind('<KeyPress-Left>', self.TurnLeft)
+        parent.bind('<KeyPress-Right>', self.TurnRight)
+        parent.bind('<KeyPress-Up>', self.Accelerate)
+        parent.bind('<KeyPress-Down>', self.Decelerate)
+        parent.bind('<KeyPress-space>', self.Pause)
 
     def Accelerate(self, event=None):
         print "accel"
@@ -39,7 +39,7 @@ class Controls(Frame):
         scop.scop_emit(self.sock, "l")
 
     def TurnRight(self, event=None):
-        print "turn right"
+        print "turn right pressed"
         scop.scop_emit(self.sock, "r")
         
     def Pause(self, event=None):
