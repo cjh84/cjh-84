@@ -219,7 +219,7 @@ class Recogniser
 	static void usage()
 	{
 		Classifier c;
-		
+   		
 		System.out.println("Usage: java Recogniser [classifier] [person] " +
 				"<filename.csv>");
 		System.out.println("People: " + User.all_usernames());
@@ -439,9 +439,6 @@ class Heuristic extends Recogniser
 {
 	static double CLOSED_THRESHOLD = -1;
 	
-	// static final double CLOSED_THRESHOLD = 3000;
-	// static final double CLOSED_THRESHOLD = 100;
-	
 	public static Gesture recognise(Person person, Features features)
 	{
 		int command = Gesture.NoMatch;
@@ -469,7 +466,7 @@ class Heuristic extends Recogniser
 		
 		for(int axis = 0; axis < 3; axis++)
 		{
-			if(features.relocation > CLOSED_THRESHOLD)
+			if(features.displacement > CLOSED_THRESHOLD)
 				return false;
 			
 			left_delta = features.leftarm.get_delta(axis);
