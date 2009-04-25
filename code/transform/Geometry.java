@@ -220,7 +220,7 @@ class Point
 			x0,y0,z0 is point to be rotated
 			Inefficient if rotating multiple points by same angle-axis vector */
 		
-		double magnitude, s, c, t;
+		double s, c, t;
 		Point p = new Point();
 		
 		if(Math.abs(angle) < EPSILON)

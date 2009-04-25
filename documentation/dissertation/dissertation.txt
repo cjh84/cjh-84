@@ -1,4 +1,4 @@
-Cover
+ÔªøCover
 =====
 
 Proforma & Declaration of Originality
@@ -18,7 +18,7 @@ The philosophy which is common to these systems is defined by the term "ubiquito
 
 Conversely, robots have generally been operated by skilled engineers and researchers. The motivation was to bring the power of human intuition, using techniques from machine learning, to the human-machine interface. The medium that we chose to investigate and exploit is gesture recognition, a specialization of pattern recognition.
 
-One of the limitations of the project is that while machine vision was an option, it does not provide the accuracy of motion capture systems, such as the Vicon system. Another restriction is that rather than allowing users full freedom of gestures, we chose to train on a finite set of predefined gestures, converting these into commands that are used to drive the robot. 
+While machine vision is one option for solving this problem, motion capture systems provide far more detailed location data, down to hundredths of a millimeter. Rather than allowing users full freedom of gestures, I chose to train on a finite set of predefined gestures, converting these into commands that are used to drive the robot. 
 
 The two computational models used internally for this translation are Artificial Neural Networks and Hidden Markov Models. Gesture recognition is really a two-phase problem; the training with prerecorded datasets and the run-time interpretation. 
 
@@ -52,14 +52,14 @@ The main alternatives considered were:
 
 {diagram: robot}
 
-The budget was £500, funded equally by the Computer Laboratory Outreach programme and King's College. The final expenditure came to £585 as follows:
+The budget was ÔøΩ500, funded equally by the Computer Laboratory Outreach programme and King's College. The final expenditure came to ÔøΩ585 as follows:
 
-Two iRobot Creates at $229.99 = £306.80
-OLPC XO laptop @ $220.00 = £151.86
-OLPC XO laptop @ $170.00 = £117.35
-UK/US Step Down Adapter = £8.99
+Two iRobot Creates at $229.99 = ÔøΩ306.80
+OLPC XO laptop @ $220.00 = ÔøΩ151.86
+OLPC XO laptop @ $170.00 = ÔøΩ117.35
+UK/US Step Down Adapter = ÔøΩ8.99
 
-Total: £585.00
+Total: ÔøΩ585.00
 
 The main reason for the increase was that the basic iRobot Create comes without a rechargeable battery, and requires 12 AA batteries per robot per hour. The upgraded package comes with a command module as well as rechargeable battery; however it was found that the command module cannot be used, as it considers the laptop attached via USB to be a peripheral rather than the laptop being the USB master device to the robot slave.
 
@@ -108,19 +108,19 @@ R = [	tx^2+c	txy+sz	txz-sy
 Euler Angles
 ------------
 
-With Euler angles, the rotation matrix is decomposed into three rotations from a reference frame, (x,y,z). The rotated orientation system is denoted in upper case letters, (X,Y,Z). The line of nodes (N) is the line of intersection between the xy and XY coordinate planes, and the new coordinate system is parameterized by (a,ﬂ,gamma).
+With Euler angles, the rotation matrix is decomposed into three rotations from a reference frame, (x,y,z). The rotated orientation system is denoted in upper case letters, (X,Y,Z). The line of nodes (N) is the line of intersection between the xy and XY coordinate planes, and the new coordinate system is parameterized by (a,ÔøΩ,gamma).
 
 In the z-x-z convention,
 
 {latex:
     * a is the angle between the x-axis and the line of nodes, modulo 2pi
-    * ﬂ is the angle between the z-axis and the Z-axis, modulo pi
+    * ÔøΩ is the angle between the z-axis and the Z-axis, modulo pi
     * gamma is the angle between the line of nodes and the X-axis, modulo 2pi
 }
 
 {diagram: euler angles}
 
-However, when the xy and XY planes are identical and the z and Z axes are parallel, the Euler system is subject to a phenomenon known as gimbal lock, since not all points in the coordinate system can be uniquely identified. Euler angles are also prone to angle flips at the extremities of the ranges of a,ﬂ,gamma. For this reason, Euler angles are harder to deal with than axis angles, which vary smoothly.
+However, when the xy and XY planes are identical and the z and Z axes are parallel, the Euler system is subject to a phenomenon known as gimbal lock, since not all points in the coordinate system can be uniquely identified. Euler angles are also prone to angle flips at the extremities of the ranges of a,ÔøΩ,gamma. For this reason, Euler angles are harder to deal with than axis angles, which vary smoothly.
 
 Pattern recognition
 -------------------
@@ -248,7 +248,7 @@ bT+1:t 	= Pr(eT+1:t|ST) = sum sT+1 Pr(eT+1:t, sT+1 | ST)
 						= BACKWARDS(eT+1:t, bT+2:t)
 }
 
-This smooths all points 1:t in time O(t^2). By storing the computed results for f(1:T) and using these in the computation of bT+1:t, we can reduce this to O(t).
+This smooths all points 1:t in time O(t^2). By storing the computed results for f(1:T) and using these in the computation of bT+1:t, this is reduced to O(t).
 
 Matrix multiplication to calculate f
 Reestimation
@@ -321,7 +321,18 @@ Using the notation <R-X, R-Y, R-Z, T-X, T-Y, T-Z>, it send the rotation and tran
 
 With three objects per user and six datapoints per object, the Tarsus server sends eighteen or thirty six (for two players) values per frame via TCP/IP on port 800, at 100fps.
 
-The Capture.java class, uses DataParserR.java, a Java client provided by Cecily Morrison, to mutiplex on the requested channel names, determining whether one or two players are currently using the system. It opens up to two sockets to a SCOP server running on localhost and forwards p1coords and p2coords to the gesture recognition phase.
+The Capture.java class, uses DataParserR.java, a Java client provided by Cecily Morrison, to mutiplex on the requested channel names, determining whether one or two players are currently using the system. It opens up to two sockets to a SCOP server running on localhost and forwards p1coords and p2coords to the gesture recognition phase. It also performs downsampling to a configurable framerate (default is 100fps) to reduce burstiness and to avoid overloading the server buffers.
+
+There are two potential problems with the data; glitches and dropouts. Glitches are caused by incorrect object reconstruction, transcribed as valid data values from an object which often have an improbably high rate of change and return to the correct values shortly. Dropouts are the result of improper triangulation from the cameras, and so the objects are not recognised at all and result in all rotational data A-X,A-Y,A-Z being reported as 0.0 and translation data repeated from the last known values. For example, a glitch could be :
+
+-1, -2, -1, 53, 168, 168, 89, -4, -3, 0, ............
+
+whereas a dropout is reported as:
+
+33, 33, 34, 35, 35, 0, 0, 0, 0, 36, 35, 35, ............... (rotation)
+697, 692, 680, 669, 669, 669, 669, 669, 669, 624, ......... (translation)
+
+Dropouts are handled gracefully by a 19th flag in the stream, and converting rotations smaller than a given EPSILON into harmless zero rotations about the Z-axis during preprocessing. Glitches are relatively hard to detect and the solution for fixing is less clear, so they are currently ignored.
 
 Training data
 -------------
@@ -343,41 +354,132 @@ Frame, <R-X>, <R-Y>, <R-Z>, <T-X>, <T-Y>, <T-Z>
 etc.
 
 The GestureReader.java class getData() method reads in the data line by line until it finds an object name it recognises ("BodyP1", "LeftArmP2" etc), ignores the column headings, and parses each frame until it finds whitespace. Each frame becomes a Frame object, containing references to three SixDOF objects for body, left arm and right arm. The SixDOF (six degrees of freedom) holds the six double precision floating point numbers corresponding to <R-X>, <R-Y>, <R-Z>, <T-X>, <T-Y>, <T-Z>; calling normalise() sets the angle of rotation and normalises the rotation tuple to a unit vector.
+The SimGesture class is used to replay the data in the same format as a Vicon stream on the same SCOP stream, rendering it identical to the real data. It uses  GestureReader.getData(filename) on all CSV files from a single person and replays them in a random order. It assumes that all recorded gestures begin and end in the neutral position, and so movement between gestures is represented by linearly interpolating all values for a random length of time. It also appends the dropout boolean, in the same way as Capture.
 
 Preprocessing
 -------------
 
-The data requires significant preprocessing to convert the feature vector from world coordinates to body coordinates. This is performed by the Transform.java class, which implements the axis angle conversion to rotation matrix through two equivalent methods. The first, calcHeading, uses the javax.vecmath library to convert AxisAngle4d to Matrix3d, multiplies it by a Vector3d (0,1,0) and takes the arctan of the resulting y and x coordinates to get the bearing (as a double floating point number) of the original axis angle triplet. The second, rotatePoint, implements the matrix multiplication by hand, including checking for small angles which are below machine epsilon to avoid floating point rounding errors. It takes an axis angle triplet and a point to be rotated into the axis' frame of reference, and returns a Point.
+The data requires significant preprocessing to convert the feature vector from world coordinates to body coordinates. This is performed by the Transform.java file together with the Geometry.java file, which defines geometric classes for SixDOF, Frame, and Point.
 
-The matter of floating point precision is relatively unimportant for the purposes of gesture recognition. The translation data is typically accurate to hundredths of a milimeter, and rotation data is thrown away after the initial rotation.
+{diagram: Geometry class diagram}
+
+The SixDOF class represents an {ax,ay,az,tx,ty,tz} and contains the following code, which coverts the ax,ay,az AxisAngle triplet into a normalised vector plus an angle for the rotation magnitude:
+
+double angle = 1.0
+angle *= Math.sqrt(ax * ax + ay * ay + az * az);
+if (angle > EPSILON)
+{
+	ax /= angle;
+	ay /= angle;
+	az /= angle;
+}
+else
+{
+	//Convert small rotations into a zero rotation about the z-axis to avoid floating point errors
+	angle = 0.0;
+	ax = ay = 0.0;
+	az = 1.0
+}
+
+The Frame class contains three of these SixDOFs for body, left arm and right arm.
+
+Point contains a static rotatePoint method which implements the conversion from axis-angle triplets to matrix rotations. It takes an axis angle and a point to be rotated and returns a Point.
+
+double ax, ay, az, angle; //axis angle
+double x0, xy, xz; //Point
+
+double s = Math.sin(-angle);
+double c = Math.cos(-angle);
+double t = 1 ‚Äì c;
+
+Point p = new Point()
+
+p.x = (t*ax*ax + c)*x0 + (t*ax*ay + s*az)*y0 + (t*ax*az - s*ay)*z0;
+p.y = (t*ax*ay - s*az)*x0 + (t*ay*ay + c)*y0 + (t*ay*az + s*ax)*z0;
+p.z = (t*ax*az + s*ay)*x0 + (t*ay*az - s*ax)*y0 + (t*az*az + c)*z0;
 
 Gesture segmentation
 --------------------
 
-Sliding windows
+Sliding window
 
-The raw gesture data consists of a vector of 18 double-precision floating-point numbers, at 100 frames per second. In order to discover the start and end of gestures, a rectangular window of the last frames.
-[TODO]
+{diagram: SlidingWindow}
+
+java SlidingWindow <playernum> [person] [classifier]
+
+The raw gesture data consists of a vector of 18 double-precision floating-point numbers, at 100 frames per second. In order to discover the start and end of gestures, the recogniser is repeatedly run on multiple rectangular windows of different sizes until a success is reported. Since the preprocessing and feature extraction is performed on every frame, I have implemented an optimization using dynamic programming to store processed frames in a circular buffer containing the last 500 frames of data.
+
+{diagram: Circular buffer}
+
+A circular buffer holds a list of frames and a pointer to indicate the next position for an incoming data frame. SlidingWindow performs preprocessing on  incoming frames, adds them to the active position until the buffer is full, and from then on overwrites the oldest frames.
+
+Every ten frames, SlidingWindow runs the specified recogniser on the circular buffer with window sizes of 50 frames (0.5 seconds) to 350 frames (3.5 seconds), with trials showing that almost all clearly defined gestures fall within these boundaries.
+
+while (true)
+{
+	msg = scop.get_message();
+	circbuffer.add(Frame(msg));
+	for windowsize = 50; windowsize < 350; windowsize += 10
+		{
+			if recognised(circbuffer, windowsize)
+				break; //recognised emits the command to ctrlserver
+		}
+}
+
+If a gesture is recognised from the current window, the buffer continues to fill with arriving data but no more attempts at recognition are made until the minimum windowsize is exceeded. In addition, SlidingWindow monitors the frames for a flag indicating a dropout; if a frame contains data where at least one object is unavailable, it emits an ‚Äúdropout‚Äù message to the statusserver, and ‚Äúok‚Äù when the object returns.
+
+This status information is used by feedback.py to display two rectangles, for player 1 and player 2. A red rectangle indicates that the data is currently unavailable, while a green rectangle indicates a good detection rate. This feedback was highly rated in a user study, allowing users to distinguish between poor detection from the Vicon system and poor recognition from a recogniser.
+
+{diagram: feedback.py}
 
 Feature extraction
 ------------------
 
 Since neural networks have a fixed number of input nodes, but the feature vector has a variable number of frames, it is also necessary to perform feature extraction to create a fixed size set of variables to characterise the gesture. Performing feature extraction also reduces the search space for the recogniser, in order to increase the probability of successful matching; the gesture contains a lot of redundancy, since frames are taken at high speed and show close temporal correlation.
 
-Choosing the minimal features which extracted the most information to distinguish the gestures was an important step; using the entire data for each gesture (6 data points * 3 objects * ~300 frames/gesture = 5400 data values, for each example) would be equivalent to template matching and would require excessive processing times. Since the gestures were chosen to be axis aligned, the distinguishing features are the use of one or both arms, and the range of values that the gesture takes.
-
-Features.java contains two utility classes; Ranges, containing six values for the minimum and maximum of x, y and z, and Features, which holds two Ranges for left and right arms. The features which are extracted are LeftArm {dx,dy,dz} and RightArm {dx,dy,dz}, normalised to between 0 and 1.
+Choosing the minimal features which extracted the most information to distinguish the gestures was an important step; using the entire data for each gesture (6 data points * 3 objects * ~300 frames/gesture = 5400 data values, for each example) would be equivalent to template matching and would require excessive processing times. Since the gestures were chosen to be axis aligned, the distinguishing features are the range of dx,dy,dz values that each prototypical gesture may take. However, since each gesture is symmetric and begins and ends with a neutral pose, I defined a further feature indicating a closed gesture, a double defining the sum of squares error of the distance moved from the beginning. Thus a gesture which is at the peak displacement will have a large relocation value, while a closed gesture which has returned to the neutral pose has a small displacement value.
 
 {diagram: Features.java}
 
-Recognition [TODO]
+Features.java contains a utility class, Ranges, containing six values for the minimum and maximum of x, y and z. The features which are extracted are LeftArm {dx,dy,dz} and RightArm {dx,dy,dz}, normalised to between 0 and 1, and displacement, the sum of squares error of the first and last frames, in mm. It takes a list of Frames and holds two Ranges for left and right arms, and a double containing the displacement value calculated as follows:
+
+double displacement = 0.0;
+displacement += square(last.left.tx ‚Äì first.left.tx);
+displacement += square(last.left.ty ‚Äì first.left.ty);
+displacement += square(last.left.tz ‚Äì first.left.tz);
+displacement += square(last.right.ax ‚Äì first.right.ax);
+displacement += square(last.right.ay ‚Äì first.right.ay);
+displacement += square(last.right.az ‚Äì first.right.az);
+
+
+Recognition
 -----------
 
-The training of the neural network and Hidden Markov
+* Recogniser *
+
+java Recogniser [classifier] [person] <filename.csv>
+
+The Recogniser.java file holds defines the Recogniser interface containing a single method that all recognisers are expected to override:
+
+static Gesture recognise(Person person, Features features)
+
+The file also holds Gesture, Person and Classifier classes which are enumerations of the valid inputs:
+
+Gesture: TurnLeft, TurnRight, Accelerate, Decelerate, StartStop, NoMatch, MultiMatch
+
+Person: CHERYL, DAVID
+
+Classifer: HEURISTIC, NEURAL, MARKOV, HYBRID
 
 * Heuristic recogniser *
 
+{diagram: Heuristic.java}
+
 This application-specific recogniser depends strongly on the particular gestures chosen. It makes use of prior knowledge about the domain; specifically, patterns for how each gesture is characterised.
+
+The first offline training stage is to calculate all features on the training dataset, excluding outliers. The Person class defines the valid intervals of the specified user for the left and right ranges, as the maximum and minimum ranges that are permissable. The threshold for a closed gesture was experimentally determined to be around 3000, but is editable in the configuration file.
+
+When given a Person and Features calculated from a list of frames, the first check is that the displacement is less than the specified theshold. If this suceeds, the left and right Ranges are compared with the Person's Intervals. If the ranges fall within the permissable intervals, a Gesture is returned.
 
 * Neural network recogniser *
 
@@ -398,31 +500,26 @@ This is an application of the safety engineering technique of triple modular red
 GUI
 ---
 
-Two GUIs was created which simulated input (via mouse and keyboard) and output (turtle graphics) respectively for testing purposes. These were completely decoupled and communicated only via the SRCF.
+Two GUIs was created which simulated input (via mouse and keyboard) and output (turtle graphics) respectively for alternative feedback. These were completely decoupled and communicated only via the SRCF. Since these were independent from the rest of the system, they are written in Python using the Python SCOP library and Tkinter, the Python graphical libraries.
 
-The control panel issues commands on either the p1ctrl or the p2ctrl streams, and view.py listens to both streams. The view uses turtle graphics to represent the two players which can change in velocity or angle; an instance of Arena.py holds two instances of Turtle.py and directs the appropriate commands to update each turtle.
-
-{reference: Berkley}
+Control.py displays a control panel which accepts either keystrokes or mouse clicks and emits commands on either the p1ctrl or the p2ctrl streams.
 
 {diagram: screenshot of control keys for P1 and P2}
+
+View.py listens to both streams and uses turtle graphics to represent the two players which can change in velocity or angle; an instance of Arena.py holds two instances of Turtle.py and directs the appropriate commands to update each turtle.
+
 {diagram: screenshot of turtle graphics showing two turtles}
 
-Networking
-----------
-
-Decoupling various components allows message passing between different languages, which was important to allow the Java client to communicate with the Python robotics control. SCOP, a lightweight middleware framework written by Dr David Ingram, allows particularly simple events, messaging and RPC written in C++ with ports to C, Java, Python and Scheme. SCOP hides the client and server setup and silently discards data streams if there are no listeners. This makes it particularly simple to create and run such a distributed system by passing gesture data from the Java client through Python processing with Java libraries to the Python robot library.
-
-SCOP assigns a name to each resource and an optional source hint to each stream. In order to listen to both players' commands, Transform.java, control.py and view.py open two sockets to listen to two independant streams. Relay.py only listens to the stream of its user, either p1ctrl or p2ctrl.
-
-p1coords and p2coords represent the raw input streams from two users.
-p1ctrl and p2ctrl are the {a,d,l,r,s} commands as interpreted from the two users.
-
-The SRCF was used to provide a SCOP server running on a domain name, so that all units can reach it irrespective of whether they were wired or wireless and without knowing IP addresses. When testing on the King's College wifi network, it was found that broadcasting on non-standard ports is refused, including 51234. To compensate for this, tunnel.sh sets up port forwarding to the SRCF, so that sockets opened on the OLPC XO appear as if connected from the SRCF's port 51234.
+{reference: Berkley}
 
 Robot control
 -------------
 
+{diagram: relay.py}
+
 Relay.py uses the Python implementation of SCOP to open a socket to SRCF:51234. Each robot runs a separate instance of relay.py and listens to either p1ctrl or p2ctrl, depending on which one is assigned to which user. 
+
+Since the laptops are separate from the desktop PC running all other components, the robot's player numbers are assigned from an environment variable.
 
 There were two options when deciding about drive commands; accelerate/decelerate vs drive forwards/backwards for a set time. Accelerate/decelerate with continual motion was chosen to avoid users having to continually issue commands to their robot.
 
@@ -431,6 +528,42 @@ This meant that turning should also be a smooth turn, rather than stop/turn in p
 {diagram: turningradius}
 
 Furthermore, since users issue commands asynchronously, a turn command may be issued while the robot is in the middle of a turn. For this case, an alarm is set for when the turn completes and the robot resumes straight line motion, and the alarm is incremented by 1 second per turn instruction.
+
+A
+D
+L
+R
+S
+
+The PyRobot library converts the Drive(velocity, radius) commands into opcodes and operands. It serialises these for transmission over the USB-to-serial link, which controls the wheel motors.
+
+Networking
+----------
+
+Decoupling various components allows message passing between different languages, which was important to allow the Java client to communicate with the Python robotics control. SCOP, a lightweight middleware framework written by Dr D Ingram, allows particularly simple events, messaging and RPC written in C++ with ports to C, Java, Python and Scheme. SCOP hides the client and server setup and silently discards data streams if there are no listeners. This makes it particularly simple to create and run such a distributed system by passing gesture data from the Java client through Python processing with Java libraries to the Python robot library.
+
+SCOP assigns a name to each resource and an optional source hint to each stream. In order to listen to both players' commands, Transform.java, control.py and view.py open two sockets to listen to two independant streams. Relay.py only listens to the stream of its user, either p1ctrl or p2ctrl.
+
+p1coords and p2coords represent the raw input streams from two users.
+p1ctrl and p2ctrl are the {a,d,l,r,s} commands as interpreted from the two users.
+
+The SRCF was used to provide a SCOP server running on a domain name, so that all units can reach it irrespective of whether they were wired or wireless and without knowing IP addresses. When testing on the King's College wifi network, it was found that broadcasting on non-standard ports is refused, including 51234. To compensate for this, tunnel.sh sets up port forwarding to the SRCF, so that sockets opened on the OLPC XO appear as if connected from the SRCF's port 51234.
+
+The three streams used for interprocess communication are p1coords, p1ctrl and p1status (and their equivalents for p2). In order to allow these to be distributed, three constants are defined in the configuration file: coordserver, ctrlserver and statusserver. 
+
+Configuration
+-------------
+
+The Config.java file ensures that all processes with an interest in a stream are talking to the same server, and to allow the three streams to use different sockets as necessary. For example, the coordsserver stream is the most intensive (19/38 double floating point values at 100 fps), so by specifying ‚Äúlocalhost‚Äù, the overhead of TCP/IP network communication is reduced.
+
+The <key, value> pairs are parsed from a file in the user's home directory and stored in a java.util.HashMap. If the file is not present or the values not defined, the class uses the following default values:
+
+framerate = 100
+closedthreshold = 3000
+coordserver = ‚Äúwww.srcf.ucam.org‚Äù
+ctrlserver = ‚Äúwww.srcf.ucam.org‚Äù
+
+In order to ensure that all classes read from the same configuration values, the Config.java file uses the Singleton design pattern. A static variable of type Config is set to null, and the first lookup initialises it from the configuration file. Subsequent requests only perform lookups on the instantiated object.
 
 Evaluation [TODO]
 ==========

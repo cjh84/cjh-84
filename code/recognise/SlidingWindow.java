@@ -153,7 +153,7 @@ class SlidingWindow
 				for(int windowsize = MIN_WINDOW; windowsize <= MAX_WINDOW &&
 						windowsize <= availableframes; windowsize += WINDOW_STEP)
 				{
-					if(recognise(buf, windowsize, framecounter) == true)
+					if(recognised(buf, windowsize, framecounter) == true)
 					{
 						lastrecognition = framecounter;
 						break;
@@ -165,7 +165,7 @@ class SlidingWindow
 		// scop.close();
 	}
 	
-	static boolean recognise(CircularBuffer buf, int windowsize,
+	static boolean recognised(CircularBuffer buf, int windowsize,
 			int framecounter)
 	{
 		Gesture gesture;

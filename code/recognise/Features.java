@@ -3,7 +3,23 @@ import java.util.*;
 class Features
 {
 	Ranges leftarm, rightarm;
-	double relocation;
+	double displacement;
+
+	Features(ArrayList<Frame> data)
+	{
+		leftarm = new Ranges();
+		rightarm = new Ranges();
+		for(Frame f: data)
+		{
+			leftarm.update(f.left);
+			rightarm.update(f.right);
+		}
+		
+		Frame first, last;
+		first = data.get(0);
+		last = data.get(data.size() - 1);
+		displacement = calc_displacement(first, last);
+	}
 	
 	Features(CircularBuffer buf, int windowsize)
 	{
@@ -20,45 +36,21 @@ class Features
 		Frame first, last;
 		first = buf.get(windowsize, 0);
 		last = buf.get(windowsize, windowsize - 1);
-		relocation = calc_relocation(first, last);
+		displacement = calc_displacement(first, last);
 	}
 	
-	double calc_relocation(Frame first, Frame last)
+	double calc_displacement(Frame first, Frame last)
 	{
-		double relocation = 0.0;
+		double displacement = 0.0;
 		
-		relocation += Utils.square(last.left.tx - first.left.tx);
-		relocation += Utils.square(last.left.ty - first.left.ty);
-		relocation += Utils.square(last.left.tz - first.left.tz);
-		relocation += Utils.square(last.right.tx - first.right.tx);
-		relocation += Utils.square(last.right.ty - first.right.ty);
-		relocation += Utils.square(last.right.tz - first.right.tz);
-		/*
-		relocation += Math.abs(last.left.tx - first.left.tx);
-		relocation += Math.abs(last.left.ty - first.left.ty);
-		relocation += Math.abs(last.left.tz - first.left.tz);
-		relocation += Math.abs(last.right.tx - first.right.tx);
-		relocation += Math.abs(last.right.ty - first.right.ty);
-		relocation += Math.abs(last.right.tz - first.right.tz);
-		*/
-		
-		return relocation;
-	}
-	
-	Features(ArrayList<Frame> data)
-	{
-		leftarm = new Ranges();
-		rightarm = new Ranges();
-		for(Frame f: data)
-		{
-			leftarm.update(f.left);
-			rightarm.update(f.right);
-		}
-		
-		Frame first, last;
-		first = data.get(0);
-		last = data.get(data.size() - 1);
-		relocation = calc_relocation(first, last);
+		displacement += Utils.square(last.left.tx - first.left.tx);
+		displacement += Utils.square(last.left.ty - first.left.ty);
+		displacement += Utils.square(last.left.tz - first.left.tz);
+		displacement += Utils.square(last.right.tx - first.right.tx);
+		displacement += Utils.square(last.right.ty - first.right.ty);
+		displacement += Utils.square(last.right.tz - first.right.tz);
+
+		return displacement;
 	}
 	
 	void dump()
@@ -67,7 +59,7 @@ class Features
 		leftarm.dump();
 		System.out.print("Right Arm: ");
 		rightarm.dump();
-		System.out.printf("Relocation: %f\n", relocation);
+		System.out.printf("Displacement: %f\n", displacement);
 	}
 };
 
