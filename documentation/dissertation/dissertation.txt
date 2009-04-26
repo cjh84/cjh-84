@@ -10,8 +10,6 @@ Contents Page
 Introduction
 ============
 
-This project uses machine learning techniques for gesture recognition in order to control a remote vehicular robot. Three very different approaches were taken to the same problem; a heuristic evaluator, Artifical Neural Networks, and Hidden Markov Models. The gesture data was recorded from a motion capture system using arm and body markers for training purposes and was preprocessed for invariance to translation and rotation before feature extraction. A voting system was implemented to aggregate the results and intepret the real time data as commands. Furthermore, an extension for multiple users was implemented, and the system demonstrated successfully on live motion capture data to control physical hardware.
-
 New paradigms for human-computer interaction are becoming a reality. Amongst consumer goods, new ways of interaction are forcing a rethink beyond the keyboard and mouse. The Apple iPhone is the first touchscreen cellular phone to be widely adopted, while the Nintendo Wii brings accelerometer based control to home gaming. The Opera browser uses mouse gestures for navigational input, while the Microsoft Surface is aimed towards diverse markets such as corporate events and restaurants.
 
 The philosophy which is common to these systems is defined by the term "ubiquitous computing". The aim is to allow intuitive, natural interaction so that anybody (in theory) can use them without training, but instead by mirroring or mimicking behaviour of the real world.
@@ -22,7 +20,7 @@ While machine vision is one option for solving this problem, motion capture syst
 
 The two computational models used internally for this translation are Artificial Neural Networks and Hidden Markov Models. Gesture recognition is really a two-phase problem; the training with prerecorded datasets and the run-time interpretation. 
 
-An application for the system in the form of a two-player game demonstrates the system's real time capabilities.
+This project uses machine learning techniques for gesture recognition in order to control a remote vehicular robot. Three very different approaches were taken to the same problem; a heuristic evaluator, Artifical Neural Networks, and Hidden Markov Models. The gesture data was recorded from a motion capture system using arm and body markers for training purposes and was preprocessed for invariance to translation and rotation before feature extraction. A voting system was implemented to aggregate the results and intepret the real time data as commands. Furthermore, an extension for multiple users was implemented, and the system demonstrated successfully on live motion capture data to control physical hardware.
 
 Preparation
 ===========
@@ -52,14 +50,14 @@ The main alternatives considered were:
 
 {diagram: robot}
 
-The budget was �500, funded equally by the Computer Laboratory Outreach programme and King's College. The final expenditure came to �585 as follows:
+The budget was £500, funded equally by the Computer Laboratory Outreach programme and King's College. The final expenditure came to £585 as follows:
 
-Two iRobot Creates at $229.99 = �306.80
-OLPC XO laptop @ $220.00 = �151.86
-OLPC XO laptop @ $170.00 = �117.35
-UK/US Step Down Adapter = �8.99
+Two iRobot Creates at $229.99 = £306.80
+OLPC XO laptop @ $220.00 = £151.86
+OLPC XO laptop @ $170.00 = £117.35
+UK/US Step Down Adapter = £8.99
 
-Total: �585.00
+Total: £585.00
 
 The main reason for the increase was that the basic iRobot Create comes without a rechargeable battery, and requires 12 AA batteries per robot per hour. The upgraded package comes with a command module as well as rechargeable battery; however it was found that the command module cannot be used, as it considers the laptop attached via USB to be a peripheral rather than the laptop being the USB master device to the robot slave.
 
@@ -68,13 +66,13 @@ Motion Capture System
 
 The Vicon Motion Capture system in the Rainbow Group is controlled by Tarsus. This software collates the data from the ten infra-red cameras to reconstruct the three dimensional marker positions in real time, and further combines these into either user-defined objects or full skeletons. There were two choices to be considered; the objects (body parts), and the gestures to be recognised.
 
-The objects needed firstly for input to a gesture, and secondly representing the user's position so that gestures can be calculated invariant to tranlation, rotation and spatial displacement. For the gesture input, one or two hands or arms were considered; two gives a wider range of movement (and thus a larger input space) and forearms have more rigidity than hands, giving better recognition rates from the Vicon system. Options for positional data were belt, hat and body. The belt was easily occluded and confused by the arm markers, while the hat gave poor rotational data due to the independant movement of the head. The final configuration chosen was twelve markers spread across two arms and body (upper chest and back).
+The objects needed firstly for input to a gesture, and secondly representing the user's position so that gestures can be calculated invariant to translation, rotation and spatial displacement. For the gesture input, one or two hands or arms were considered; two gives a wider range of movement (and thus a larger input space) and forearms have more rigidity than hands, giving better recognition rates from the Vicon system. Options for positional data were belt, hat and body. The belt was easily occluded and confused by the arm markers, while the hat gave poor rotational data due to the independent movement of the head. The final configuration chosen was twelve markers spread across two arms and body (upper chest and back).
 
 {diagram: markers}
 
-The data outputted is six data values per object; an AxisAngle triplet for rotation and a triplet for global translation in mm. An alternative rotation system which is also available is Euler angles.
+The data outputted is six data values per object; an Axis Angle triplet for rotation and a triplet for global translation in mm. An alternative rotation system which is also available is Euler angles.
 
-In order to simplify data processing while providing adequate control over the robot, most of the preset gestures were constrained to one arm movement within two dimensions (x-z or y-z planes in a z-up world):
+In order to simplify data processing while providing adequate control over the robot, most of the pre-set gestures were constrained to one arm movement within two dimensions (x-z or y-z planes in a z-up world):
 * accelerate
 * decelerate
 * turn left
@@ -82,10 +80,10 @@ In order to simplify data processing while providing adequate control over the r
 * start/stop - a test case for a more complex gesture, in this case a single clap at chest level.
 {diagram: gestures}
 
-AxisAngles
+Axis Angles
 ----------
 
-Axis angles are also known as exponential coordinates or rotation vectors. This parameterizes orientation by a three dimensional Cartesion vector, describing a directed axis and the magnitude of rotation. The following rotation matrix is used to rotate around an arbitary axis where (x,y,z) is a unit vector on the axis of rotation, and theta is the angle of rotation.
+Axis angles are also known as exponential coordinates or rotation vectors. This parametrizes orientation by a three dimensional Cartesian vector, describing a directed axis and the magnitude of rotation. The following rotation matrix is used to rotate around an arbitrary axis where (x,y,z) is a unit vector on the axis of rotation, and theta is the angle of rotation.
 
 {reference: Graphics Gems}
 
@@ -108,7 +106,7 @@ R = [	tx^2+c	txy+sz	txz-sy
 Euler Angles
 ------------
 
-With Euler angles, the rotation matrix is decomposed into three rotations from a reference frame, (x,y,z). The rotated orientation system is denoted in upper case letters, (X,Y,Z). The line of nodes (N) is the line of intersection between the xy and XY coordinate planes, and the new coordinate system is parameterized by (a,�,gamma).
+With Euler angles, the rotation matrix is decomposed into three rotations from a reference frame, (x,y,z). The rotated orientation system is denoted in upper case letters, (X,Y,Z). The line of nodes (N) is the line of intersection between the xy and XY coordinate planes, and the new coordinate system is parametrized by (a,�,gamma).
 
 In the z-x-z convention,
 
@@ -137,12 +135,12 @@ g: X -> Y
 }
 where the training set {(x1,y1) ... (xn,xn)} are instances of X x Y (the Cartesian product of the X and Y domains).
 
-Among the more popular techniques are Support Vector Machines, naive Bayes classifer, k-nearest neighbour, neural networks and Hidden Markov Models. I chose the latter two as an example of a general classifier and temporal classifer respectively.
+Among the more popular techniques are Support Vector Machines, naive Bayes classifier, k-nearest neighbour, neural networks and Hidden Markov Models. I chose the latter two as an example of a general classifier and temporal classifier respectively.
 
 Neural Networks
 ---------------
 
-An artifical neural network is an interconnected set of nodes which individually perform simple processing, but exhibits complex behaviour as a whole system. This is the connectionist approach to pattern recognition from large sets of data; it was inspired by the biological neural network. Each unit combines the inputs by means of an activation function, which fires non-linearly given sufficient input. Common choices for the activation function are the tanh function or the sigmoid function, which have the property of being differentiable:
+An artificial neural network is an interconnected set of nodes which individually perform simple processing, but exhibits complex behaviour as a whole system. This is the connectionist approach to pattern recognition from large sets of data; it was inspired by the biological neural network. Each unit combines the inputs by means of an activation function, which fires non-linearly given sufficient input. Common choices for the activation function are the tanh function or the sigmoid function, which have the property of being differentiable:
 
 {latex:
 phi(vi) = 1/(1+e^(-vi) 
@@ -168,7 +166,7 @@ Since this is a supervised learning technique, the first phase is to present tra
 s = ((x1,y1), ... , (xm, ym))
 }
 
-The backpropagation algorithm is an application of gradient descent for minimization of error. The first stage is to initialize w to a random set of weights. Calculate E(w); if this is greater than a theshold value, calculate the gradient dE(w)/dw of E(w) at each point wi and adjust the weight vector to lower the error:
+The backpropagation algorithm is an application of gradient descent for minimization of error. The first stage is to initialize w to a random set of weights. Calculate E(w); if this is greater than a threshold value, calculate the gradient dE(w)/dw of E(w) at each point wi and adjust the weight vector to lower the error:
 
 {latex:
 wi+1 = wi - a d(E(w)/dw) | wi
@@ -218,13 +216,13 @@ where S0:t-1 = (S0,S1,...St-1)
 
 {diagram: hidden markov models}
 
-At each time t, a symbol is emitted from state i. For a Bakis HMM, at t+1 the only options are to stay in state i or move to state i+1. Each state is parameterized by an emission probability of staying in the same state and a transition probability of moving to state i+1.
+At each time t, a symbol is emitted from state i. For a Bakis HMM, at t+1 the only options are to stay in state i or move to state i+1. Each state is parametrized by an emission probability of staying in the same state and a transition probability of moving to state i+1.
 
-A Hidden Markov Model is one where these probabilities characterizing the states are unknown, and for a training sequence, it is unknown which state the observation lies in. To find the probabilities, the Baulm-Welch algorithm takes a vector of training sequences and iterates using Expectation-Maximization. The expection is calculated by the forward-backward algorithm, which is an example of dynamic programming - the use of memoization to save recomputing soloutions to subproblems.
+A Hidden Markov Model is one where these probabilities characterizing the states are unknown, and for a training sequence, it is unknown which state the observation lies in. To find the probabilities, the Baulm-Welch algorithm takes a vector of training sequences and iterates using Expectation-Maximization. The expectation is calculated by the forward-backward algorithm, which is an example of dynamic programming - the use of memoization to save recomputing solutions to sub-problems.
 
 For a Markov Model, Pr(Et|St) is the sensor model and Pr(St|St-1) is the transition model. Pr(S0) denotes the prior state. The assumption is that the probabilities do not change over time, as the observations are stationary processes.
 
-The forward-backward algorithm solves the task of smoothing, ie. deducing the previous states from the current state, Pr(St|e1:t) for 0 <= T < t. 
+The forward-backward algorithm solves the task of smoothing; deducing the previous states from the current state, Pr(St|e1:t) for 0 <= T < t. 
 
 {latex:
 
@@ -251,7 +249,7 @@ bT+1:t 	= Pr(eT+1:t|ST) = sum sT+1 Pr(eT+1:t, sT+1 | ST)
 This smooths all points 1:t in time O(t^2). By storing the computed results for f(1:T) and using these in the computation of bT+1:t, this is reduced to O(t).
 
 Matrix multiplication to calculate f
-Reestimation
+Re-estimation
 
 Feature extraction
 ------------------
@@ -265,7 +263,7 @@ However these techniques were deemed excessively complex for the purposes of ges
 Tools
 -----
 
-Subversion was used for versioning control, together with Google Code Project Hosting. The libraries used were:
+Subversion was used for version control, together with Google Code Project Hosting. The libraries used were:
 
 Joone: Java Object Oriented Neural Engine
 Jahmm: Java Hidden Markov Model
@@ -280,7 +278,7 @@ The choice of languages was based on ease of development, portability, availabil
 
 The robot control library, PyRobot, is written in Python. Cecily Morrison's client and both pattern recognition engines are Java. Message passing of simple string data is handled by SCOP, which has ports to both Python and Java.
 
-Since the OLPC XO runs a modified version of Fedora Linux, the Tarsus system runs on Windows XP and the development environment was Ubuntu Linux, using architecture independant languages makes it easy to perform processing on a more powerful computer to the XO laptop.
+Since the OLPC XO runs a modified version of Fedora Linux, the Tarsus system runs on Windows XP and the development environment was Ubuntu Linux, using architecture independent languages makes it easy to perform processing on a more powerful computer to the XO laptop.
 
 Implementation
 ==============
@@ -291,16 +289,64 @@ System Overview
 System Diagram
 {diagram: system diagram}
 
-This high level overview shows how components are decoupled for reusability. During training, the training sequences are read from disk and preprocessed to form data for training the pattern recognition modules. When live, the data capture subsystem sends double arrays of raw data values to the SCOP server. The preprocessing module additionally listens to the event stream for gesture data. The output from all three services is interpreted as one of five commands by Control and is sent to the SCOP server on a different stream. For testing purposes, a GUI provides alternative input methods of mouse and keystrokes.
+This high level overview shows how components are decoupled for re-usability. During training, the training sequences are read from disk and preprocessed to form data for training the pattern recognition modules. When live, the data capture subsystem sends double arrays of raw data values to the SCOP server. The preprocessing module additionally listens to the event stream for gesture data. The output from all three services is interpreted as one of five commands by Control and is sent to the SCOP server on a different stream. For testing purposes, a GUI provides alternative input methods of mouse and keystrokes.
 
 The relay program on the XO laptop converts this into drive commands and the PyRobot library handles low level opcodes. The monitor shows the output for a turtle program which responds to the same commands, again for test purposes.
 
-Message passing provides inter-language communication via an SCOP server running on the SRCF. Relatively small amounts of data is passed (gesture data is 100 frames per second but is handled by a local server, and commands are single characters {a,d,l,r,s} at no more than 2 or 3 per second).
+Message passing provides inter-language communication via an SCOP server running on the SRCF.
 
 * Component Interfaces *
 
 {diagram: data flow diagram}
+
+All SCOP messages are ASCII string messages. Each class that interacts with the server has a name and can express an interest in one or more streams, or endpoints by opening sockets.
+
+NB: All names containing p1 have p2 equivalents.
+
 Protocols & Data formats
+
+coordsserver
+
+Endpoint: p1coords
+Event sources: capturep1, simulatep1
+Event sinks: windowp1
+
+The coordsserver transmits both players' stream of coordinates, labelled p1coords and p2coords. The data format consists of eighteen floating point values, followed by a string expressing the result of filtering the data for a body part dropping out.
+
+{
+	<body-ax>, <body-ay>, <body-az>, <body-tx>, <body-ty>, <body-tz>,
+	<leftarm-ax>, <leftarm-ay>, <leftarm-az>, <leftarm-tx>, <leftarm-ty>, <leftarm-tz>,
+	<rightarm-ax>, <rightarm-ay>, <rightarm-az>, <rightarm-tx>, <rightarm-ty>, <rightarm-tz>,
+	<”ok”|”dropout”>
+}
+
+All double values are to accurate to six significant figures.
+The axis angles values (ax,ay,az) are denormalised and in degrees (-180 to +180). Lost objects (reported as (0,0,0) for the angles) are converted to (0,0,1) and the status field set to “dropout”. When non-zero values appear the status field is reset to “ok”. Translations (tx,ty,tz) are in millimetres. The default rate is 100fps.
+ctrlserver
+
+Endpoint: p1ctrl
+Event sources: controlp1, windowp1
+Event sinks: viewp1, relayp1
+
+The ctrlserver handles the output from gestures, as single lower case characters representing a single accelerate, decelerate, turn left, turn right or start/stop command:
+{
+	<“a“|”d”|”l”|”r”|”s”>
+}
+
+The commands may be acted upon by the simulated or physical robots. Commands are typically issued around once per second.
+
+statusserver
+
+Endpoint: p1status
+Event sources: windowp1
+Event sinks: feedbackp1
+
+This stream is a direct transcription of the “ok”/”dropout” field of the coordinates. It reflects whether the data provided by TARSUS can be used for the purposes of recognition.
+
+{
+	<”ok”|”dropout”>
+}
+
 
 * Breakdown of components *
 
@@ -317,11 +363,11 @@ The Tarsus system performs the following processing in real time on the raw came
 Triangulation of twelve marker positions (using a variable number of between 3 and 10 cameras) in three dimensional space
 Interpolation and smoothing of the marker data, to reduce jitter
 Pairwise comparison between sets of the marker angles and three skeletons of defined features
-Using the notation <R-X, R-Y, R-Z, T-X, T-Y, T-Z>, it send the rotation and translation data for each object. If some markers are occluded or there is insufficient rigidity in the angles for object reconstruction, T-X, T-Y and T-Z are held at their last known position, and R-X, R-Y, and R-Z are set to 0.0.
+Using the notation <A-X, A-Y, A-Z, T-X, T-Y, T-Z>, it send the rotation and translation data for each object. If some markers are occluded or there is insufficient rigidity in the angles for object reconstruction, T-X, T-Y and T-Z are held at their last known position, and A-X, A-Y, and A-Z are set to 0.0.
 
-With three objects per user and six datapoints per object, the Tarsus server sends eighteen or thirty six (for two players) values per frame via TCP/IP on port 800, at 100fps.
+With three objects per user and six data-points per object, the Tarsus server sends eighteen or thirty six (for two players) values per frame via TCP/IP on port 800, at 100fps.
 
-The Capture.java class, uses DataParserR.java, a Java client provided by Cecily Morrison, to mutiplex on the requested channel names, determining whether one or two players are currently using the system. It opens up to two sockets to a SCOP server running on localhost and forwards p1coords and p2coords to the gesture recognition phase. It also performs downsampling to a configurable framerate (default is 100fps) to reduce burstiness and to avoid overloading the server buffers.
+The Capture class uses DataParserR.java, a Java client provided by Cecily Morrison, to multiplex on the requested channel names, determining whether one or two players are currently using the system. It opens up to two sockets to a SCOP server running on localhost and forwards p1coords and p2coords to the gesture recognition phase. It also performs downsampling to a configurable framerate (default is 100fps) to reduce burstiness and to avoid overloading the server buffers.
 
 There are two potential problems with the data; glitches and dropouts. Glitches are caused by incorrect object reconstruction, transcribed as valid data values from an object which often have an improbably high rate of change and return to the correct values shortly. Dropouts are the result of improper triangulation from the cameras, and so the objects are not recognised at all and result in all rotational data A-X,A-Y,A-Z being reported as 0.0 and translation data repeated from the last known values. For example, a glitch could be :
 
@@ -341,7 +387,7 @@ Training data consists of five sequences for each of five gestures, giving a tot
 
 In addition, two extra sets were recorded. The first is for calibration, consisting of stationary data at the origin, axis aligned translations, and 90 degree rotations. The second is examples of non-gestures, such as the neutral arms by side position, so that the pattern recognition engine can give negative examples.
 
-The format of the data is CSV. All values are double precision floating point numbers to six significant figures. Rotations are in the range +/- 180 degrees and translations are in mm from the origin in a z-up world.
+The data is formatted as CSV files. All values are double precision floating point numbers to six significant figures. Rotations are in the range +/- 180 degrees and translations are in mm from the origin in a z-up world.
 
 {Object1 Name}
 Frame, <R-X>, <R-Y>, <R-Z>, <T-X>, <T-Y>, <T-Z>
@@ -353,7 +399,9 @@ Frame, <R-X>, <R-Y>, <R-Z>, <T-X>, <T-Y>, <T-Z>
 {Object2 Name}
 etc.
 
-The GestureReader.java class getData() method reads in the data line by line until it finds an object name it recognises ("BodyP1", "LeftArmP2" etc), ignores the column headings, and parses each frame until it finds whitespace. Each frame becomes a Frame object, containing references to three SixDOF objects for body, left arm and right arm. The SixDOF (six degrees of freedom) holds the six double precision floating point numbers corresponding to <R-X>, <R-Y>, <R-Z>, <T-X>, <T-Y>, <T-Z>; calling normalise() sets the angle of rotation and normalises the rotation tuple to a unit vector.
+
+
+The GestureReader class contains a getData() method, which reads in the data line by line until it finds an object name it recognises ("BodyP1", "LeftArmP2" etc), ignores the column headings, and parses each frame until it finds whitespace. Each frame becomes a Frame object, containing references to three SixDOF objects for body, left arm and right arm. The SixDOF (six degrees of freedom) holds the six double precision floating point numbers corresponding to <R-X>, <R-Y>, <R-Z>, <T-X>, <T-Y>, <T-Z>; calling normalise() sets the angle of rotation and normalises the rotation tuple to a unit vector.
 The SimGesture class is used to replay the data in the same format as a Vicon stream on the same SCOP stream, rendering it identical to the real data. It uses  GestureReader.getData(filename) on all CSV files from a single person and replays them in a random order. It assumes that all recorded gestures begin and end in the neutral position, and so movement between gestures is represented by linearly interpolating all values for a random length of time. It also appends the dropout boolean, in the same way as Capture.
 
 Preprocessing
@@ -363,7 +411,7 @@ The data requires significant preprocessing to convert the feature vector from w
 
 {diagram: Geometry class diagram}
 
-The SixDOF class represents an {ax,ay,az,tx,ty,tz} and contains the following code, which coverts the ax,ay,az AxisAngle triplet into a normalised vector plus an angle for the rotation magnitude:
+The SixDOF class represents an {ax,ay,az,tx,ty,tz} and contains the following code, which converts the ax,ay,az Axis Angle triplet into a normalised vector plus an angle for the rotation magnitude:
 
 double angle = 1.0
 angle *= Math.sqrt(ax * ax + ay * ay + az * az);
@@ -457,8 +505,6 @@ Recognition
 
 * Recogniser *
 
-java Recogniser [classifier] [person] <filename.csv>
-
 The Recogniser.java file holds defines the Recogniser interface containing a single method that all recognisers are expected to override:
 
 static Gesture recognise(Person person, Features features)
@@ -469,7 +515,7 @@ Gesture: TurnLeft, TurnRight, Accelerate, Decelerate, StartStop, NoMatch, MultiM
 
 Person: CHERYL, DAVID
 
-Classifer: HEURISTIC, NEURAL, MARKOV, HYBRID
+Classifier: HEURISTIC, NEURAL, MARKOV, HYBRID
 
 * Heuristic recogniser *
 
@@ -477,9 +523,9 @@ Classifer: HEURISTIC, NEURAL, MARKOV, HYBRID
 
 This application-specific recogniser depends strongly on the particular gestures chosen. It makes use of prior knowledge about the domain; specifically, patterns for how each gesture is characterised.
 
-The first offline training stage is to calculate all features on the training dataset, excluding outliers. The Person class defines the valid intervals of the specified user for the left and right ranges, as the maximum and minimum ranges that are permissable. The threshold for a closed gesture was experimentally determined to be around 3000, but is editable in the configuration file.
+The first off-line training stage is to calculate all features on the training dataset, excluding outliers. The Person class defines the valid intervals of the specified user for the left and right ranges, as the maximum and minimum ranges that are permissible. The threshold for a closed gesture was experimentally determined to be around 3000, but is editable in the configuration file.
 
-When given a Person and Features calculated from a list of frames, the first check is that the displacement is less than the specified theshold. If this suceeds, the left and right Ranges are compared with the Person's Intervals. If the ranges fall within the permissable intervals, a Gesture is returned.
+When given a Person and Features calculated from a list of frames, the first check is that the displacement is less than the specified threshold. If this succeeds, the left and right Ranges are compared with the Person's Intervals. If the ranges fall within the permissible intervals, a Gesture is returned.
 
 * Neural network recogniser *
 
@@ -487,9 +533,13 @@ When given a Person and Features calculated from a list of frames, the first che
 
 There are six input nodes for LeftArm {dx,dy,dz} and RightArm {dx,dy,dz}, a layer of hidden nodes and five output nodes corresponding to the five gestures. Each gesture is labelled with a vector of expected output; for example, an accelerate gesture is (1,0,0,0,0), a Turn Right gesture is (0,0,0,1,0) and a non-gesture is (0,0,0,0,0).
 
+I researched several neural network libraries, including Joone and JavaNNS. The Joone library has particularly good tools for writing third party modules, as well as support for distributed training, which would be useful for higher performance in the CPU intensive training stage.
+
 * Hidden Markov Model recogniser *
 
 Each gesture is modelled by a different Markov process, so five Hidden Markov Models are created for the five gestures. All the gestures empirically can be modelled by either two states (rising and falling) or four states (including a neutral start and end). This recogniser uses the raw data rather than the extracted data, since it is highly dependant on the temporal characteristics of the input vector.
+
+Alternative Java libraries for Hidden Markov Models include Jahmm, jHMM, and HmmSDK.
 
 * Decision logic *
 
@@ -500,7 +550,7 @@ This is an application of the safety engineering technique of triple modular red
 GUI
 ---
 
-Two GUIs was created which simulated input (via mouse and keyboard) and output (turtle graphics) respectively for alternative feedback. These were completely decoupled and communicated only via the SRCF. Since these were independent from the rest of the system, they are written in Python using the Python SCOP library and Tkinter, the Python graphical libraries.
+Two graphical user interfaces was created which simulated input (via mouse and keyboard) and output (turtle graphics) respectively for alternative feedback. These were completely decoupled and communicated only via the SRCF. Since these were independent from the rest of the system, they are written in Python using the Python SCOP library and Tkinter, the Python graphical libraries. The Model-View-Controller design pattern is used to separate display from control.
 
 Control.py displays a control panel which accepts either keystrokes or mouse clicks and emits commands on either the p1ctrl or the p2ctrl streams.
 
@@ -527,22 +577,16 @@ This meant that turning should also be a smooth turn, rather than stop/turn in p
 
 {diagram: turningradius}
 
-Furthermore, since users issue commands asynchronously, a turn command may be issued while the robot is in the middle of a turn. For this case, an alarm is set for when the turn completes and the robot resumes straight line motion, and the alarm is incremented by 1 second per turn instruction.
+Furthermore, since users issue commands asynchronously, a turn command may be issued while the robot is in the middle of a turn. For this case, an alarm is set for when the turn completes and the robot resumes straight line motion, and the alarm is incremented by 1 second per turn instruction. 
 
-A
-D
-L
-R
-S
-
-The PyRobot library converts the Drive(velocity, radius) commands into opcodes and operands. It serialises these for transmission over the USB-to-serial link, which controls the wheel motors.
+Accelerate and decelerates increment and decrement the velocity; turn left and right increment and decrement the radius; and start/stop either performs an initialising acceleration, or sets the velocity to zero. The PyRobot library converts the Drive(velocity, radius) commands into 4 byte opcodes and operands. It serialises these for transmission over the USB-to-serial link in order to control the wheel motors.
 
 Networking
 ----------
 
 Decoupling various components allows message passing between different languages, which was important to allow the Java client to communicate with the Python robotics control. SCOP, a lightweight middleware framework written by Dr D Ingram, allows particularly simple events, messaging and RPC written in C++ with ports to C, Java, Python and Scheme. SCOP hides the client and server setup and silently discards data streams if there are no listeners. This makes it particularly simple to create and run such a distributed system by passing gesture data from the Java client through Python processing with Java libraries to the Python robot library.
 
-SCOP assigns a name to each resource and an optional source hint to each stream. In order to listen to both players' commands, Transform.java, control.py and view.py open two sockets to listen to two independant streams. Relay.py only listens to the stream of its user, either p1ctrl or p2ctrl.
+SCOP assigns a name to each resource and an optional source hint to each stream. In order to listen to both players' commands, Transform.java, control.py and view.py open two sockets to listen to two independent streams. Relay.py only listens to the stream of its user, either p1ctrl or p2ctrl.
 
 p1coords and p2coords represent the raw input streams from two users.
 p1ctrl and p2ctrl are the {a,d,l,r,s} commands as interpreted from the two users.
