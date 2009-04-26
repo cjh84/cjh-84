@@ -42,7 +42,6 @@ class Sample
 
 class Training implements NeuralNetListener
 {
-	static final int NUM_INPUTS = 7;
 	static String gesture_dir, output_file;
 	static final String index_filename = "training.dat";
 	
@@ -124,7 +123,7 @@ class Training implements NeuralNetListener
 		System.exit(0); // XXXXX
 				
 		int num_samples = samples.size();
-		double[][] data = new double[num_samples][NUM_INPUTS +
+		double[][] data = new double[num_samples][Features.num_features +
 			Gesture.num_gestures + 1];
 		
 		Training tr = new Training(data);
@@ -141,6 +140,7 @@ class Training implements NeuralNetListener
 	Training(double[][] data)
 	{
 		final int epochs = 10000;
+		final int num_hidden_neurons = 20;
 		
 		input = new LinearLayer();
 		hidden = new SigmoidLayer();
@@ -148,8 +148,8 @@ class Training implements NeuralNetListener
 		input.setLayerName("input");
 		hidden.setLayerName("hidden");
 		output.setLayerName("output");
-		input.setRows(NUM_INPUTS);
-		hidden.setRows(20);
+		input.setRows(Features.num_features);
+		hidden.setRows(num_hidden_neurons);
 		output.setRows(Gesture.num_gestures);
 		synapse_IH = new FullSynapse();
 		synapse_HO = new FullSynapse();
@@ -162,12 +162,13 @@ class Training implements NeuralNetListener
 		
 		inputStream = new MemoryInputSynapse();
 		inputStream.setInputArray(data);
-		set_columns(inputStream, 1, NUM_INPUTS);
+		set_columns(inputStream, 1, Features.num_features);
 		input.addInputSynapse(inputStream);
 
 		samples = new MemoryInputSynapse();
 		samples.setInputArray(data);
-		set_columns(samples, NUM_INPUTS + 1, NUM_INPUTS + Gesture.num_gestures);
+		set_columns(samples, Features.num_features + 1,
+				Features.num_features + Gesture.num_gestures);
 			
 		trainer = new TeachingSynapse();
 		trainer.setDesired(samples);
