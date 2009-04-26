@@ -1,4 +1,6 @@
-import java.io.File;
+import java.io.*;
+import java.util.*;
+
 import org.joone.engine.*;
 import org.joone.engine.learning.*;
 import org.joone.io.*;
@@ -17,13 +19,111 @@ class Neural extends Recogniser
 	}
 }
 
+class Sample
+{
+	String pathname;
+	Gesture gesture;
+	ArrayList<Frame> data;
+	Features feat;
+	
+	Sample(String pathname, Gesture g)
+	{
+		this.pathname = pathname;
+		gesture = g;
+		data = null;
+		feat = null;
+	}
+	
+	void dump()
+	{
+		System.out.println(pathname + " = " + gesture.toString());
+	}
+};
+
 class Training implements NeuralNetListener
 {
 	static final int NUM_INPUTS = 7;
+	static String gesture_dir, output_file;
+	static final String index_filename = "training.dat";
+	
+	static void usage()
+	{
+		System.out.println("Usage: java Training <gesture-dir> <output-file>");
+		System.out.println("       <gesture-dir> must contain a file called " +
+				index_filename);
+		System.exit(0);
+	}
+	
+	static void parse_args(String[] args)
+	{
+		if(args.length != 2)
+			usage();
+		gesture_dir = args[0];
+		output_file = args[1];
+	}
+	
+	static ArrayList<Sample> read_index(String gesture_dir,
+			String index_filename)
+	{
+		Sample samp;
+		Gesture gest;
+		ArrayList<Sample> samples = new ArrayList<Sample>();
+		String line;
+		String[] parts;
+		String index_pathname, record_filename, record_pathname;
+		String slash = System.getProperty("file.separator");
+		File dir;
+		
+		dir = new File(gesture_dir);
+		if(dir.exists() == false || dir.canRead() == false ||
+				dir.isDirectory() == false)
+		{
+			Utils.error("Cannot read directory " + gesture_dir);
+		}
+		index_pathname = gesture_dir + slash + index_filename;
+		try
+		{
+			BufferedReader in = new BufferedReader(new FileReader(index_pathname));
+			while((line = in.readLine()) != null)
+			{
+				if(line.length() == 0 || line.charAt(0) == '#')
+					continue;
+				parts = line.split(":");
+				if(parts.length != 2)
+					Utils.error("Invalid index file line: <" + line + ">");
+				
+				gest = Gesture.lookup(parts[1]);
+				if(gest == null)
+					Utils.error("Invalid gesture name <" + parts[1] + ">");
+				
+				record_filename = parts[0];
+				record_pathname = gesture_dir + slash + record_filename;
+				samp = new Sample(record_pathname, gest);
+				samp.data = GestureReader.getData(record_pathname);
+				Transform.process(samp.data);
+				samp.feat = new Features(samp.data);
+				samp.dump();
+				samples.add(samp);
+			}
+			in.close();
+		}
+		catch(IOException e)
+		{
+			System.out.println("Cannot read index from <" + index_pathname + ">");
+			System.exit(0);
+		}
+		return samples;
+	}
 	
 	public static void main(String[] args)
 	{
-		int num_samples = 42;
+		ArrayList<Sample> samples;
+		parse_args(args);
+		
+		samples = read_index(gesture_dir, index_filename);
+		System.exit(0); // XXXXX
+				
+		int num_samples = samples.size();
 		double[][] data = new double[num_samples][NUM_INPUTS +
 			Gesture.num_gestures + 1];
 		

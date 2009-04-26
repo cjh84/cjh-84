@@ -28,7 +28,21 @@ class Gesture
 		}
 		return "u"; //Unknown gesture
 	}
-	
+
+	static Gesture lookup(String name) // Returns null if invalid gesture name
+	{
+		// Includes 'No match'
+		Gesture g = new Gesture(0);
+		
+		for(int i = 0; i < num_gestures + 1; i++)
+		{
+			g.command = i;
+			if(g.toString().equalsIgnoreCase(name))
+				return g;
+		}
+		return null;
+	}
+		
 	public String toString()
 	{
 		switch(command)
