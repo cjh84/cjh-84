@@ -4,6 +4,8 @@ class Features
 {
 	Ranges leftarm, rightarm;
 	double displacement;
+	
+	static final int num_features = 7;
 
 	Features(ArrayList<Frame> data)
 	{
