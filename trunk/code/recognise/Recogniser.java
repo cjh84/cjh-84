@@ -483,14 +483,6 @@ class Heuristic extends Recogniser
 	}
 };
 
-class Neural extends Recogniser
-{
-	public static Gesture recognise(Person person, Features features)
-	{
-		return new Gesture(Gesture.NoMatch);
-	}
-};
-
 class Hybrid extends Recogniser
 {
 	public static Gesture recognise(Person person, Features features)
