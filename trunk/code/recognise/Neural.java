@@ -1,6 +1,7 @@
 import java.io.*;
 import java.util.*;
 
+import org.joone.log.*;
 import org.joone.engine.*;
 import org.joone.engine.learning.*;
 import org.joone.io.*;
@@ -15,7 +16,44 @@ class Neural extends Recogniser
 			features.leftarm|rightarm.get_delta(0|1|2)
 			Total 7 input neurons
 		*/
+		
+		double[] inputdata, outputdata;
+		Pattern pin, pout;
+		
+		init(person); // Check person.nnet has been initialised
+
+		inputdata = new double[Features.num_features];
+		features.extract(inputdata);
+		pin = new Pattern(inputdata);
+		pin.setCount(person.neural_seq++);
+		person.nnet.singleStepForward(pin);
+		pout = person.netout.fwdGet();
+		
+		// Look at pout.getArray() to decide what to do
+		;
+				
 		return new Gesture(Gesture.NoMatch);
+	}
+	
+	static void init(Person p)
+	{
+		Layer input, output;
+
+		if(p.nnet != null)
+			return; // Already initialised
+			
+		p.nnet = Training.restoreNeuralNet(p.neural_file);
+		
+		input = p.nnet.getInputLayer();
+		input.removeAllInputs();
+		
+		output = p.nnet.getOutputLayer();
+		output.removeAllOutputs();
+		
+		p.netout = new DirectSynapse();
+		output.addOutputSynapse(p.netout);
+		
+		p.nnet.getMonitor().setLearning(false);
 	}
 }
 
@@ -44,6 +82,14 @@ class Training implements NeuralNetListener
 {
 	static String gesture_dir, output_file;
 	static final String index_filename = "training.dat";
+	
+	LinearLayer input;
+	SigmoidLayer hidden, output;
+	FullSynapse synapse_IH, synapse_HO;
+	NeuralNet nnet;
+	Monitor monitor;
+	MemoryInputSynapse inputStream, samples;
+	TeachingSynapse trainer;
 	
 	static void usage()
 	{
@@ -117,30 +163,59 @@ class Training implements NeuralNetListener
 	public static void main(String[] args)
 	{
 		ArrayList<Sample> samples;
+		int num_samples;
+		Sample samp;
+		double[][] inputdata, outputdata;
+		
 		parse_args(args);
 		
 		samples = read_index(gesture_dir, index_filename);
-		System.exit(0); // XXXXX
 				
-		int num_samples = samples.size();
-		double[][] data = new double[num_samples][Features.num_features +
-			Gesture.num_gestures + 1];
+		num_samples = samples.size();
+		inputdata = new double[num_samples][Features.num_features];
+		outputdata = new double[num_samples][Gesture.num_gestures];
+		for(int i = 0; i < num_samples; i++)
+		{
+			samp = samples.get(i);
+			samp.feat.extract(inputdata[i]);
+			for(int j = 0; j < Gesture.num_gestures; j++)
+				outputdata[i][j] = 0.0;
+			if(samp.gesture.command < Gesture.num_gestures)
+				outputdata[i][samp.gesture.command] = 1.0;
+		}
 		
-		Training tr = new Training(data);
+		// dump_arrays(inputdata, outputdata);
+		Training tr = new Training(inputdata, outputdata);
 	}
 	
-	LinearLayer input;
-	SigmoidLayer hidden, output;
-	FullSynapse synapse_IH, synapse_HO;
-	NeuralNet nnet;
-	Monitor monitor;
-	MemoryInputSynapse inputStream, samples;
-	TeachingSynapse trainer;
-	
-	Training(double[][] data)
+	static void dump_arrays(double[][] inputdata, double[][] outputdata)
 	{
-		final int epochs = 10000;
+		int num_samples;
+		
+		num_samples = inputdata.length;
+		assert(outputdata.length == num_samples);
+		
+		for(int i = 0; i < num_samples; i++)
+		{
+			System.out.printf("Sample %d features: ", i);
+			for(int j = 0; j < Features.num_features; j++)
+				System.out.print(inputdata[i][j] + " ");
+			System.out.println("");
+			System.out.printf("Outputs: ", i);
+			for(int j = 0; j < Gesture.num_gestures; j++)
+				System.out.print(outputdata[i][j] + " ");
+			System.out.println("");
+		}
+	}
+	
+	Training(double[][] inputdata, double[][] outputdata)
+	{
+		final int epochs = 2000;
 		final int num_hidden_neurons = 20;
+		int num_samples;
+		
+		num_samples = inputdata.length;
+		assert(outputdata.length == num_samples);
 		
 		input = new LinearLayer();
 		hidden = new SigmoidLayer();
@@ -161,14 +236,13 @@ class Training implements NeuralNetListener
 		output.addInputSynapse(synapse_HO);
 		
 		inputStream = new MemoryInputSynapse();
-		inputStream.setInputArray(data);
+		inputStream.setInputArray(inputdata);
 		set_columns(inputStream, 1, Features.num_features);
 		input.addInputSynapse(inputStream);
 
 		samples = new MemoryInputSynapse();
-		samples.setInputArray(data);
-		set_columns(samples, Features.num_features + 1,
-				Features.num_features + Gesture.num_gestures);
+		samples.setInputArray(outputdata);
+		set_columns(samples, 1, Gesture.num_gestures);
 			
 		trainer = new TeachingSynapse();
 		trainer.setDesired(samples);
@@ -180,7 +254,7 @@ class Training implements NeuralNetListener
 		nnet.addLayer(output, NeuralNet.OUTPUT_LAYER);
 		
 		monitor = nnet.getMonitor();
-		monitor.setTrainingPatterns(data.length); // Should be 42
+		monitor.setTrainingPatterns(num_samples);
 		monitor.setTotCicles(epochs);
 		monitor.setLearningRate(0.8);
 		monitor.setMomentum(0.3);
@@ -229,6 +303,7 @@ class Training implements NeuralNetListener
 	public void netStopped(NeuralNetEvent e)
 	{
 		System.out.println("Training finished");
+		saveNeuralNet(nnet, output_file);
 	}
 	
 	public void netStoppedError(NeuralNetEvent e, String error)
@@ -237,5 +312,34 @@ class Training implements NeuralNetListener
 	}
 	
 	public void cicleTerminated(NeuralNetEvent e) {}
+	
+	static void saveNeuralNet(NeuralNet nnet, String filename)
+	{
+		try
+		{
+			FileOutputStream stream = new FileOutputStream(filename);
+			ObjectOutputStream out = new ObjectOutputStream(stream);
+			out.writeObject(nnet);
+			out.close();
+		}
+		catch(Exception e)
+		{
+			Utils.error("Cannot save neural net to <" + filename + ">");
+		}
+	}
+	
+	static NeuralNet restoreNeuralNet(String filename)
+	{
+		try
+		{
+			FileInputStream stream = new FileInputStream(filename);
+			ObjectInputStream in = new ObjectInputStream(stream);
+			return (NeuralNet)in.readObject();
+		}
+		catch(Exception e)
+		{
+			Utils.error("Cannot load neural net from <" + filename + ">");
+		}
+		return null; // Never happens
+	}
 };
-

@@ -1,5 +1,8 @@
 import java.util.*;
 
+import org.joone.engine.*;
+import org.joone.net.NeuralNet;
+
 class Gesture
 {
 	static final int TurnLeft = 0;
@@ -350,6 +353,11 @@ class Person
 	Intervals[] left;
 	Intervals[] right;
 	
+	String neural_file;
+	NeuralNet nnet;
+	DirectSynapse netout;
+	int neural_seq;
+	
 	Person()
 	{
 		left = new Intervals[Gesture.num_gestures];
@@ -359,6 +367,9 @@ class Person
 			left[i] = new Intervals();
 			right[i] = new Intervals();
 		}
+		neural_file = null;
+		nnet = null;
+		neural_seq = 0;
 	}
 
 	void tabulate()
@@ -383,7 +394,9 @@ class Person
 	static Person create_david()
 	{
 		Person dmi = new Person();
-		
+
+		dmi.neural_file = "david.net";
+				
 		dmi.left[Gesture.TurnLeft].setX(20,35);
 		dmi.left[Gesture.TurnLeft].setY(0,18);
 		dmi.left[Gesture.TurnLeft].setZ(65,80);
@@ -417,6 +430,8 @@ class Person
 	static Person create_cheryl()
 	{
 		Person ch = new Person();
+		
+		ch.neural_file = "cheryl.net";
 		
 		ch.left[Gesture.TurnLeft].setX(15,30);
 		ch.left[Gesture.TurnLeft].setY(0,18);
