@@ -28,11 +28,25 @@ class Neural extends Recogniser
 		pin.setCount(person.neural_seq++);
 		person.nnet.singleStepForward(pin);
 		pout = person.netout.fwdGet();
+		dump_results(pout);
 		
 		// Look at pout.getArray() to decide what to do
 		;
 				
 		return new Gesture(Gesture.NoMatch);
+	}
+	
+	static void dump_results(Pattern pat)
+	{
+		double[] a = pat.getArray();
+		Gesture gest = new Gesture(0);
+		
+		assert(a.length == Gesture.num_gestures);
+		for(int i = 0; i < Gesture.num_gestures; i++)
+		{
+			gest.command = i;
+			System.out.printf(gest.toString() + ": %5f\n", a[i]);
+		}
 	}
 	
 	static void init(Person p)
@@ -82,6 +96,8 @@ class Training implements NeuralNetListener
 {
 	static String gesture_dir, output_file;
 	static final String index_filename = "training.dat";
+	static final int num_epochs = 2000;
+	static final int num_hidden_neurons = 20;
 	
 	LinearLayer input;
 	SigmoidLayer hidden, output;
@@ -210,8 +226,6 @@ class Training implements NeuralNetListener
 	
 	Training(double[][] inputdata, double[][] outputdata)
 	{
-		final int epochs = 2000;
-		final int num_hidden_neurons = 20;
 		int num_samples;
 		
 		num_samples = inputdata.length;
@@ -255,14 +269,14 @@ class Training implements NeuralNetListener
 		
 		monitor = nnet.getMonitor();
 		monitor.setTrainingPatterns(num_samples);
-		monitor.setTotCicles(epochs);
+		monitor.setTotCicles(num_epochs);
 		monitor.setLearningRate(0.8);
 		monitor.setMomentum(0.3);
 		monitor.setLearning(true);
 		monitor.setSingleThreadMode(true);
 		monitor.addNeuralNetListener(this);
 		
-		nnet.go(); // "async mode" (is there a synchonous way...?)
+		nnet.go();
 	}
 	
 	void set_columns(MemoryInputSynapse syn, int first, int last)
@@ -288,10 +302,10 @@ class Training implements NeuralNetListener
 		
 		Monitor mon = (Monitor)e.getSource();
 		cycle = mon.getCurrentCicle();
-		if(cycle % 200 == 0)
+		if(cycle % 200 == 0 || cycle >= num_epochs - 10)
 		{
 			err = mon.getGlobalError();
-			System.out.println(cycle + " epochs remaining; RMSE = " + err);
+			System.out.printf("%d epochs remaining; RMSE = %5f\n", cycle, err);
 		}
 	}
 	
