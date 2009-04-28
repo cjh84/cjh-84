@@ -54,7 +54,18 @@ class Features
 
 		return displacement;
 	}
-	
+
+	void extract(double[] a)
+	{
+		a[0] = leftarm.get_delta(0);
+		a[1] = leftarm.get_delta(1);
+		a[2] = leftarm.get_delta(2);
+		a[3] = rightarm.get_delta(0);
+		a[4] = rightarm.get_delta(1);
+		a[5] = rightarm.get_delta(2);
+		a[6] = displacement;
+	}
+		
 	void dump()
 	{
 		System.out.print("Left  Arm: ");
