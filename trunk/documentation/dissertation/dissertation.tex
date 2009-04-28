@@ -250,14 +250,7 @@ However, when the xy and XY planes are identical and the z and Z axes are parall
 There are many different techniques used for pattern recognition. The purpose of the pattern recognition phase is to classify the observations into categories, based on extracted features. For supervised learning, a training set of patterns is labelled with the correct classification; unsupervised learning (such as the K-means clustering algorithm) evaluate the raw, unlabelled data and attempt to infer the patterns, for example by minimizing the root mean squared error based on Euclidean distance. However given the set of gestures are fixed for this application, the algorithms for supervised learning have higher accuracy ratings so unsupervised learning will not be considered further.
 
 Statistical techniques for pattern recognition are based on finding a classifier
-{latex: 
-h: X -> Y
-}
-which maps x in X to y in Y in a close approximation to the actual ground function
-{latex: 
-g: X -> Y
-}
-where the training set {(x1,y1) ... (xn,xn)} are instances of X x Y (the Cartesian product of the X and Y domains).
+$ h: X \mapsto Y $ which maps $x \in X$ to $y \in Y$ in a close approximation to the actual ground function $ g: X \mapsto Y $ where the training set $ (\mathbf x_1,y_1), ... , (\mathbf x_n, y_n) $ are instances of $X \times Y$ (the Cartesian product of the $X$ and $Y$ domains).
 
 Among the more popular techniques are Support Vector Machines, naive Bayes classifier, k-nearest neighbour, neural networks and Hidden Markov Models. I chose the latter two as an example of a general classifier and temporal classifier respectively.
 
@@ -265,64 +258,58 @@ Among the more popular techniques are Support Vector Machines, naive Bayes class
 
 An artificial neural network is an interconnected set of nodes which individually perform simple processing, but exhibits complex behaviour as a whole system. This is the connectionist approach to pattern recognition from large sets of data; it was inspired by the biological neural network. Each unit combines the inputs by means of an activation function, which fires non-linearly given sufficient input. Common choices for the activation function are the tanh function or the sigmoid function, which have the property of being differentiable:
 
-\[ \phi(v_i) = 1/(1+e^{-v_i} \]
+\[ \phi(v_i) = 1/(1+e^{-v_i}) \]
 
 {diagram: single neuron}
 
-{latex:
-wji connects node i to node j
-aij is the activation for node, the weighted sum of the inputs
-g is the activation function. 
-zj = g(aj)
+$w_{ji}$ connects node $i$ to node $j$ \\
+$a_{ij}$ is the activation for node, the weighted sum of the inputs \\
+$g$ is the activation function \\
+$z_j = g(a_j)$ \\
 bias input = 1
-}
 
 The most common model is the multilayer perceptron, where the overall structure is feedforward and there are three layers of nodes; an input layer, a hidden layer and an output layer. 
 
 {diagram: multilayer perceptron}
 
-Since this is a supervised learning technique, the first phase is to present training data. The goal is to adjust the weights w so as to minimise the overall error, denoted E(w). The training sequence is a vector of labelled inputs:
+Since this is a supervised learning technique, the first phase is to present training data. The goal is to adjust the weights $w$ so as to minimise the overall error, denoted ${E}(\mathbf w)$. The training sequence is a vector of labelled inputs:
 
-{latex:
-s = ((x1,y1), ... , (xm, ym))
-}
+\[ s = ((\mathbf x_1,y_1), ... , (\mathbf x_m, y_m)) \]
 
-The backpropagation algorithm is an application of gradient descent for minimization of error. The first stage is to initialize w to a random set of weights. Calculate E(w); if this is greater than a threshold value, calculate the gradient dE(w)/dw of E(w) at each point wi and adjust the weight vector to lower the error:
+The backpropagation algorithm is an application of gradient descent for minimization of error. The first stage is to initialize w to a random set of weights. Calculate $E (\mathbf w)$; if this is greater than a threshold value, calculate the gradient $\partial E (\mathbf w) / \partial \mathbf w $ of $E(\mathbf w )$ at each point wi and adjust the weight vector to lower the error:
 
-{latex:
-wi+1 = wi - a d(E(w)/dw) | wi
-}
+\[
+\mathbf w_{i+1} = \mathbf w_i - \alpha \left. \frac {\partial E(\mathbf w)} {\partial \mathbf w} \right| \mathbf w_i
+\]
 
-The forward propagation stage is to calculate aj and zj for all nodes, given an input example p.
+The forward propagation stage is to calculate $a_j$ and $z_j$ for all nodes, given an input example $p$.
 
-{latex:
-dEp(w)/dwji = dEp(w)/daj * daj/dwji = djzi
+\[
+\frac {\partial E_p(\mathbf w)} {\partial w_{ji}} = \frac {\partial E_p(\mathbf w)} {\partial a_j} \frac {\partial a_j} {\partial w_{ji}} = \delta_j z_i
+\]
 
-where dj = dEp(w)/daj
-and daj/dwji = d/dwij ( sum {zk * wjk} ) = zi
-}
+where $\delta j = \frac {\partial E_p\mathbf w} {\partial a_j}$
+and $ \frac {\partial a_j} {\partial w_{ji}} = \frac {\partial} {\partial w_{ij}} \left( \sum_k {z_kw_{jk}} \right) = z_i$
 
-There are two cases for calculating dj:
+There are two cases for calculating $\partial_j$:
 
-1. j is an output node
+1. $j$ is an output node
 
-{latex:
-dj = dEp(w)/daj
- = dEp(w)/dzj * dzj/daj
- = dEp(w)/dzj * g'(aj)
-}
+\[
+\delta j = \frac {\partial E_p (\mathbf w)} {\partial a_j} \\
+ = \frac {\partial E_p (\mathbf w)} {\partial z_j} \frac {\partial z_j} {\partial a_j} \\
+ = \frac {\partial E_p (\mathbf w)} {\partial z_j}  g'(a_j)
+\]
 
-2. j is not an output node
+2. $j$ is not an output node
 
-{latex:
-dj = dEp(w)/daj
- = sum { dEp(w)/dak dak/daj }
- = g'(aj) sum {dk wkj}
- 
-since 
-dak/daj = d/daj sum { wki * g(ai) }
- = wkj g'(aj)
-}
+\[
+\delta j = \frac {\partial E_p (\mathbf w)} {\partial a_j}
+ = \sum_{k \in \{k_1, k_2,\ldots,k_q\}} \frac {\partial E_p (\mathbf w)} {\partial a_k} \frac {\partial a_k} {\partial a_j}
+ = g'(a_j) \sum_{k \in \{k_1, k_2,\ldots,k_q\}} {\delta_k w_{kj}}
+\]
+
+since $ \frac {\partial a_k} {\partial a_j} = \frac {\partial} {\partial a_j} \left( \sum_{k \in \{k_1, k_2,\ldots,k_q\}} { w_{ki} g(a_i) } \right) = w_{kj} g'(a_j) $
 
 \subsection{Hidden Markov Models}
 

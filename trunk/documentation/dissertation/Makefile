@@ -34,4 +34,4 @@ force:
 	ps2pdf $(TARGET).ps
 
 clean:
-	rm -f *.dvi *.aux *.log *.toc *.bbl *.blg
+	rm -f *.dvi *.aux *.log *.toc *.bbl *.blg *.lof
