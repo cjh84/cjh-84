@@ -315,45 +315,44 @@ since $ \frac {\partial a_k} {\partial a_j} = \frac {\partial} {\partial a_j} \l
 
 First order Markov processes are a class of statistical model which state that the probability of being in some future state is only dependant on the current state, also known as the memoryless model since the ``memory" or past states have no effect on the next state.
 
-{latex:
-Pr(St| S0:t-1) = Pr(St|St-1)
+\[ Pr(S_t|S_{0:t-1}) = Pr(S_t|S_{t-1}) \]
 
-where S0:t-1 = (S0,S1,...St-1)
-}
+where $S_{0:t-1} = (S_0,S_1,...S_{t-1})$
+
 
 {diagram: hidden markov models}
 
-At each time t, a symbol is emitted from state i. For a Bakis HMM, at t+1 the only options are to stay in state i or move to state i+1. Each state is parametrized by an emission probability of staying in the same state and a transition probability of moving to state i+1.
+At each time $t$, a symbol is emitted from state $i$. For a Bakis HMM, at $t+1$ the only options are to stay in state $i$ or move to state $i+1$. Each state is parametrized by an emission probability of staying in the same state and a transition probability of moving to state $i+1$.
 
 A Hidden Markov Model is one where these probabilities characterizing the states are unknown, and for a training sequence, it is unknown which state the observation lies in. To find the probabilities, the Baulm-Welch algorithm takes a vector of training sequences and iterates using Expectation-Maximization. The expectation is calculated by the forward-backward algorithm, which is an example of dynamic programming - the use of memoization to save recomputing solutions to sub-problems.
 
-For a Markov Model, Pr(Et|St) is the sensor model and Pr(St|St-1) is the transition model. Pr(S0) denotes the prior state. The assumption is that the probabilities do not change over time, as the observations are stationary processes.
+For a Markov Model, $Pr(E_t|S_t)$ is the sensor model and $Pr(S_t|S_{t-1})$ is the transition model. $Pr(S_0)$ denotes the prior state. The assumption is that the probabilities do not change over time, as the observations are stationary processes.
 
-The forward-backward algorithm solves the task of smoothing; deducing the previous states from the current state, Pr(St|e1:t) for 0 <= T < t. 
+The forward-backward algorithm solves the task of smoothing; deducing the previous states from the current state, $Pr(S_t|e_{1:t})$ for $0 \leq T < t$. 
 
 {latex:
 
-The forward pass calculates f1:t = Pr(St|e1:t), passing f1:t as a forward message:
-
-Pr(ST|e1:t) = Pr(ST | e1:T, eT+1:t)
-			= c Pr(ST | e1:T) Pr(eT+1:t | ST,e1:T)
-			= c Pr(ST | e1:T) Pr(eT+1:t | ST)
-			= c f1:T bT+1:t
-
+The forward pass calculates $f_{1:t} = Pr(S_t|e_{1:t})$, passing $f_{1:t}$ as a forward message:
+\begin{eqnarray*}
+Pr(S_T | e_{1:t}) &=& Pr(S_T | e_{1:T}, e_{T+1:t}) \\
+&=& c Pr(S_T | e_{1:T}) Pr(e_{T+1:t} | S_T,e_{1:T}) \\
+&=& c Pr(S_T | e_{1:T}) Pr(e_{T+1:t} | S_T) \\
+&=& c f_{1:T} b_{T+1:t} \\
+\end{eqnarray*}
 			
-where bT+1:t = Pr(eT+1:t|ST) is the backward message for computing backwards probabilities:
+where $b_{T+1:t} = Pr(e_{T+1:t}|S_T)$ is the backward message for computing backwards probabilities:
 
-Initialisation	 		bt+1:t = Pr(et+1:t|St) = (1,...1)
+\begin{eqnarray*}
+\mbox{Initialisation: }b_{t+1:t} &=& Pr(e_{t+1:t}|S_t) = (1,...1) \\
+b_{T+1:t} 	= Pr(e_{T+1:t}|S_T) &=&  \sum_{s_{T+1}} Pr(e_{T+1:t}, s_{T+1} | S_T) \\
+						&=& \sum_{s_{T+1}} Pr(e_{T+1:t} | s_{T+1}) Pr(S_{T+1} | S_T) \\
+						&=& \sum_{s_{T+1}} Pr(e_{T+1:t}, e_{T+2:t} | s_{T+1}) \\
+						&=& \sum_{s_{T+1}} Pr(e_{T+1} | s_{T+1}) Pr(e_{T+2:t} | s_{T+1}) Pr(s_{T+1}|S_T) \\
+						&=& \sum_{s_{T+1}} * Sensor model * b_{T+2:t} * Transition model \\
+						&=& BACKWARDS(e_{T+1:t}, b_{T+2:t}) \\
+\end{eqnarray*}
 
-bT+1:t 	= Pr(eT+1:t|ST) = sum sT+1 Pr(eT+1:t, sT+1 | ST)
-						= sum sT+1 Pr(eT+1:t | sT+1) Pr(ST+1 | ST)
-						= sum sT+1 Pr(eT+1:t, eT+2:t | sT+1)
-						= sum sT+1 Pr(eT+1 | sT+1) Pr(eT+2:t | sT+1) Pr(sT+1|ST)
-						= sum sT+1 * Sensor model * bT+2:t * Transition model
-						= BACKWARDS(eT+1:t, bT+2:t)
-}
-
-This smooths all points 1:t in time O($t^2$). By storing the computed results for f(1:T) and using these in the computation of bT+1:t, this is reduced to O(t).
+This smooths all points $1:t$ in time $O(t^2)$. By storing the computed results for $f_{1:T}$ and using these in the computation of $b_{T+1:t}$, this is reduced to $O(t)$.
 
 Matrix multiplication to calculate f
 Re-estimation
@@ -370,11 +369,15 @@ However these techniques were deemed excessively complex for the purposes of ges
 
 Subversion was used for version control, together with Google Code Project Hosting. The libraries used were:
 
-Joone: Java Object Oriented Neural Engine
-Jahmm: Java Hidden Markov Model
-SCOP: Server COmmunication Protocol
-PyRobot: robot and laptop control, motors, sensors and webcam
-Tarsus: motion capture and object reconstruction
+Joone: Java Object Oriented Neural Engine \\
+Jahmm: Java Hidden Markov Model \\
+SCOP: Server COmmunication Protocol \\
+PyRobot: robot and laptop control, motors, sensors and webcam \\
+Tarsus: motion capture and object reconstruction \\
+
+The majority of the system was developed under Ubuntu Linux, using NEdit and GEdit. The XO laptops run a modified version of Fedora Linux, while the PC used during live capture runs Windows XP.
+
+CITATIONS!!!
 
 \section{Languages}
 
@@ -419,7 +422,7 @@ NB: All names containing \verb^p1^ have \verb^p2^ equivalents.
 \scopendpoint{windowp1}\rule[-2mm]{0mm}{3mm}\\
 
  & \multicolumn{3}{l}{\begin{minipage}{12.5cm}%
-The coordsserver transmits both players' stream of coordinates, labelled p1coords and p2coords. The data format consists of eighteen floating point values, followed by a string expressing the result of filtering the data for a body part dropping out.
+The \variable{coordsserver} transmits both players' stream of coordinates, labelled \scopendpoint{p1coords} and \scopendpoint{p2coords}. The data format consists of eighteen floating point values, followed by a string expressing the result of filtering the data for a body part dropping out.
 
 \texttt{\{}\\
 \texttt{\hspace*{5mm}\<body-ax\>, \<body-ay\>, \<body-az\>, }\\
@@ -432,7 +435,7 @@ The coordsserver transmits both players' stream of coordinates, labelled p1coord
 \texttt{\}}\\
 
 All double values are to accurate to six significant figures.
-The axis angles values (ax,ay,az) are denormalised and in degrees (-180 to +180). Lost objects (reported as (0,0,0) for the angles) are converted to (0,0,1) and the status field set to ``\variable{dropout}". When non-zero values appear the status field is reset to 
+The axis angles values (ax,ay,az) are denormalised and in degrees ($-180^{\circ}$ to $+180^{\circ} $). Lost objects (reported as (0,0,0) for the angles) are converted to (0,0,1) and the status field set to ``\variable{dropout}". When non-zero values appear the status field is reset to 
 ``\variable{ok}". Translations (tx,ty,tz) are in millimetres. The default rate is 100fps.\rule[-2mm]{0mm}{3mm}
 \end{minipage}}\\
 
@@ -442,7 +445,7 @@ The axis angles values (ax,ay,az) are denormalised and in degrees (-180 to +180)
 \scopendpoint{viewp1}, \scopendpoint{relayp1}\rule[-2mm]{0mm}{3mm}\\
 
  & \multicolumn{3}{l}{\begin{minipage}{12.5cm}%
-The ctrlserver handles the output from gestures, as single lower case characters representing a single accelerate, decelerate, turn left, turn right or start/stop command:
+The \variable{ctrlserver} handles the output from gestures, as single lower case characters representing a single accelerate, decelerate, turn left, turn right or start/stop command:
 
 \texttt{\<"a"|"d"|"l"|"r"|"s"\>}
 
@@ -474,22 +477,22 @@ The Tarsus system performs the following processing in real time on the raw came
 Triangulation of twelve marker positions (using a variable number of between 3 and 10 cameras) in three dimensional space
 Interpolation and smoothing of the marker data, to reduce jitter
 Pairwise comparison between sets of the marker angles and three skeletons of defined features
-Using the notation <A-X, A-Y, A-Z, T-X, T-Y, T-Z>, it send the rotation and translation data for each object. If some markers are occluded or there is insufficient rigidity in the angles for object reconstruction, T-X, T-Y and T-Z are held at their last known position, and A-X, A-Y, and A-Z are set to 0.0.
+Using the notation \<A-X, A-Y, A-Z, T-X, T-Y, T-Z\>, it send the rotation and translation data for each object. If some markers are occluded or there is insufficient rigidity in the angles for object reconstruction, T-X, T-Y and T-Z are held at their last known position, and A-X, A-Y, and A-Z are set to 0.0.
 
-With three objects per user and six data-points per object, the Tarsus server sends eighteen or thirty six (for two players) values per frame via TCP/IP on port 800, at 100fps.
+With three objects per user and six data-points per object, the Tarsus server sends eighteen or thirty six (for two players) values per frame via TCP/IP on port 800, at 100 frames per second.
 
-The Capture class uses DataParserR.java, a Java client provided by Cecily Morrison, to multiplex on the requested channel names, determining whether one or two players are currently using the system. It opens up to two sockets to a SCOP server running on localhost and forwards p1coords and p2coords to the gesture recognition phase. It also performs downsampling to a configurable framerate (default is 100fps) to reduce burstiness and to avoid overloading the server buffers.
+The Capture class uses DataParserR.java, a Java client provided by Cecily Morrison, to multiplex on the requested channel names, determining whether one or two players are currently using the system. It opens up to two sockets to a SCOP server running on localhost and forwards \scopendpoint{p1coords} and \scopendpoint{p2coords} to the gesture recognition phase. It also performs downsampling to a configurable framerate (default is 100fps) to reduce burstiness and to avoid overloading the server buffers.
 
-There are two potential problems with the data; glitches and dropouts. Glitches are caused by incorrect object reconstruction, transcribed as valid data values from an object which often have an improbably high rate of change and return to the correct values shortly. Dropouts are the result of improper triangulation from the cameras, and so the objects are not recognised at all and result in all rotational data A-X,A-Y,A-Z being reported as 0.0 and translation data repeated from the last known values. For example, a glitch could be :
+There are two potential problems with the data; glitches and dropouts. Glitches are caused by incorrect object reconstruction, transcribed as valid data values from an object which often have an improbably high rate of change and return to the correct values shortly. Dropouts are the result of improper triangulation from the cameras, and so the objects are not recognised at all and result in all rotational data being reported as 0.0 and translation data repeated from the last known values. For example, a glitch could be :
 
 -1, -2, -1, 53, 168, 168, 89, -4, -3, 0, ............
 
 whereas a dropout is reported as:
 
-33, 33, 34, 35, 35, 0, 0, 0, 0, 36, 35, 35, ............... (rotation)
+33, 33, 34, 35, 35, 0, 0, 0, 0, 36, 35, 35, ............... (rotation) \\
 697, 692, 680, 669, 669, 669, 669, 669, 669, 624, ......... (translation)
 
-Dropouts are handled gracefully by a 19th flag in the stream, and converting rotations smaller than a given EPSILON into harmless zero rotations about the Z-axis during preprocessing. Glitches are relatively hard to detect and the solution for fixing is less clear, so they are currently ignored.
+Dropouts are handled gracefully by setting a 19th flag in the stream, and converting rotations smaller than a given $\epsilon$ into harmless zero rotations about the Z-axis during preprocessing. Glitches are relatively hard to detect and the solution for fixing is less clear, so they are currently ignored.
 
 \subsection{Training data}
 
@@ -497,21 +500,34 @@ Training data consists of five sequences for each of five gestures, giving a tot
 
 In addition, two extra sets were recorded. The first is for calibration, consisting of stationary data at the origin, axis aligned translations, and 90 degree rotations. The second is examples of non-gestures, such as the neutral arms by side position, so that the pattern recognition engine can give negative examples.
 
-The data is formatted as CSV files. All values are double precision floating point numbers to six significant figures. Rotations are in the range +/- 180 degrees and translations are in mm from the origin in a z-up world.
+The data is formatted as CSV files. All values are double precision floating point numbers to six significant figures. Rotations are in the range $ \pm 180^{\circ}$ and translations are in mm from the origin in a z-up world.
 
-{Object1 Name}
-Frame, <R-X>, <R-Y>, <R-Z>, <T-X>, <T-Y>, <T-Z>
-{Frame1}
-{Frame2}
+{\scriptsize
+\begin{verbatim}
+BodyP1
+Frame,BodyP1<A-X>,BodyP1<A-Y>,BodyP1<A-Z>,BodyP1<T-X>,BodyP1<T-Y>,BodyP1<T-Z>,
+1,-0.991818,3.4194,-102.972,-715.545,820.366,1186.36,
+2,-0.987695,3.40335,-102.978,-715.479,820.352,1186.33,
 ...
-{Framen}
+242,-1.61596,3.84801,-101.36,-696.667,821.255,1186.13,
 
-{Object2 Name}
-etc.
+LeftArmP1
+Frame,LeftArmP1<A-X>,LeftArmP1<A-Y>,LeftArmP1<A-Z>,LeftArmP1<T-X>,LeftArmP1<T-Y>,LeftArmP1<T-Z>,
+1,106.316,100.107,-19.2348,-660.681,1039.83,928.706,
+2,106.457,99.9967,-19.219,-660.629,1039.9,928.689,
+...
+242,106.069,102.104,-19.6354,-649.414,1042.67,927.508,
 
+RightArmP1
+Frame,RightArmP1<A-X>,RightArmP1<A-Y>,RightArmP1<A-Z>,RightArmP1<T-X>,RightArmP1<T-Y>,RightArmP1<T-Z>,
+1,27.848,44.5584,-47.155,-670.526,559.707,938.067,
+2,28.3683,44.5345,-47.6479,-670.71,559.914,937.873,
+...
+242,30.3788,43.5149,-55.0284,-642.649,555,938.528,
+\end{verbatim}
+}
 
-
-The GestureReader class contains a getData() method, which reads in the data line by line until it finds an object name it recognises (``BodyP1", ``LeftArmP2" etc), ignores the column headings, and parses each frame until it finds whitespace. Each frame becomes a Frame object, containing references to three SixDOF objects for body, left arm and right arm. The SixDOF (six degrees of freedom) holds the six double precision floating point numbers corresponding to <R-X>, <R-Y>, <R-Z>, <T-X>, <T-Y>, <T-Z>; calling normalise() sets the angle of rotation and normalises the rotation tuple to a unit vector.
+The GestureReader class contains a getData() method, which reads in the data line by line until it finds an object name it recognises (``BodyP1", ``LeftArmP2" etc), ignores the column headings, and parses each frame until it finds whitespace. Each frame becomes a Frame object, containing references to three SixDOF objects for body, left arm and right arm. The SixDOF (six degrees of freedom) holds the six double precision floating point numbers corresponding to \<R-X\>, \<R-Y\>, \<R-Z\>, \<T-X\>, \<T-Y\>, \<T-Z\>; calling normalise() sets the angle of rotation and normalises the rotation tuple to a unit vector.
 The SimGesture class is used to replay the data in the same format as a Vicon stream on the same SCOP stream, rendering it identical to the real data. It uses  GestureReader.getData(filename) on all CSV files from a single person and replays them in a random order. It assumes that all recorded gestures begin and end in the neutral position, and so movement between gestures is represented by linearly interpolating all values for a random length of time. It also appends the dropout boolean, in the same way as Capture.
 
 \subsection{Preprocessing}
@@ -520,25 +536,28 @@ The data requires significant preprocessing to convert the feature vector from w
 
 {diagram: Geometry class diagram}
 
-The SixDOF class represents an {ax,ay,az,tx,ty,tz} and contains the following code, which converts the ax,ay,az Axis Angle triplet into a normalised vector plus an angle for the rotation magnitude:
+The SixDOF class holds doubles for \variable{ax,ay,az,tx,ty,tz} and contains the following code, which converts the \variable{ax,ay,az} Axis Angle triplet into a normalised vector plus an angle for the rotation magnitude:
 
+%\parbox[20cm]{
 \begin{verbatim}
 double angle = 1.0
 angle *= Math.sqrt(ax * ax + ay * ay + az * az);
 if (angle > EPSILON)
 {
-	ax /= angle;
-	ay /= angle;
-	az /= angle;
+    ax /= angle;
+    ay /= angle;
+    az /= angle;
 }
 else
 {
-	//Convert small rotations into a zero rotation about the z-axis to avoid floating point errors
-	angle = 0.0;
-	ax = ay = 0.0;
-	az = 1.0
+    //Convert small rotations into a zero rotation about the z-axis 
+    to avoid floating point errors
+    angle = 0.0;
+    ax = ay = 0.0;
+    az = 1.0
 }
 \end{verbatim}
+
 
 The Frame class contains three of these SixDOFs for body, left arm and right arm.
 
@@ -588,7 +607,7 @@ while (true)
 }
 \end{verbatim}
 
-If a gesture is recognised from the current window, the buffer continues to fill with arriving data but no more attempts at recognition are made until the minimum windowsize is exceeded. In addition, SlidingWindow monitors the frames for a flag indicating a dropout; if a frame contains data where at least one object is unavailable, it emits an "dropout" message to the statusserver, and "ok" when the object returns.
+If a gesture is recognised from the current window, the buffer continues to fill with arriving data but no more attempts at recognition are made until the minimum windowsize is exceeded. In addition, SlidingWindow monitors the frames for a flag indicating a dropout; if a frame contains data where at least one object is unavailable, it emits an "dropout" message to the \variable{statusserver}, and "ok" when the object returns.
 
 This status information is used by feedback.py to display two rectangles, for player 1 and player 2. A red rectangle indicates that the data is currently unavailable, while a green rectangle indicates a good detection rate. This feedback was highly rated in a user study, allowing users to distinguish between poor detection from the Vicon system and poor recognition from a recogniser.
 
@@ -666,7 +685,7 @@ This is an application of the safety engineering technique of triple modular red
 
 Two graphical user interfaces was created which simulated input (via mouse and keyboard) and output (turtle graphics) respectively for alternative feedback. These were completely decoupled and communicated only via the SRCF. Since these were independent from the rest of the system, they are written in Python using the Python SCOP library and Tkinter, the Python graphical libraries. The Model-View-Controller design pattern is used to separate display from control.
 
-Control.py displays a control panel which accepts either keystrokes or mouse clicks and emits commands on either the p1ctrl or the p2ctrl streams.
+Control.py displays a control panel which accepts either keystrokes or mouse clicks and emits commands on either the \scopendpoint{p1ctrl} or the \scopendpoint{p2ctrl} streams.
 
 {diagram: screenshot of control keys for P1 and P2}
 
@@ -680,7 +699,7 @@ View.py listens to both streams and uses turtle graphics to represent the two pl
 
 {diagram: relay.py}
 
-Relay.py uses the Python implementation of SCOP to open a socket to SRCF:51234. Each robot runs a separate instance of relay.py and listens to either p1ctrl or p2ctrl, depending on which one is assigned to which user. 
+Relay.py uses the Python implementation of SCOP to open a socket to SRCF:51234. Each robot runs a separate instance of relay.py and listens to either \scopendpoint{p1ctrl} or \scopendpoint{p2ctrl}, depending on which one is assigned to which user. 
 
 Since the laptops are separate from the desktop PC running all other components, the robot's player numbers are assigned from an environment variable.
 
@@ -704,14 +723,14 @@ Accelerate and decelerates increment and decrement the velocity; turn left and r
 
 Decoupling various components allows message passing between different languages, which was important to allow the Java client to communicate with the Python robotics control. SCOP, a lightweight middleware framework written by Dr D Ingram, allows particularly simple events, messaging and RPC written in C++ with ports to C, Java, Python and Scheme. SCOP hides the client and server setup and silently discards data streams if there are no listeners. This makes it particularly simple to create and run such a distributed system by passing gesture data from the Java client through Python processing with Java libraries to the Python robot library.
 
-SCOP assigns a name to each resource and an optional source hint to each stream. In order to listen to both players' commands, Transform.java, control.py and view.py open two sockets to listen to two independent streams. Relay.py only listens to the stream of its user, either p1ctrl or p2ctrl.
+SCOP assigns a name to each resource and an optional source hint to each stream. In order to listen to both players' commands, Transform.java, control.py and view.py open two sockets to listen to two independent streams. Relay.py only listens to the stream of its user, either \scopendpoint{p1ctrl} or \scopendpoint{p2ctrl}.
 
-p1coords and p2coords represent the raw input streams from two users.
-p1ctrl and p2ctrl are the {a,d,l,r,s} commands as interpreted from the two users.
+\scopendpoint{p1coords} and \scopendpoint{p2coords} represent the raw input streams from two users.
+\scopendpoint{p1ctrl} and \scopendpoint{p2ctrl} are the {a,d,l,r,s} commands as interpreted from the two users.
 
 The SRCF was used to provide a SCOP server running on a domain name, so that all units can reach it irrespective of whether they were wired or wireless and without knowing IP addresses. When testing on the King's College wifi network, it was found that broadcasting on non-standard ports is refused, including 51234. To compensate for this, tunnel.sh sets up port forwarding to the SRCF, so that sockets opened on the OLPC XO appear as if connected from the SRCF's port 51234.
 
-The three streams used for interprocess communication are p1coords, p1ctrl and p1status (and their equivalents for p2). In order to allow these to be distributed, three constants are defined in the configuration file: coordserver, ctrlserver and statusserver. 
+The three streams used for interprocess communication are \scopendpoint{p1coords}, \scopendpoint{p1ctrl} and \scopendpoint{p1status} (and their equivalents for \scopendpoint{p2}). In order to allow these to be distributed, three constants are defined in the configuration file: \variable{coordserver}, \variable{ctrlserver} and \variable{statusserver}. 
 
 \subsection{Configuration}
 
@@ -719,10 +738,10 @@ The Config.java file ensures that all processes with an interest in a stream are
 
 The <key, value> pairs are parsed from a file in the user's home directory and stored in a java.util.HashMap. If the file is not present or the values not defined, the class uses the following default values:
 
-framerate = 100
-closedthreshold = 3000
-coordserver = \verb^www.srcf.ucam.org^
-ctrlserver = \verb^www.srcf.ucam.org^
+framerate = 100 \\
+closedthreshold = 3000 \\
+\variable{coordserver} = \verb^www.srcf.ucam.org^ \\
+\variable{ctrlserver} = \verb^www.srcf.ucam.org^ \\
 
 In order to ensure that all classes read from the same configuration values, the Config.java file uses the Singleton design pattern. A static variable of type Config is set to null, and the first lookup initialises it from the configuration file. Subsequent requests only perform lookups on the instantiated object.
 
