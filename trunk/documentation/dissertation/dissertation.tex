@@ -470,7 +470,29 @@ Class diagrams
 
 \section{Motion capture}
 
-{diagram: mocap class diagram}
+\begin{tabular}{|c|} \hline 
+\class{Capture} \\ \hline
+\multicolumn{1}{|p{16cm}|}
+{ \variable{int FRAME\_RATE \newline
++ static void output(double[] data, int startpos, SCOP scop, String label) \newline
++ static void main (String[] args)
+} } \\ \hline
+\end{tabular}
+
+\begin{tabular}{|c|} \hline 
+\class{DataParserR} \\ \hline
+\multicolumn{1}{|p{16cm}|}
+{ \variable{DataInputStream is \newline
+DataOutputStream os \newline
+String[] channels \newline
++ double[] getData() \newline
+- String[] parseInfoPacket() \newline
+- void matchStrings(String[] channels) \newline
+- double[] parseDataPacket() throws IOException \newline
+- static int readNum(DataInputStream is) throws IOException \newline
+- static double readDoub(DataInputStream is) throws IOException
+} } \\ \hline
+\end{tabular}
 
 The Tarsus system performs the following processing in real time on the raw camera data:
 
@@ -527,6 +549,28 @@ Frame,RightArmP1<A-X>,RightArmP1<A-Y>,RightArmP1<A-Z>,RightArmP1<T-X>,RightArmP1
 \end{verbatim}
 }
 
+\begin{tabular}{|c|} \hline 
+\class{GestureReader} \\ \hline
+\multicolumn{1}{|p{16cm}|}
+{ \variable{+ static ArrayList\<Frame\> getData(String filename) \newline
+static SixDOF parse(String s)
+} } \\ \hline
+\end{tabular}
+
+\begin{tabular}{|c|} \hline 
+\class{SimGesture} \\ \hline
+\multicolumn{1}{|p{16cm}|}
+{ \variable{static ArrayList\<RecordedGesture\> read\_gesture(String gesture\_dir) \newline
++ static void interpolate\_gestures(SCOP scop, RecordedGesture from\_gesture, RecordedGesture to\_gesture, int duration) \newline
+- static Frame interpolate\_frames(Frame from, Frame to, double weight) \newline
+- static SixDOF interpolate\_sixdof(SixDOF from, SixDOF to, double w) \newline
+- static double interpolate\_angle(double from, double to, double w) \newline
+static void framesync() \newline
++ static void replay\_gesture(SCOP scop, RecordedGesture gesture) \newline
++ static void main(String[] args)
+} } \\ \hline
+\end{tabular}
+
 The GestureReader class contains a getData() method, which reads in the data line by line until it finds an object name it recognises (``BodyP1", ``LeftArmP2" etc), ignores the column headings, and parses each frame until it finds whitespace. Each frame becomes a Frame object, containing references to three SixDOF objects for body, left arm and right arm. The SixDOF (six degrees of freedom) holds the six double precision floating point numbers corresponding to \<R-X\>, \<R-Y\>, \<R-Z\>, \<T-X\>, \<T-Y\>, \<T-Z\>; calling normalise() sets the angle of rotation and normalises the rotation tuple to a unit vector.
 The SimGesture class is used to replay the data in the same format as a Vicon stream on the same SCOP stream, rendering it identical to the real data. It uses  GestureReader.getData(filename) on all CSV files from a single person and replays them in a random order. It assumes that all recorded gestures begin and end in the neutral position, and so movement between gestures is represented by linearly interpolating all values for a random length of time. It also appends the dropout boolean, in the same way as Capture.
 
@@ -534,7 +578,19 @@ The SimGesture class is used to replay the data in the same format as a Vicon st
 
 The data requires significant preprocessing to convert the feature vector from world coordinates to body coordinates. This is performed by the Transform.java file together with the Geometry.java file, which defines geometric classes for SixDOF, Frame, and Point.
 
-{diagram: Geometry class diagram}
+\begin{tabular}{|c|} \hline 
+\class{SixDOF} \\ \hline
+\multicolumn{1}{|p{8cm}|}
+{\variable{double ax, ay, az, angle, ty, ty, tz \newline
+  static final double EPSILON = 1.0e-5 \newline
+  SixDOF(double[] a, int offset) \newline
+  + void normalise() \newline
+  + String toString() \newline
+  void rotate (double bearing) \newline
+  double calcHeading() \newline
+  void translate(SixDOF axes)
+} } \\ \hline
+\end{tabular}
 
 The SixDOF class holds doubles for \variable{ax,ay,az,tx,ty,tz} and contains the following code, which converts the \variable{ax,ay,az} Axis Angle triplet into a normalised vector plus an angle for the rotation magnitude:
 
@@ -558,8 +614,25 @@ else
 }
 \end{verbatim}
 
+\begin{tabular}{|c|} \hline 
+\class{Frame} \\ \hline
+\multicolumn{1}{|p{16cm}|}
+{\variable{double x,y,z \newline
+  static final double EPSILON = 1.0e-5 \newline
+  static Point rotatePoint(double ax, double ay, double az, double angle, double x0, double y0, double z0)
+} } \\ \hline
+\end{tabular}
 
 The Frame class contains three of these SixDOFs for body, left arm and right arm.
+
+\begin{tabular}{|c|} \hline 
+\class{Point} \\ \hline
+\multicolumn{1}{|p{8cm}|}
+{\variable{Frame(String s) \newline
+  Frame(double[] a, int offset)\newline
+  SixDOF body, left, right 
+} } \\ \hline
+\end{tabular}
 
 Point contains a static rotatePoint method which implements the conversion from axis-angle triplets to matrix rotations. It takes an axis angle and a point to be rotated and returns a Point.
 
@@ -580,11 +653,20 @@ p.z = (t*ax*az + s*ay)*x0 + (t*ay*az - s*ax)*y0 + (t*az*az + c)*z0;
 
 \subsection{Gesture segmentation}
 
-Sliding window
+\subsubsection{Sliding window}
 
-{diagram: SlidingWindow}
-
-java SlidingWindow <playernum> [person] [classifier]
+\begin{tabular}{|c|} \hline 
+\class{SlidingWindow} \\ \hline
+\multicolumn{1}{|p{16cm}|}
+{ \variable{static User user \newline
+static Person person \newline
+static Classifier classifier \newline
+static SCOP scopin, scopout, scopstat \newline
+static String player \newline
++ static void main(String[] args) \newline
+- static boolean recognised(CircularBuffer buf, int windowsize,	int framecounter)
+} } \\ \hline
+\end{tabular}
 
 The raw gesture data consists of a vector of 18 double-precision floating-point numbers, at 100 frames per second. In order to discover the start and end of gestures, the recogniser is repeatedly run on multiple rectangular windows of different sizes until a success is reported. Since the preprocessing and feature extraction is performed on every frame, I have implemented an optimization using dynamic programming to store processed frames in a circular buffer containing the last 500 frames of data.
 
@@ -597,13 +679,13 @@ Every ten frames, SlidingWindow runs the specified recogniser on the circular bu
 \begin{verbatim}
 while (true)
 {
-	msg = scop.get_message();
-	circbuffer.add(Frame(msg));
-	for windowsize = 50; windowsize < 350; windowsize += 10
-		{
-			if recognised(circbuffer, windowsize)
-				break; //recognised emits the command to ctrlserver
-		}
+    msg = scop.get_message();
+    circbuffer.add(Frame(msg));
+    for windowsize = 50; windowsize < 350; windowsize += 10
+        {
+            if recognised(circbuffer, windowsize)
+                break; //recognised emits the command to ctrlserver
+        }
 }
 \end{verbatim}
 
@@ -619,7 +701,17 @@ Since neural networks have a fixed number of input nodes, but the feature vector
 
 Choosing the minimal features which extracted the most information to distinguish the gestures was an important step; using the entire data for each gesture (6 data points * 3 objects * ~300 frames/gesture = 5400 data values, for each example) would be equivalent to template matching and would require excessive processing times. Since the gestures were chosen to be axis aligned, the distinguishing features are the range of dx,dy,dz values that each prototypical gesture may take. However, since each gesture is symmetric and begins and ends with a neutral pose, I defined a further feature indicating a closed gesture, a double defining the sum of squares error of the distance moved from the beginning. Thus a gesture which is at the peak displacement will have a large relocation value, while a closed gesture which has returned to the neutral pose has a small displacement value.
 
-{diagram: Features.java}
+\begin{tabular}{|c|} \hline 
+\class{Features} \\ \hline
+\multicolumn{1}{|p{12cm}|}
+{\variable{Features(ArrayList\<Frame\> data) \newline
+Features(CircularBuffer buf, int windowsize) \newline
+Ranges leftarm, rightarm \newline
+double displacement \newline
+double calc\_displacement(Frame first, Frame last) \newline
+void extract(double[] a)
+} } \\ \hline
+\end{tabular}
 
 Features.java contains a utility class, Ranges, containing six values for the minimum and maximum of x, y and z. The features which are extracted are LeftArm {dx,dy,dz} and RightArm {dx,dy,dz}, normalised to between 0 and 1, and displacement, the sum of squares error of the first and last frames, in mm. It takes a list of Frames and holds two Ranges for left and right arms, and a double containing the displacement value calculated as follows:
 
@@ -637,21 +729,72 @@ displacement += square(last.right.az - first.right.az);
 
 \subsection{Recogniser}
 
-The Recogniser.java file holds defines the Recogniser interface containing a single method that all recognisers are expected to override:
+\begin{tabular}{|c|} \hline 
+\class{Recogniser} \\ \hline
+\multicolumn{1}{|p{16cm}|}
+{\variable{
++ static Gesture recognise(Person person, Features features)
+ } } \\
+\hline
+\end{tabular}
 
-static Gesture recognise(Person person, Features features)
+The Recogniser.java file holds defines the Recogniser interface containing a single method that all recognisers are expected to override.
 
 The file also holds Gesture, Person and Classifier classes which are enumerations of the valid inputs:
 
-Gesture: TurnLeft, TurnRight, Accelerate, Decelerate, StartStop, NoMatch, MultiMatch
+\begin{tabular}{|c|} \hline 
+\class{Gesture} \\ \hline
+\multicolumn{1}{|p{4cm}|}
+{\variable{TurnLeft \newline TurnRight \newline Accelerate \newline Decelerate \newline StartStop \newline NoMatch \newline MultiMatch
+} } \\ \hline
+\end{tabular}
 
-Person: CHERYL, DAVID
+\begin{tabular}{|c|} \hline 
+\class{User} \\ \hline
+\multicolumn{1}{|p{4cm}|}
+{\variable{CHERYL \newline DAVID
+} } \\ \hline
+\end{tabular}
 
-Classifier: HEURISTIC, NEURAL, MARKOV, HYBRID
+\begin{tabular}{|c|} \hline 
+\class{Classifier} \\ \hline
+\multicolumn{1}{|p{4cm}|}
+{\variable{HEURISTIC \newline NEURAL \newline MARKOV \newline HYBRID
+} } \\ \hline
+\end{tabular}
+
+The Person class is the union of all trained data related to a single specified user. It aggregates Intervals, neural network and Hidden Markov Model parameters, and also contains static methods to populate these fields from data files.
+
+\begin{tabular}{|c|} \hline 
+\class{Person} \\ \hline
+\multicolumn{1}{|p{8    cm}|}
+{\variable{Intervals[] left, right \newline String neural\_file \newline NeuralNet nnet \newline DirectSynapse netout \newline int neural\_seq 
+} } \\ \hline
+\end{tabular}
 
 \subsection{Heuristic recogniser}
 
-{diagram: Heuristic.java}
+\begin{tabular}{|c|} \hline 
+\class{Heuristic extends Recogniser} \\ \hline
+\multicolumn{1}{|p{16cm}|}
+{\variable{\ \ static double CLOSED\_THRESHOLD \newline
+ + static Gesture recognise(Person person, Features features) \newline
+ - static boolean Match(Person person, Features features, int gesture)
+} } \\ \hline
+\end{tabular}
+
+\begin{tabular}{|c|} \hline 
+\class{Intervals} \\ \hline
+\multicolumn{1}{|p{12cm}|}
+{\variable{- double[][] range \newline
+  double get\_min(int axis) \newline
+  double get\_max(int axis) \newline
+  void setX(double from, double to) \newline
+  void setY(double from, double to) \newline
+  void setZ(double from, double to) \newline
+  void stationary(int wobble)
+} } \\ \hline
+\end{tabular}
 
 This application-specific recogniser depends strongly on the particular gestures chosen. It makes use of prior knowledge about the domain; specifically, patterns for how each gesture is characterised.
 
@@ -661,7 +804,51 @@ When given a Person and Features calculated from a list of frames, the first che
 
 \subsection{Neural network recogniser}
 
-{diagram: nnstructure}
+\begin{tabular}{|c|} \hline 
+\class{Neural extends Recogniser} \\ \hline
+\multicolumn{1}{|p{16cm}|}
+{ \variable{+ static Gesture recognise(Person person, Features features)
+} } \\ \hline
+\end{tabular}
+
+\begin{tabular}{|c|} \hline 
+\class{Sample} \\ \hline
+\multicolumn{1}{|p{12cm}|}
+{\variable{String pathname \newline
+Gesture gesture \newline
+ArrayList\<Frame\> \newline
+Features feat \newline
+Sample(String pathname, Gesture g)
+} } \\ \hline
+\end{tabular}
+
+\begin{tabular}{|c|} \hline 
+\class{Training implements NeuralNetListener} \\ \hline
+\multicolumn{1}{|p{16cm}|}
+{\variable{Training(double[][] inputdata, double[][] outputdata) \newline
+String gesture\_dir, output\_file \newline
+static final String index\_filename = "training.dat" \newline
+static final int num\_epochs = 2000 \newline
+static final int num\_hidden\_neurons = 20 \newline
+LinearLayer input \newline
+SigmoidLayer hidden, output \newline
+FullSynapse synapse\_IH, synapse\_HO \newline
+NeuralNet nnet \newline
+Monitor monitor \newline
+MemoryInputSynapse inputStream, samples \newline
+TeachingSynapse trainer \newline
+static ArrayList<Sample> read\_index(String gesture\_dir, String index\_filename) \newline
+void set\_columns(MemoryInputSynapse syn, int first, int last) \newline
++ void errorChanged(NeuralNetEvent e) \newline
++ void netStarted(NeuralNetEvent e) \newline
++ void netStopped(NeuralNetEvent e) \newline
++ void netStoppedError(NeuralNetEvent e, String error) \newline
++ void cicleTerminated(NeuralNetEvent e) \newline
+static void saveNeuralNet(NeuralNet nnet, String filename) \newline
+static NeuralNet restoreNeuralNet(String filename)
+} } \\ \hline
+
+\end{tabular}
 
 There are six input nodes for LeftArm {dx,dy,dz} and RightArm {dx,dy,dz}, a layer of hidden nodes and five output nodes corresponding to the five gestures. Each gesture is labelled with a vector of expected output; for example, an accelerate gesture is (1,0,0,0,0), a Turn Right gesture is (0,0,0,1,0) and a non-gesture is (0,0,0,0,0).
 
@@ -734,16 +921,27 @@ The three streams used for interprocess communication are \scopendpoint{p1coords
 
 \subsection{Configuration}
 
+\begin{tabular}{|c|} \hline 
+\class{Config} \\ \hline
+\multicolumn{1}{|p{12cm}|}
+{\variable{- Config() \newline
+- static String lookup(String key) \newline
+- void supply\_defaults() \newline
+- void check\_add(String key, String defaultvalue) \newline
+- String do\_lookup(String key)
+} } \\ \hline
+\end{tabular}
+
 The Config.java file ensures that all processes with an interest in a stream are talking to the same server, and to allow the three streams to use different sockets as necessary. For example, the coordsserver stream is the most intensive (19/38 double floating point values at 100 fps), so by specifying "localhost", the overhead of TCP/IP network communication is reduced.
 
-The <key, value> pairs are parsed from a file in the user's home directory and stored in a java.util.HashMap. If the file is not present or the values not defined, the class uses the following default values:
+The \<key, value\> pairs are parsed from a file in the user's home directory and stored in a java.util.HashMap. If the file is not present or the values not defined, the class uses the following default values:
 
 framerate = 100 \\
 closedthreshold = 3000 \\
 \variable{coordserver} = \verb^www.srcf.ucam.org^ \\
 \variable{ctrlserver} = \verb^www.srcf.ucam.org^ \\
 
-In order to ensure that all classes read from the same configuration values, the Config.java file uses the Singleton design pattern. A static variable of type Config is set to null, and the first lookup initialises it from the configuration file. Subsequent requests only perform lookups on the instantiated object.
+In order to ensure that all classes read from the same configuration values, the Config.java file uses the Singleton design pattern. A static variable of type \class{Config} is set to null, and the first lookup initialises it from the configuration file. Subsequent requests only perform lookups on the instantiated object.
 
 \chapter{Evaluation [TODO]}
 
