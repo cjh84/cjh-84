@@ -1,0 +1,329 @@
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+accel1.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.001340
+Turn right: 0.022794
+Accelerate: 0.965452
+Decelerate: 0.012472
+Start/Stop: 0.012395
+accel2.csv: Accelerate
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+accel3.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+accel4.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+accel5.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.001340
+Turn right: 0.022794
+Accelerate: 0.965452
+Decelerate: 0.012472
+Start/Stop: 0.012395
+accel6.csv: Accelerate
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+decel1.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+decel2.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.007596
+Turn right: 0.016946
+Accelerate: 0.000619
+Decelerate: 0.974182
+Start/Stop: 0.012057
+decel3.csv: Decelerate
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+decel4.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+decel5.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+decel6.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+doubleturn1.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+doubleturn2.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+leftpoint1.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+leftpoint2.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+leftpoint3.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+missing1.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+missing2.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.015643
+Turn right: 0.028542
+Accelerate: 0.023187
+Decelerate: 0.006100
+Start/Stop: 0.012159
+neutral1.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+neutral2.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+neutral3.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+neutral4.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+neutral5.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+neutral6.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+panic1.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+panic2.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+rightpoint1.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+rightpoint2.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+rightpoint3.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+startstop2.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+startstop3.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+startstop4.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+startstop5.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+startstop6.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.975833
+Turn right: 0.008340
+Accelerate: 0.007207
+Decelerate: 0.000007
+Start/Stop: 0.000157
+turnleft1.csv: Turn left
+Using user Cheryl and classifier Neural
+Turn left: 0.992926
+Turn right: 0.003588
+Accelerate: 0.000141
+Decelerate: 0.007428
+Start/Stop: 0.000052
+turnleft2.csv: Turn left
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+turnleft3.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.975833
+Turn right: 0.008340
+Accelerate: 0.007207
+Decelerate: 0.000007
+Start/Stop: 0.000157
+turnleft4.csv: Turn left
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+turnleft5.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.992926
+Turn right: 0.003588
+Accelerate: 0.000141
+Decelerate: 0.007428
+Start/Stop: 0.000052
+turnleft6.csv: Turn left
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+turnright1.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+turnright2.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.001431
+Turn right: 0.970813
+Accelerate: 0.018507
+Decelerate: 0.004424
+Start/Stop: 0.000610
+turnright3.csv: Turn right
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+turnright4.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+turnright5.csv: No match
+Using user Cheryl and classifier Neural
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+turnright6.csv: No match
