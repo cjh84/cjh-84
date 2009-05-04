@@ -56,6 +56,7 @@ class Config
 		check_add("closedthreshold", "3000");
 		check_add("coordserver", "www.srcf.ucam.org");
 		check_add("ctrlserver", "www.srcf.ucam.org");
+		check_add("neuralthreshold", "0.5");
 	}
 	
 	private void check_add(String key, String defaultvalue)

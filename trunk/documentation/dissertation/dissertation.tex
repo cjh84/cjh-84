@@ -230,11 +230,11 @@ With Euler angles, the rotation matrix is decomposed into three rotations from a
 
 In the z-x-z convention,
 
-{latex:
-    * $\alpha$ is the angle between the x-axis and the line of nodes, modulo 2pi
-    * $\beta$ is the angle between the z-axis and the Z-axis, modulo pi
-    * $\gamma$ is the angle between the line of nodes and the X-axis, modulo 2pi
-}
+\begin{itemize}
+\item $\alpha$ is the angle between the x-axis and the line of nodes, modulo $2\pi$
+\item $\beta$ is the angle between the z-axis and the Z-axis, modulo $\pi$
+\item $\gamma$ is the angle between the line of nodes and the X-axis, modulo $2\pi$
+\end{itemize}
 
 \begin{figure}[hb]
 \centering
@@ -243,7 +243,7 @@ In the z-x-z convention,
 \label{eulerangles}
 \end{figure}
 
-However, when the xy and XY planes are identical and the z and Z axes are parallel, the Euler system is subject to a phenomenon known as gimbal lock, since not all points in the coordinate system can be uniquely identified. Euler angles are also prone to angle flips at the extremities of the ranges of alpha,beta,gamma. For this reason, Euler angles are harder to deal with than axis angles, which vary smoothly.
+However, when the $xy$ and $XY$ planes are identical and the $z$ and $Z$ axes are parallel, the Euler system is subject to a phenomenon known as gimbal lock, since not all points in the coordinate system can be uniquely identified. Euler angles are also prone to angle flips at the extremities of the ranges of $\alpha,\beta,\gamma$. For this reason, Euler angles are harder to deal with than axis angles, which vary smoothly.
 
 \section{Pattern recognition}
 
@@ -377,7 +377,7 @@ Tarsus: motion capture and object reconstruction \\
 
 The majority of the system was developed under Ubuntu Linux, using NEdit and GEdit. The XO laptops run a modified version of Fedora Linux, while the PC used during live capture runs Windows XP.
 
-CITATIONS!!!
+This dissertation was typeset using \LaTeX.
 
 \section{Languages}
 
@@ -548,6 +548,7 @@ Frame,RightArmP1<A-X>,RightArmP1<A-Y>,RightArmP1<A-Z>,RightArmP1<T-X>,RightArmP1
 242,30.3788,43.5149,-55.0284,-642.649,555,938.528,
 \end{verbatim}
 }
+
 
 \begin{tabular}{|c|} \hline 
 \class{GestureReader} \\ \hline
@@ -725,6 +726,8 @@ displacement += square(last.right.ay - first.right.ay);
 displacement += square(last.right.az - first.right.az);
 \end{verbatim}
 
+\newpage
+
 \section{Recognition}
 
 \subsection{Recogniser}
@@ -772,6 +775,8 @@ The Person class is the union of all trained data related to a single specified 
 } } \\ \hline
 \end{tabular}
 
+\newpage
+
 \subsection{Heuristic recogniser}
 
 \begin{tabular}{|c|} \hline 
@@ -801,6 +806,8 @@ This application-specific recogniser depends strongly on the particular gestures
 The first off-line training stage is to calculate all features on the training dataset, excluding outliers. The Person class defines the valid intervals of the specified user for the left and right ranges, as the maximum and minimum ranges that are permissible. The threshold for a closed gesture was experimentally determined to be around 3000, but is editable in the configuration file.
 
 When given a Person and Features calculated from a list of frames, the first check is that the displacement is less than the specified threshold. If this succeeds, the left and right Ranges are compared with the Person's Intervals. If the ranges fall within the permissible intervals, a Gesture is returned.
+
+\newpage
 
 \subsection{Neural network recogniser}
 
@@ -853,6 +860,8 @@ static NeuralNet restoreNeuralNet(String filename)
 There are six input nodes for LeftArm {dx,dy,dz} and RightArm {dx,dy,dz}, a layer of hidden nodes and five output nodes corresponding to the five gestures. Each gesture is labelled with a vector of expected output; for example, an accelerate gesture is (1,0,0,0,0), a Turn Right gesture is (0,0,0,1,0) and a non-gesture is (0,0,0,0,0).
 
 I researched several neural network libraries, including Joone and JavaNNS. The Joone library has particularly good tools for writing third party modules, as well as support for distributed training, which would be useful for higher performance in the CPU intensive training stage.
+
+\newpage
 
 \subsection{Hidden Markov Model recogniser}
 
