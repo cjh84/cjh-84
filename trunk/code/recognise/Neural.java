@@ -7,10 +7,14 @@ import org.joone.engine.learning.*;
 import org.joone.io.*;
 import org.joone.net.NeuralNet;
 
+//import Recogniser.Person;
+
 class Neural extends Recogniser
 {
+	static double NEURAL_THRESHOLD = -1;
+
 	public static Gesture recognise(Person person, Features features)
-	{
+	{		
 		/* Uses:
 			features.displacement
 			features.leftarm|rightarm.get_delta(0|1|2)
@@ -30,10 +34,29 @@ class Neural extends Recogniser
 		pout = person.netout.fwdGet();
 		dump_results(pout);
 		
-		// Look at pout.getArray() to decide what to do
-		;
+		if(NEURAL_THRESHOLD < 0)
+			NEURAL_THRESHOLD = Double.valueOf(Config.lookup("neuralthreshold"));
+		
+		
+		double[] a = pout.getArray();
+		int command = Gesture.NoMatch;
 				
-		return new Gesture(Gesture.NoMatch);
+		for (int i = 0; i < Gesture.num_gestures; i++)
+		{
+			if(a[i] > NEURAL_THRESHOLD)
+			{
+				if(command == Gesture.NoMatch)
+					command = i;
+				else
+					command = Gesture.MultiMatch;
+			}
+		}
+		
+		return new Gesture(command);
+
+		// Look at pout.getArray() to decide what to do
+				
+		//return new Gesture(Gesture.NoMatch);
 	}
 	
 	static void dump_results(Pattern pat)
