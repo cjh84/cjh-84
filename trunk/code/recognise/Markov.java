@@ -6,29 +6,218 @@ import java.util.List;
 
 import be.ac.ulg.montefiore.run.jahmm.*;
 import be.ac.ulg.montefiore.run.jahmm.learn.*;
-import be.ac.ulg.montefiore.run.jahmm.toolbox.KullbackLeiblerDistanceCalculator;
-import be.ac.ulg.montefiore.run.jahmm.toolbox.MarkovGenerator;
+import be.ac.ulg.montefiore.run.jahmm.io.*;
 
 class Markov extends Recogniser
 {
+
+	ArrayList<Learner> learners;
+	ArrayList<ArrayList<ArrayList<ObservationVector>>> sequences;
+
+	int num_states = 5;
+	int num_dimensions = 9;
+	int num_iterations = 10;
+	
+	String output_root;
+	
+	static int SCALING_FACTOR = 100;
+	
+	
 	public static Gesture recognise(Person person, Features features)
 	{
-		return new Gesture(Gesture.NoMatch);
+		String filename;
+		double[] probabilities = new double[Gesture.num_gestures];
+		ArrayList<ObservationVector> framedata = toObservationVectors(features.rawdata);
+		
+		Hmm<ObservationVector> recog_hmm = new Hmm<ObservationVector>(5, new OpdfMultiGaussianFactory(features.rawdata.size()));
+				
+		for (int i = 0; i < Gesture.num_gestures; i++)
+		{
+			filename  = person.markov_root + new Gesture(i).toAction();
+			recog_hmm = restore_hmm(filename);
+			probabilities[i] = calc_prob(recog_hmm, framedata);
+		}
+
+		//dump_results(probabilities);
+
+		int command = Gesture.NoMatch;
+				
+		for (int i = 0; i < Gesture.num_gestures; i++)
+		{
+			if(!Double.isNaN(probabilities[i]))
+			{
+				if(command == Gesture.NoMatch)
+					command = i;
+				else
+					command = Gesture.MultiMatch;
+			}
+		}
+
+		return new Gesture(command);
 	}
 
-	public static void main(String[] argv)
+	static double calc_prob(Hmm hmm, ArrayList<ObservationVector> framedata)
 	{
+		return hmm.lnProbability(framedata);
+	}
 
-		OpdfMultiGaussianFactory ogf = new OpdfMultiGaussianFactory(1);
+	static void dump_results(double[] a)
+	{
+		Gesture gest = new Gesture(0);
+		
+		assert(a.length == Gesture.num_gestures);
+		for(int i = 0; i < Gesture.num_gestures; i++)
+		{
+			gest.command = i;
+			System.out.printf(gest.toString() + ": %5f\n", a[i]);
+		}
+	}
 
-		Hmm<ObservationInteger>hmm1 = new Hmm<ObservationInteger>(5, new OpdfIntegerFactory(10));
-		Hmm<ObservationVector> hmm = new Hmm<ObservationVector>(5, ogf);
+	void train(ArrayList<Sample> samples, String out_file)
+	{
+		init();
+		output_root = out_file;
+
+		for (Sample sample : samples)
+		{
+			Learner learner = learners.get(sample.gesture.command);
+			learner.add_sequence(toObservationVectors(sample.data));
+			System.out.println("Assigned " + sample.pathname + " to learner for " + learner.gesture.toString());
+		}
 		
-		
+		for (Learner learner : learners)
+		{
+			System.out.println("Training " + learner.gesture.toString());
+			//learner.learnkm();
+			learner.learnbw();
+			//System.out.println(learner.hmm.toString());
+			save_hmm(learner, output_root + "_" + learner.gesture.toAction());
+		}
 
 		
-		//hmm = new Hmm<ObservationVector>(2);//, new OpdfGaussianFactory());
-		List<List<ObservationVector>> sequences;
+	}
+
+	static ArrayList<ObservationVector> toObservationVectors(ArrayList<Frame> frames)
+	{
+		ArrayList<ObservationVector> ovs = new ArrayList<ObservationVector>();
+		double[] values;
 		
+		for (int i = 0; i < frames.size(); i++)
+		{
+			values = frames.get(i).toDoubles();
+			for (double v : values)
+			{
+				v  = v / SCALING_FACTOR;
+			}
+			ovs.add(new ObservationVector(values));
+		}
+		//System.out.println("Done sample " + s.pathname);
+		return ovs;
+	}
+		
+	static void save_hmm(Learner learner, String filename)
+	{
+		try
+		{
+			FileOutputStream stream = new FileOutputStream(filename);
+			ObjectOutputStream out = new ObjectOutputStream(stream);
+			out.writeObject(learner.hmm);
+			out.close();
+			/*
+			Writer writer = new FileWriter(filename);
+			HmmWriter.write(writer, new OpdfMultiGaussianWriter(), learner.hmm);
+			writer.close();
+			*/
+		}
+		catch (IOException e)
+		{
+			Utils.error("Cannot save hidden markov model to <" + filename + ">");
+		}
+	}
+	
+	static Hmm restore_hmm(String filename)
+	{
+		try
+		{
+			FileInputStream stream = new FileInputStream(filename);
+			ObjectInputStream in = new ObjectInputStream(stream);
+			return (Hmm)in.readObject();
+		
+			/*
+			Reader reader = new FileReader(filename);
+			return HmmReader.read(reader, new OpdfMultiGaussianReader());
+			*/
+		}
+		catch (IOException e)
+		{
+			Utils.error("Cannot load hidden markov model from <" + filename + ">");
+		}
+		/*
+		catch (FileFormatException e)
+		{
+			System.out.println(e.getMessage());			
+			Utils.error("Incorrect file format from <" + filename + ">");
+		}
+		*/
+		catch (Exception e)
+		{}
+		return null;
+	}
+
+	void init()
+	{
+		learners = new ArrayList<Learner>(5);
+
+		for (int i = 0; i < Gesture.num_gestures; i++)
+		{
+			learners.add(new Learner(num_states, num_dimensions, num_iterations,
+				new Gesture(i)));
+		}
 	}
 };
+
+class Learner implements Serializable
+{
+	Hmm<ObservationVector> hmm;
+	ArrayList<ArrayList<ObservationVector>> sequences;
+	BaumWelchScaledLearner bwl;
+	KMeansLearner<ObservationVector> kml; 
+    OpdfMultiGaussianFactory factory;
+    Gesture gesture;
+    
+	int num_states;
+	int num_dimensions;
+	int num_iterations;    
+
+	Learner(int states, int dimensions, int iterations, Gesture g)
+	{
+		num_states = states;
+		num_dimensions = dimensions;
+		num_iterations = iterations;
+		gesture = g;
+
+		factory = new OpdfMultiGaussianFactory(num_dimensions);
+		hmm = new Hmm<ObservationVector>(num_states, factory);
+		sequences = new ArrayList<ArrayList<ObservationVector>>();
+	}
+	
+	void add_sequence(ArrayList<ObservationVector> seq)
+	{
+		sequences.add(seq);
+	}
+	
+	void learnbw()
+	{
+		bwl = new BaumWelchScaledLearner();
+		bwl.setNbIterations(num_iterations);
+		//One iteration of KMeansLearner to initalise
+		hmm = new KMeansLearner<ObservationVector>(num_states, factory, sequences).iterate();
+		hmm = bwl.learn(hmm, sequences);
+	}
+	
+	void learnkm()
+	{
+		kml = new KMeansLearner<ObservationVector>(num_states, factory, sequences);
+		hmm = kml.learn();
+	}
+}

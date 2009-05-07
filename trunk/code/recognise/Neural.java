@@ -7,11 +7,22 @@ import org.joone.engine.learning.*;
 import org.joone.io.*;
 import org.joone.net.NeuralNet;
 
-//import Recogniser.Person;
-
-class Neural extends Recogniser
+class Neural extends Recogniser implements NeuralNetListener 
 {
 	static double NEURAL_THRESHOLD = -1;
+
+	static final int num_epochs = 2000;
+	static final int num_hidden_neurons = 20;
+	
+	String output_file;
+	
+	LinearLayer input;
+	SigmoidLayer hidden, output;
+	FullSynapse synapse_IH, synapse_HO;
+	NeuralNet nnet;
+	Monitor monitor;
+	MemoryInputSynapse inputStream, samples;
+	TeachingSynapse trainer;
 
 	public static Gesture recognise(Person person, Features features)
 	{		
@@ -32,7 +43,7 @@ class Neural extends Recogniser
 		pin.setCount(person.neural_seq++);
 		person.nnet.singleStepForward(pin);
 		pout = person.netout.fwdGet();
-		dump_results(pout);
+		//dump_results(pout);
 		
 		if(NEURAL_THRESHOLD < 0)
 			NEURAL_THRESHOLD = Double.valueOf(Config.lookup("neuralthreshold"));
@@ -59,200 +70,23 @@ class Neural extends Recogniser
 		//return new Gesture(Gesture.NoMatch);
 	}
 	
-	static void dump_results(Pattern pat)
+	void train(ArrayList<Sample> sampleslist, String out_file)
 	{
-		double[] a = pat.getArray();
-		Gesture gest = new Gesture(0);
-		
-		assert(a.length == Gesture.num_gestures);
-		for(int i = 0; i < Gesture.num_gestures; i++)
-		{
-			gest.command = i;
-			System.out.printf(gest.toString() + ": %5f\n", a[i]);
-		}
-	}
-	
-	static void init(Person p)
-	{
-		Layer input, output;
-
-		if(p.nnet != null)
-			return; // Already initialised
-			
-		p.nnet = Training.restoreNeuralNet(p.neural_file);
-		
-		input = p.nnet.getInputLayer();
-		input.removeAllInputs();
-		
-		output = p.nnet.getOutputLayer();
-		output.removeAllOutputs();
-		
-		p.netout = new DirectSynapse();
-		output.addOutputSynapse(p.netout);
-		
-		p.nnet.getMonitor().setLearning(false);
-	}
-}
-
-class Sample
-{
-	String pathname;
-	Gesture gesture;
-	ArrayList<Frame> data;
-	Features feat;
-	
-	Sample(String pathname, Gesture g)
-	{
-		this.pathname = pathname;
-		gesture = g;
-		data = null;
-		feat = null;
-	}
-	
-	void dump()
-	{
-		System.out.println(pathname + " = " + gesture.toString());
-	}
-};
-
-class Training implements NeuralNetListener
-{
-	static String gesture_dir, output_file;
-	static final String index_filename = "training.dat";
-	static final int num_epochs = 2000;
-	static final int num_hidden_neurons = 20;
-	
-	LinearLayer input;
-	SigmoidLayer hidden, output;
-	FullSynapse synapse_IH, synapse_HO;
-	NeuralNet nnet;
-	Monitor monitor;
-	MemoryInputSynapse inputStream, samples;
-	TeachingSynapse trainer;
-	
-	static void usage()
-	{
-		System.out.println("Usage: java Training <gesture-dir> <output-file>");
-		System.out.println("       <gesture-dir> must contain a file called " +
-				index_filename);
-		System.exit(0);
-	}
-	
-	static void parse_args(String[] args)
-	{
-		if(args.length != 2)
-			usage();
-		gesture_dir = args[0];
-		output_file = args[1];
-	}
-	
-	static ArrayList<Sample> read_index(String gesture_dir,
-			String index_filename)
-	{
+		output_file = out_file;
 		Sample samp;
-		Gesture gest;
-		ArrayList<Sample> samples = new ArrayList<Sample>();
-		String line;
-		String[] parts;
-		String index_pathname, record_filename, record_pathname;
-		String slash = System.getProperty("file.separator");
-		File dir;
 		
-		dir = new File(gesture_dir);
-		if(dir.exists() == false || dir.canRead() == false ||
-				dir.isDirectory() == false)
-		{
-			Utils.error("Cannot read directory " + gesture_dir);
-		}
-		index_pathname = gesture_dir + slash + index_filename;
-		try
-		{
-			BufferedReader in = new BufferedReader(new FileReader(index_pathname));
-			while((line = in.readLine()) != null)
-			{
-				if(line.length() == 0 || line.charAt(0) == '#')
-					continue;
-				parts = line.split(":");
-				if(parts.length != 2)
-					Utils.error("Invalid index file line: <" + line + ">");
-				
-				gest = Gesture.lookup(parts[1]);
-				if(gest == null)
-					Utils.error("Invalid gesture name <" + parts[1] + ">");
-				
-				record_filename = parts[0];
-				record_pathname = gesture_dir + slash + record_filename;
-				samp = new Sample(record_pathname, gest);
-				samp.data = GestureReader.getData(record_pathname);
-				Transform.process(samp.data);
-				samp.feat = new Features(samp.data);
-				samp.dump();
-				samples.add(samp);
-			}
-			in.close();
-		}
-		catch(IOException e)
-		{
-			System.out.println("Cannot read index from <" + index_pathname + ">");
-			System.exit(0);
-		}
-		return samples;
-	}
-	
-	public static void main(String[] args)
-	{
-		ArrayList<Sample> samples;
-		int num_samples;
-		Sample samp;
-		double[][] inputdata, outputdata;
-		
-		parse_args(args);
-		
-		samples = read_index(gesture_dir, index_filename);
-				
-		num_samples = samples.size();
-		inputdata = new double[num_samples][Features.num_features];
-		outputdata = new double[num_samples][Gesture.num_gestures];
+		int num_samples = sampleslist.size();
+		double[][] inputdata = new double[num_samples][Features.num_features];
+		double[][] outputdata = new double[num_samples][Gesture.num_gestures];
 		for(int i = 0; i < num_samples; i++)
 		{
-			samp = samples.get(i);
+			samp = sampleslist.get(i);
 			samp.feat.extract(inputdata[i]);
 			for(int j = 0; j < Gesture.num_gestures; j++)
 				outputdata[i][j] = 0.0;
 			if(samp.gesture.command < Gesture.num_gestures)
 				outputdata[i][samp.gesture.command] = 1.0;
 		}
-		
-		// dump_arrays(inputdata, outputdata);
-		Training tr = new Training(inputdata, outputdata);
-	}
-	
-	static void dump_arrays(double[][] inputdata, double[][] outputdata)
-	{
-		int num_samples;
-		
-		num_samples = inputdata.length;
-		assert(outputdata.length == num_samples);
-		
-		for(int i = 0; i < num_samples; i++)
-		{
-			System.out.printf("Sample %d features: ", i);
-			for(int j = 0; j < Features.num_features; j++)
-				System.out.print(inputdata[i][j] + " ");
-			System.out.println("");
-			System.out.printf("Outputs: ", i);
-			for(int j = 0; j < Gesture.num_gestures; j++)
-				System.out.print(outputdata[i][j] + " ");
-			System.out.println("");
-		}
-	}
-	
-	Training(double[][] inputdata, double[][] outputdata)
-	{
-		int num_samples;
-		
-		num_samples = inputdata.length;
-		assert(outputdata.length == num_samples);
 		
 		input = new LinearLayer();
 		hidden = new SigmoidLayer();
@@ -379,4 +213,38 @@ class Training implements NeuralNetListener
 		}
 		return null; // Never happens
 	}
-};
+	
+	static void dump_results(Pattern pat)
+	{
+		double[] a = pat.getArray();
+		Gesture gest = new Gesture(0);
+		
+		assert(a.length == Gesture.num_gestures);
+		for(int i = 0; i < Gesture.num_gestures; i++)
+		{
+			gest.command = i;
+			System.out.printf(gest.toString() + ": %5f\n", a[i]);
+		}
+	}
+	
+	static void init(Person p)
+	{
+		Layer input, output;
+
+		if(p.nnet != null)
+			return; // Already initialised
+			
+		p.nnet = restoreNeuralNet(p.neural_file);
+		
+		input = p.nnet.getInputLayer();
+		input.removeAllInputs();
+		
+		output = p.nnet.getOutputLayer();
+		output.removeAllOutputs();
+		
+		p.netout = new DirectSynapse();
+		output.addOutputSynapse(p.netout);
+		
+		p.nnet.getMonitor().setLearning(false);
+	}
+}

@@ -42,6 +42,16 @@ class SixDOF
 		return s;
 	}
 	
+	public double[] toDoubles()
+	{
+		//Assume everything normalised and processed
+		double[] d = new double[3];
+		d[0] = tx;
+		d[1] = ty;
+		d[2] = tz;
+		return d;
+	}
+		
 	void dump()
 	{
 		System.out.printf("%6.2f,%6.2f,%6.2f,%5.0f,%5.0f,%5.0f,%5.0f",
@@ -162,6 +172,26 @@ class Frame
 			status = "ok";
 		return body.toString() + " " + left.toString() + " " +
 				right.toString() + " " + status;
+	}
+			
+	public double[] toDoubles()
+	{
+		/* Returns all tx,ty,tz which are already assumed to be 
+		normalised and processed */
+		double[] doubles = new double[9]; 
+		double[] b = body.toDoubles();
+		double[] l = left.toDoubles();
+		double[] r = right.toDoubles();
+		doubles[0] = b[0];
+		doubles[1] = b[1];
+		doubles[2] = b[2];
+		doubles[3] = l[0];
+		doubles[4] = l[1];
+		doubles[5] = l[2];
+		doubles[6] = r[0];
+		doubles[7] = r[1];
+		doubles[8] = r[2];
+		return doubles;
 	}
 			
 	void dump()

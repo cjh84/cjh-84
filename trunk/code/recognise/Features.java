@@ -4,11 +4,13 @@ class Features
 {
 	Ranges leftarm, rightarm;
 	double displacement;
+	ArrayList<Frame> rawdata;
 	
 	static final int num_features = 7;
 
 	Features(ArrayList<Frame> data)
 	{
+		rawdata = data; //.clone()
 		leftarm = new Ranges();
 		rightarm = new Ranges();
 		for(Frame f: data)
@@ -31,6 +33,7 @@ class Features
 		for(int i = 0; i < windowsize; i++)
 		{
 			f = buf.get(windowsize, i);
+			rawdata.add(f);
 			leftarm.update(f.left);
 			rightarm.update(f.right);
 		}
