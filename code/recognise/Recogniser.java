@@ -60,7 +60,16 @@ class Gesture
 		}
 		return "Unknown gesture";
 	}
-		
+	
+	public boolean equals(Gesture g)
+	{
+
+		if (this.command == g.command)
+			return true;
+		else
+			return false;
+	}
+	
 	Gesture(int cmd)
 	{
 		command = cmd;
@@ -193,6 +202,17 @@ class Classifier
 		}
 		return new Gesture(Gesture.NoMatch); // Never occurs
 	}
+	
+	void train(ArrayList<Sample> samples, String out_file)
+	{
+		switch(id)
+		{
+			case NEURAL:    (new Neural()).train(samples, out_file); break;
+			case MARKOV:    (new Markov()).train(samples, out_file); break;
+			case HYBRID:    ;//return Hybrid.recognise(person, features);
+		}
+		return;
+	}
 
 	static String all_classifiers()
 	{
@@ -227,6 +247,7 @@ class Classifier
 class Recogniser
 {
 	static Gesture recognise(Person person, Features features) { return null; }
+	void train(ArrayList<Sample> samples, String out_file) { ; }
 	
 	static String filename;
 	static User user;
@@ -246,12 +267,14 @@ class Recogniser
 	
 	static void parse_args(String[] argv)
 	{
+		if(argv.length < 1)
+			usage();
+			
 		int id;
 		
 		user = new User();
 		classifier = new Classifier();
-		if(argv.length < 1)
-			usage();
+
 		for(int i = 0; i < argv.length - 1; i++)
 		{
 			id = User.lookup(argv[i]);
@@ -316,6 +339,8 @@ class Person
 	DirectSynapse netout;
 	int neural_seq;
 	
+	String markov_root;
+	
 	Person()
 	{
 		left = new Intervals[Gesture.num_gestures];
@@ -328,6 +353,8 @@ class Person
 		neural_file = null;
 		nnet = null;
 		neural_seq = 0;
+		
+		markov_root = null;
 	}
 
 	void tabulate()
@@ -354,7 +381,8 @@ class Person
 		Person dmi = new Person();
 
 		dmi.neural_file = "david.net";
-				
+		dmi.markov_root = "David.Markov.out_";
+
 		dmi.left[Gesture.TurnLeft].setX(20,35);
 		dmi.left[Gesture.TurnLeft].setY(0,18);
 		dmi.left[Gesture.TurnLeft].setZ(65,80);
@@ -390,6 +418,7 @@ class Person
 		Person ch = new Person();
 		
 		ch.neural_file = "cheryl.net";
+		ch.markov_root = "Cheryl_Markov.out_";
 		
 		ch.left[Gesture.TurnLeft].setX(15,30);
 		ch.left[Gesture.TurnLeft].setY(0,18);
@@ -419,21 +448,5 @@ class Person
 		ch.right[Gesture.StartStop].setZ(15,30);
 		
 		return ch;
-	}
-};
-
-class Hybrid extends Recogniser
-{
-	public static Gesture recognise(Person person, Features features)
-	{
-	    return new Gesture(Gesture.NoMatch);
-	}
-};
-
-class Markov extends Recogniser
-{
-	public static Gesture recognise(Person person, Features features)
-	{
-		return new Gesture(Gesture.NoMatch);
 	}
 };
