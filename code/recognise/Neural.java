@@ -11,8 +11,11 @@ class Neural extends Recogniser implements NeuralNetListener
 {
 	static double NEURAL_THRESHOLD = -1;
 
-	static final int num_epochs = 2000;
-	static final int num_hidden_neurons = 20;
+	static int num_epochs = 2000;
+	static int num_hidden_neurons = 20;
+	static double learning_rate = 0.8;
+	static double momentum = 0.3;
+	static int learning_mode = 0;
 	
 	String output_file;
 	
@@ -23,6 +26,8 @@ class Neural extends Recogniser implements NeuralNetListener
 	Monitor monitor;
 	MemoryInputSynapse inputStream, samples;
 	TeachingSynapse trainer;
+
+	double err;
 
 	public static Gesture recognise(Person person, Features features)
 	{		
@@ -127,12 +132,21 @@ class Neural extends Recogniser implements NeuralNetListener
 		monitor = nnet.getMonitor();
 		monitor.setTrainingPatterns(num_samples);
 		monitor.setTotCicles(num_epochs);
-		monitor.setLearningRate(0.8);
-		monitor.setMomentum(0.3);
+		monitor.setLearningRate(learning_rate);
+		monitor.setMomentum(momentum);
 		monitor.setLearning(true);
+		
+		//Add learner
+		
+		monitor.addLearner(0, "org.joone.engine.BasicLearner"); // On-line
+		monitor.addLearner(1, "org.joone.engine.BatchLearner"); // Batch
+		monitor.addLearner(2, "org.joone.engine.RpropLearner"); // RPROP
+		
+		monitor.setLearningMode(learning_mode);
+		
 		monitor.setSingleThreadMode(true);
 		monitor.addNeuralNetListener(this);
-		
+			
 		nnet.go();
 	}
 	
@@ -150,36 +164,46 @@ class Neural extends Recogniser implements NeuralNetListener
 		syn.setAdvancedColumnSelector(cols);
 	}
 	
+	void set_epochs(int epochs)
+	{
+		num_epochs = epochs;
+	}
+	
+	void set_hidden_nodes(int neurons)
+	{
+		num_hidden_neurons = neurons;
+	}
+		
 	// NeuralNetListener interface methods follow:
 	
 	public void errorChanged(NeuralNetEvent e)
 	{
 		int cycle;
-		double err;
 		
 		Monitor mon = (Monitor)e.getSource();
 		cycle = mon.getCurrentCicle();
 		if(cycle % 200 == 0 || cycle >= num_epochs - 10)
 		{
 			err = mon.getGlobalError();
-			System.out.printf("%d epochs remaining; RMSE = %5f\n", cycle, err);
+			if (Utils.verbose)
+				System.out.printf("%d epochs remaining; RMSE = %5f\n", cycle, err);
 		}
 	}
 	
 	public void netStarted(NeuralNetEvent e)
 	{
-		System.out.println("Training started");
+		Utils.log("Training started");
 	}
 	
 	public void netStopped(NeuralNetEvent e)
 	{
-		System.out.println("Training finished");
+		Utils.log("Training finished");
 		saveNeuralNet(nnet, output_file);
 	}
 	
 	public void netStoppedError(NeuralNetEvent e, String error)
 	{
-		System.out.println("Net stopped error: " + error);
+		Utils.log("Net stopped error: " + error);
 	}
 	
 	public void cicleTerminated(NeuralNetEvent e) {}
@@ -223,7 +247,8 @@ class Neural extends Recogniser implements NeuralNetListener
 		for(int i = 0; i < Gesture.num_gestures; i++)
 		{
 			gest.command = i;
-			System.out.printf(gest.toString() + ": %5f\n", a[i]);
+			if (Utils.verbose)
+				System.out.printf(gest.toString() + ": %5f\n", a[i]);
 		}
 	}
 	

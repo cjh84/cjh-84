@@ -1,8 +1,11 @@
 class Utils
 {
+	static boolean verbose = true;
+
 	public static void error(String msg)
 	{
-		System.out.println(msg);
+		if (verbose)
+			System.out.println(msg);
 		System.exit(0);
 	}
 
@@ -15,6 +18,12 @@ class Utils
 	{
 		try { Thread.sleep(ms); }
 		catch (InterruptedException e) {}
+	}
+		
+	public static void log(String msg)
+	{
+		if (verbose)
+			System.out.println(msg);
 	}
 };
 

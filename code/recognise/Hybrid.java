@@ -7,9 +7,9 @@ class Hybrid extends Recogniser
 		results[1] = Neural.recognise(person, features);
 		results[2] = Markov.recognise(person, features);
 		
-		System.out.println("Heuristic result: " + results[0]);
-		System.out.println("Neural result: " + results[1]);
-		System.out.println("Markov result: " + results[2]);
+		Utils.log("Heuristic result: " + results[0]);
+		Utils.log("Neural result: " + results[1]);
+		Utils.log("Markov result: " + results[2]);
 						
 		//Find best of three or NoMatch otherwise
 		Gesture result = new Gesture(Gesture.NoMatch);
