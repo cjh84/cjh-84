@@ -13,15 +13,15 @@ class Markov extends Recogniser
 
 	ArrayList<Learner> learners;
 	ArrayList<ArrayList<ArrayList<ObservationVector>>> sequences;
+	
+	static final int num_dimensions = 9;
 
 	int num_states = 5;
-	int num_dimensions = 9;
 	int num_iterations = 10;
 	
 	String output_root;
 	
 	static int SCALING_FACTOR = 100;
-	
 	
 	public static Gesture recognise(Person person, Features features)
 	{
@@ -69,7 +69,8 @@ class Markov extends Recogniser
 		for(int i = 0; i < Gesture.num_gestures; i++)
 		{
 			gest.command = i;
-			System.out.printf(gest.toString() + ": %5f\n", a[i]);
+			if (Utils.verbose)
+				System.out.printf(gest.toString() + ": %5f\n", a[i]);
 		}
 	}
 
@@ -82,12 +83,12 @@ class Markov extends Recogniser
 		{
 			Learner learner = learners.get(sample.gesture.command);
 			learner.add_sequence(toObservationVectors(sample.data));
-			System.out.println("Assigned " + sample.pathname + " to learner for " + learner.gesture.toString());
+			Utils.log("Assigned " + sample.pathname + " to learner for " + learner.gesture.toString());
 		}
 		
 		for (Learner learner : learners)
 		{
-			System.out.println("Training " + learner.gesture.toString());
+			Utils.log("Training " + learner.gesture.toString());
 			//learner.learnkm();
 			learner.learnbw();
 			//System.out.println(learner.hmm.toString());
@@ -115,6 +116,16 @@ class Markov extends Recogniser
 		return ovs;
 	}
 		
+	void set_states(int states)
+	{
+		num_states = states;
+	}
+
+	void set_iterations(int iterations)
+	{
+		num_iterations = iterations;
+	}
+	
 	static void save_hmm(Learner learner, String filename)
 	{
 		try
@@ -123,11 +134,6 @@ class Markov extends Recogniser
 			ObjectOutputStream out = new ObjectOutputStream(stream);
 			out.writeObject(learner.hmm);
 			out.close();
-			/*
-			Writer writer = new FileWriter(filename);
-			HmmWriter.write(writer, new OpdfMultiGaussianWriter(), learner.hmm);
-			writer.close();
-			*/
 		}
 		catch (IOException e)
 		{
@@ -142,23 +148,11 @@ class Markov extends Recogniser
 			FileInputStream stream = new FileInputStream(filename);
 			ObjectInputStream in = new ObjectInputStream(stream);
 			return (Hmm)in.readObject();
-		
-			/*
-			Reader reader = new FileReader(filename);
-			return HmmReader.read(reader, new OpdfMultiGaussianReader());
-			*/
 		}
 		catch (IOException e)
 		{
 			Utils.error("Cannot load hidden markov model from <" + filename + ">");
 		}
-		/*
-		catch (FileFormatException e)
-		{
-			System.out.println(e.getMessage());			
-			Utils.error("Incorrect file format from <" + filename + ">");
-		}
-		*/
 		catch (Exception e)
 		{}
 		return null;

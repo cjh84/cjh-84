@@ -24,7 +24,7 @@ class Sample
 	
 	void dump()
 	{
-		System.out.println(pathname + " = " + gesture.toString());
+		Utils.log(pathname + " = " + gesture.toString());
 	}
 };
 
@@ -33,7 +33,7 @@ class Training
 	static User user;
 	static Classifier classifier;
 
-	static String gesture_dir, output_file;
+	static String gesture_dir, output_file = "temp_file.dat";
 	static final String index_filename = "training.dat";
 	
 	static void usage()
@@ -121,28 +121,23 @@ class Training
 				Transform.process(samp.data);
 				
 				samp.feat = new Features(samp.data);
-				samp.dump();
+				//samp.dump();
 				samples.add(samp);
 			}
 			in.close();
 		}
 		catch(IOException e)
 		{
-			System.out.println("Cannot read index from <" + index_pathname + ">");
-			System.exit(0);
+			Utils.error("Cannot read index from <" + index_pathname + ">");
 		}
 		return samples;
 	}
 	
 	public static void main(String[] args)
 	{
-		ArrayList<Sample> samples;
-		int num_samples;
-		Sample samp;
-		double[][] inputdata, outputdata;
-		
+		ArrayList<Sample> samples;		
 		parse_args(args);
-		System.out.println("Training using user " + user.name() +
+		Utils.log("Training using user " + user.name() +
 				" and classifier " + classifier.name());
 		
 		samples = read_index(gesture_dir, index_filename);

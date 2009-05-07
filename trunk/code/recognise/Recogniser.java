@@ -164,7 +164,7 @@ class Classifier
 	
 	Classifier()
 	{
-		set(HEURISTIC);
+		set(HYBRID);
 	}
 	
 	Classifier(int which)
@@ -209,7 +209,7 @@ class Classifier
 		{
 			case NEURAL:    (new Neural()).train(samples, out_file); break;
 			case MARKOV:    (new Markov()).train(samples, out_file); break;
-			case HYBRID:    ;//return Hybrid.recognise(person, features);
+			default:    	Utils.log("Cannot train on this recogniser"); break;
 		}
 		return;
 	}
