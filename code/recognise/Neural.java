@@ -48,7 +48,7 @@ class Neural extends Recogniser implements NeuralNetListener
 		pin.setCount(person.neural_seq++);
 		person.nnet.singleStepForward(pin);
 		pout = person.netout.fwdGet();
-		//dump_results(pout);
+		dump_results(pout);
 		
 		if(NEURAL_THRESHOLD < 0)
 			NEURAL_THRESHOLD = Double.valueOf(Config.lookup("neuralthreshold"));
