@@ -14,10 +14,10 @@ class Markov extends Recogniser
 	ArrayList<Learner> learners;
 	ArrayList<ArrayList<ArrayList<ObservationVector>>> sequences;
 	
-	static final int num_dimensions = 9;
-
-	int num_states = 5;
-	int num_iterations = 10;
+	static final int NUM_DIMENSIONS = 9;
+	static int NUM_STATES = -1;
+	static int NUM_ITERATIONS = -1;
+	static String LEARNER = "Baulm-Welch";
 	
 	String output_root;
 	
@@ -38,7 +38,7 @@ class Markov extends Recogniser
 			probabilities[i] = calc_prob(recog_hmm, framedata);
 		}
 
-		dump_results(probabilities);
+		//dump_results(probabilities);
 
 		int command = Gesture.NoMatch;
 				
@@ -56,7 +56,7 @@ class Markov extends Recogniser
 		return new Gesture(command);
 	}
 
-	static double calc_prob(Hmm hmm, ArrayList<ObservationVector> framedata)
+	private static double calc_prob(Hmm hmm, ArrayList<ObservationVector> framedata)
 	{
 		return hmm.lnProbability(framedata);
 	}
@@ -83,14 +83,27 @@ class Markov extends Recogniser
 		{
 			Learner learner = learners.get(sample.gesture.command);
 			learner.add_sequence(toObservationVectors(sample.data));
-			//Utils.log("Assigned " + sample.pathname + " to learner for " + learner.gesture.toString());
+			Utils.log("Assigned " + sample.pathname +
+			 " to learner for " + learner.gesture.toString());
 		}
 		
 		for (Learner learner : learners)
 		{
 			Utils.log("Training " + learner.gesture.toString());
-			//learner.learnkm();
-			learner.learnbw();
+			if (LEARNER.equalsIgnoreCase("Baulm-Welch"))
+			{	
+				learner.learnbw();
+			}
+			else if (LEARNER.equalsIgnoreCase("K-Means"))
+			{
+				learner.learnkm();
+			}
+			else
+			{
+				Utils.error("Unknown learner; valid options are " +
+					"Baulm-Welch and K-Means");
+			}
+			
 			//System.out.println(learner.hmm.toString());
 			save_hmm(learner, output_root + "_" + learner.gesture.toAction());
 		}
@@ -112,19 +125,10 @@ class Markov extends Recogniser
 			}
 			ovs.add(new ObservationVector(values));
 		}
+		//System.out.println("Done sample " + s.pathname);
 		return ovs;
 	}
 		
-	void set_states(int states)
-	{
-		num_states = states;
-	}
-
-	void set_iterations(int iterations)
-	{
-		num_iterations = iterations;
-	}
-	
 	static void save_hmm(Learner learner, String filename)
 	{
 		try
@@ -157,13 +161,18 @@ class Markov extends Recogniser
 		return null;
 	}
 
-	void init()
+	private void init()
 	{
+		if(NUM_STATES < 0)
+			NUM_STATES = Integer.valueOf(Config.lookup("m_hidden_states"));
+		if(NUM_ITERATIONS < 0)
+			NUM_ITERATIONS = Integer.valueOf(Config.lookup("m_iterations"));
+
 		learners = new ArrayList<Learner>(5);
 
 		for (int i = 0; i < Gesture.num_gestures; i++)
 		{
-			learners.add(new Learner(num_states, num_dimensions, num_iterations,
+			learners.add(new Learner(NUM_STATES, NUM_DIMENSIONS, NUM_ITERATIONS,
 				new Gesture(i)));
 		}
 	}

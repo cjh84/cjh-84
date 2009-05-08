@@ -19,7 +19,6 @@ class Heuristic extends Recogniser
 			}
 		}
 		Gesture g = new Gesture(command);
-		Utils.log("Heuristic recognised a " + g.toString());
 		return g;
 	}
 	
