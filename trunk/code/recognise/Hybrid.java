@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 class Hybrid extends Recogniser
 {
 	public static Gesture recognise(Person person, Features features)
@@ -20,5 +22,11 @@ class Hybrid extends Recogniser
 			result = results[1];
 		
 		return result;
+	}
+	
+	public void train(ArrayList<Sample> samples, String out_file)
+	{
+		(new Neural()).train(samples, out_file);
+		(new Markov()).train(samples, out_file);
 	}
 };

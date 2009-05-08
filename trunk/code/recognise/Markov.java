@@ -38,7 +38,7 @@ class Markov extends Recogniser
 			probabilities[i] = calc_prob(recog_hmm, framedata);
 		}
 
-		//dump_results(probabilities);
+		dump_results(probabilities);
 
 		int command = Gesture.NoMatch;
 				
@@ -83,7 +83,7 @@ class Markov extends Recogniser
 		{
 			Learner learner = learners.get(sample.gesture.command);
 			learner.add_sequence(toObservationVectors(sample.data));
-			Utils.log("Assigned " + sample.pathname + " to learner for " + learner.gesture.toString());
+			//Utils.log("Assigned " + sample.pathname + " to learner for " + learner.gesture.toString());
 		}
 		
 		for (Learner learner : learners)
@@ -112,7 +112,6 @@ class Markov extends Recogniser
 			}
 			ovs.add(new ObservationVector(values));
 		}
-		//System.out.println("Done sample " + s.pathname);
 		return ovs;
 	}
 		

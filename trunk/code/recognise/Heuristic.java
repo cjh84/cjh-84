@@ -17,8 +17,10 @@ class Heuristic extends Recogniser
 				else
 					command = Gesture.MultiMatch;
 			}
-		}		
-		return new Gesture(command);
+		}
+		Gesture g = new Gesture(command);
+		Utils.log("Heuristic recognised a " + g.toString());
+		return g;
 	}
 	
 	private static boolean match(Person person, Features features, int gesture)

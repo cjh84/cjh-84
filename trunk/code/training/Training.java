@@ -121,7 +121,7 @@ class Training
 				Transform.process(samp.data);
 				
 				samp.feat = new Features(samp.data);
-				//samp.dump();
+				samp.dump();
 				samples.add(samp);
 			}
 			in.close();
@@ -153,16 +153,19 @@ class Training
 		num_samples = inputdata.length;
 		assert(outputdata.length == num_samples);
 		
-		for(int i = 0; i < num_samples; i++)
+		if (Utils.verbose)
 		{
-			System.out.printf("Sample %d features: ", i);
-			for(int j = 0; j < Features.num_features; j++)
-				System.out.print(inputdata[i][j] + " ");
-			System.out.println("");
-			System.out.printf("Outputs: ", i);
-			for(int j = 0; j < Gesture.num_gestures; j++)
-				System.out.print(outputdata[i][j] + " ");
-			System.out.println("");
+			for(int i = 0; i < num_samples; i++)
+			{
+				System.out.printf("Sample %d features: ", i);
+				for(int j = 0; j < Features.num_features; j++)
+					System.out.print(inputdata[i][j] + " ");
+				System.out.println("");
+				System.out.printf("Outputs: ", i);
+				for(int j = 0; j < Gesture.num_gestures; j++)
+					System.out.print(outputdata[i][j] + " ");
+				System.out.println("");
+			}
 		}
 	}
 	
