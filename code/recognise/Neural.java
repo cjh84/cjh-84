@@ -11,13 +11,15 @@ class Neural extends Recogniser implements NeuralNetListener
 {
 	static double NEURAL_THRESHOLD = -1;
 
-	static int num_epochs = 2000;
-	static int num_hidden_neurons = 20;
-	static double learning_rate = 0.8;
-	static double momentum = 0.3;
-	static int learning_mode = 0;
+	static int LEARNING_MODE = -1;
+	static int NUM_EPOCHS = -1;
+	static int NUM_HIDDEN_NEURONS = -1;
+	static double LEARNING_RATE = -1;
+	static double MOMENTUM = -1;
+	static boolean TRAIN_ON_NEGS = false;
 	
 	String output_file;
+	double err;
 	
 	LinearLayer input;
 	SigmoidLayer hidden, output;
@@ -26,8 +28,8 @@ class Neural extends Recogniser implements NeuralNetListener
 	Monitor monitor;
 	MemoryInputSynapse inputStream, samples;
 	TeachingSynapse trainer;
-
-	double err;
+	
+	static long timing = System.nanoTime();
 
 	public static Gesture recognise(Person person, Features features)
 	{		
@@ -48,8 +50,8 @@ class Neural extends Recogniser implements NeuralNetListener
 		pin.setCount(person.neural_seq++);
 		person.nnet.singleStepForward(pin);
 		pout = person.netout.fwdGet();
-		dump_results(pout);
-		
+		//dump_results(pout);
+				
 		if(NEURAL_THRESHOLD < 0)
 			NEURAL_THRESHOLD = Double.valueOf(Config.lookup("neuralthreshold"));
 		
@@ -74,11 +76,13 @@ class Neural extends Recogniser implements NeuralNetListener
 				
 		//return new Gesture(Gesture.NoMatch);
 	}
-	
+		
 	void train(ArrayList<Sample> sampleslist, String out_file)
 	{
+
 		output_file = out_file;
 		Sample samp;
+		init_parameters();
 		
 		int num_samples = sampleslist.size();
 		double[][] inputdata = new double[num_samples][Features.num_features];
@@ -100,7 +104,7 @@ class Neural extends Recogniser implements NeuralNetListener
 		hidden.setLayerName("hidden");
 		output.setLayerName("output");
 		input.setRows(Features.num_features);
-		hidden.setRows(num_hidden_neurons);
+		hidden.setRows(NUM_HIDDEN_NEURONS);
 		output.setRows(Gesture.num_gestures);
 		synapse_IH = new FullSynapse();
 		synapse_HO = new FullSynapse();
@@ -131,9 +135,9 @@ class Neural extends Recogniser implements NeuralNetListener
 		
 		monitor = nnet.getMonitor();
 		monitor.setTrainingPatterns(num_samples);
-		monitor.setTotCicles(num_epochs);
-		monitor.setLearningRate(learning_rate);
-		monitor.setMomentum(momentum);
+		monitor.setTotCicles(NUM_EPOCHS);
+		monitor.setLearningRate(LEARNING_RATE);
+		monitor.setMomentum(MOMENTUM);
 		monitor.setLearning(true);
 		
 		//Add learner
@@ -142,12 +146,28 @@ class Neural extends Recogniser implements NeuralNetListener
 		monitor.addLearner(1, "org.joone.engine.BatchLearner"); // Batch
 		monitor.addLearner(2, "org.joone.engine.RpropLearner"); // RPROP
 		
-		monitor.setLearningMode(learning_mode);
+		monitor.setLearningMode(LEARNING_MODE);
 		
 		monitor.setSingleThreadMode(true);
 		monitor.addNeuralNetListener(this);
 			
 		nnet.go();
+	}
+	
+	private void init_parameters()
+	{
+		if(LEARNING_MODE < 0)
+			LEARNING_MODE = Integer.valueOf(Config.lookup("n_learner"));
+		if(NUM_EPOCHS < 0)
+			NUM_EPOCHS = Integer.valueOf(Config.lookup("n_epochs"));
+		if(NUM_HIDDEN_NEURONS < 0)
+			NUM_HIDDEN_NEURONS = Integer.valueOf(Config.lookup("n_hidden_nodes"));
+		if(LEARNING_RATE < 0)
+			LEARNING_RATE = Double.valueOf(Config.lookup("n_learning_rate"));
+		if(MOMENTUM < 0)
+			MOMENTUM = Double.valueOf(Config.lookup("n_momentum"));
+		if(TRAIN_ON_NEGS == false)
+			TRAIN_ON_NEGS = Boolean.valueOf(Config.lookup("n_train_on_negs"));
 	}
 	
 	void set_columns(MemoryInputSynapse syn, int first, int last)
@@ -163,16 +183,6 @@ class Neural extends Recogniser implements NeuralNetListener
 		}
 		syn.setAdvancedColumnSelector(cols);
 	}
-	
-	void set_epochs(int epochs)
-	{
-		num_epochs = epochs;
-	}
-	
-	void set_hidden_nodes(int neurons)
-	{
-		num_hidden_neurons = neurons;
-	}
 		
 	// NeuralNetListener interface methods follow:
 	
@@ -182,7 +192,7 @@ class Neural extends Recogniser implements NeuralNetListener
 		
 		Monitor mon = (Monitor)e.getSource();
 		cycle = mon.getCurrentCicle();
-		if(cycle % 200 == 0 || cycle >= num_epochs - 10)
+		if(cycle % 200 == 0 || cycle >= NUM_EPOCHS - 10)
 		{
 			err = mon.getGlobalError();
 			if (Utils.verbose)
@@ -193,11 +203,13 @@ class Neural extends Recogniser implements NeuralNetListener
 	public void netStarted(NeuralNetEvent e)
 	{
 		Utils.log("Training started");
+		timing = System.nanoTime();
 	}
 	
 	public void netStopped(NeuralNetEvent e)
 	{
-		Utils.log("Training finished");
+		timing = System.nanoTime() - timing;
+		Utils.log("Training finished in " + timing/1000 + " microseconds");
 		saveNeuralNet(nnet, output_file);
 	}
 	

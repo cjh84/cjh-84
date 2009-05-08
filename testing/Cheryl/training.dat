@@ -1,20 +1,31 @@
+*accel1.csv:Accelerate
 accel2.csv:Accelerate
 accel3.csv:Accelerate
 accel4.csv:Accelerate
+*accel5.csv:Accelerate
 accel6.csv:Accelerate
+*decel1.csv:Decelerate
+*decel2.csv:Decelerate
 decel3.csv:Decelerate
 decel4.csv:Decelerate
+*decel5.csv:Decelerate
 decel6.csv:Decelerate
+*startstop2.csv:Start/Stop
 startstop3.csv:Start/Stop
 startstop4.csv:Start/Stop
 startstop5.csv:Start/Stop
 startstop6.csv:Start/Stop
+*turnleft1.csv:Turn Left
 turnleft2.csv:Turn left
+*turnleft3.csv:Turn Left
 turnleft4.csv:Turn left
+*turnleft5.csv:Turn Left
 turnleft6.csv:Turn left
+*turnright1.csv:Turn right
 turnright2.csv:Turn right
 turnright3.csv:Turn right
 turnright4.csv:Turn right
+*turnright5.csv:Turn right
 turnright6.csv:Turn right
 doubleturn1.csv:No match
 doubleturn2.csv:No match

@@ -406,13 +406,11 @@ Message passing provides inter-language communication via an SCOP server running
 
 \subsection{Component Interfaces}
 
-{diagram: data flow diagram}
-
 All SCOP messages are ASCII string messages. Each class that interacts with the server has a name and can express an interest in one or more streams, or endpoints by opening sockets.
 
 NB: All names containing \verb^p1^ have \verb^p2^ equivalents.
 
-\subsection{Protocols and Data formats}
+\subsection{Protocols and data formats}
 
 \begin{tabular}{l|p{2.5cm}p{4.5cm}p{4.5cm}}
 \rule[-2mm]{0mm}{3mm} & Endpoint & Event sources & Event sinks\\
@@ -462,6 +460,13 @@ This stream is a direct transcription of the ``ok"/``dropout" field of the coord
 \texttt{\<"ok"|"dropout"\>}
 \end{minipage}}\\
 \end{tabular}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.8,angle=0]{diagrams/dataflowdiagram.ps}
+\caption{Data flow diagram}
+\label{dfd}
+\end{figure}
 
 \subsection{Breakdown of components}
 
@@ -745,26 +750,32 @@ The Recogniser.java file holds defines the Recogniser interface containing a sin
 
 The file also holds Gesture, Person and Classifier classes which are enumerations of the valid inputs:
 
+\begin{minipage}[t]{4cm}
 \begin{tabular}{|c|} \hline 
 \class{Gesture} \\ \hline
 \multicolumn{1}{|p{4cm}|}
 {\variable{TurnLeft \newline TurnRight \newline Accelerate \newline Decelerate \newline StartStop \newline NoMatch \newline MultiMatch
 } } \\ \hline
 \end{tabular}
+\end{minipage} \hfill
 
+\begin{minipage}[t]{4cm}
 \begin{tabular}{|c|} \hline 
 \class{User} \\ \hline
 \multicolumn{1}{|p{4cm}|}
 {\variable{CHERYL \newline DAVID
 } } \\ \hline
 \end{tabular}
+\end{minipage} \hfill
 
+\begin{minipage}[t]{4cm}
 \begin{tabular}{|c|} \hline 
 \class{Classifier} \\ \hline
 \multicolumn{1}{|p{4cm}|}
 {\variable{HEURISTIC \newline NEURAL \newline MARKOV \newline HYBRID
 } } \\ \hline
 \end{tabular}
+\end{minipage} \hfill
 
 The Person class is the union of all trained data related to a single specified user. It aggregates Intervals, neural network and Hidden Markov Model parameters, and also contains static methods to populate these fields from data files.
 

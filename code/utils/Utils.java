@@ -1,6 +1,9 @@
+import java.io.*;
+import java.util.*;
+
 class Utils
 {
-	static boolean verbose = true;
+	static boolean verbose = Boolean.valueOf(Config.lookup("verbose"));
 
 	public static void error(String msg)
 	{
@@ -25,7 +28,86 @@ class Utils
 		if (verbose)
 			System.out.println(msg);
 	}
+
+	static ArrayList<Sample> read_index(String gesture_dir, char[] escapechars)
+	{
+		/*
+		* = sample not used for training (poor quality or reserved)
+		# = negative examples
+		*/
+		
+		Sample samp;
+		Gesture gest;
+		ArrayList<Sample> samples = new ArrayList<Sample>();
+		String line;
+		String[] parts;
+		String index_pathname, record_filename, record_pathname;
+		String slash = System.getProperty("file.separator");
+		File dir;
+		
+		String index_filename = Config.lookup("index_filename");
+		
+		dir = new File(gesture_dir);
+		if(dir.exists() == false || dir.canRead() == false ||
+				dir.isDirectory() == false)
+		{
+			Utils.error("Cannot read directory " + gesture_dir);
+		}
+		index_pathname = gesture_dir + slash + index_filename;
+		try
+		{
+			BufferedReader in = new BufferedReader(new FileReader(index_pathname));
+			while((line = in.readLine()) != null)
+			{
+				if(line.length() == 0 || in(line.charAt(0), escapechars))
+					continue;
+				parts = line.split(":");
+				if(parts.length != 2)
+					Utils.error("Invalid index file line: <" + line + ">");
+				
+				gest = Gesture.lookup(parts[1]);
+				if(gest == null)
+					Utils.error("Invalid gesture name <" + parts[1] + ">");
+				
+				//Remove any unescaped characters
+				if (in(line.charAt(0), new char[] {'*', '#'}))
+				{
+					parts[0] = parts[0].substring(1);
+				}
+				record_filename = parts[0];
+				record_pathname = gesture_dir + slash + record_filename;
+				samp = new Sample(record_pathname, gest);
+				samp.data = GestureReader.getData(record_pathname);
+				Transform.process(samp.data);
+				
+				samp.feat = new Features(samp.data);
+				samp.dump();
+				samples.add(samp);
+			}
+			in.close();
+		}
+		catch(IOException e)
+		{
+			Utils.error("Cannot read index from <" + index_pathname + ">");
+		}
+		return samples;
+	}
+	
+	private static boolean in(char ch, char[] chars)
+	{
+		for (char c : chars)
+		{
+			if (c == ch)
+				return true;
+			else
+				continue;
+		}
+		return false;
+	}	
+	
 };
+
+
 
 class CircularBuffer
 {
