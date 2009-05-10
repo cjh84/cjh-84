@@ -125,7 +125,7 @@ class SlidingWindow
 				else
 					status = "ok";
 				scopstat.emit(status);
-				System.out.println("New status: " + status);
+				Utils.log("New status: " + status);
 				dropped_out = dropout;
 			}
 			
@@ -139,8 +139,8 @@ class SlidingWindow
 				cpu = 100.0 * (1.0 - cpu);
 				fps = (double)(framecounter - laststatus) / (double)elapsed_time
 						* 1000.0;
-				System.out.printf("FPS = %.1f, CPU utilisation = %.1f%%\n",
-						fps, cpu);
+				Utils.log("FPS = " + String.format("%.1f", fps)
+				    + " CPU utilisation = " + String.format("%.1f", cpu) + "%");
 				
 				start_time = current_time;
 				blocked_time = 0;
@@ -177,7 +177,7 @@ class SlidingWindow
 				gesture.command != Gesture.MultiMatch)
 		{
 			scopout.emit(gesture.toAction());
-			System.out.println("Recognised " + gesture.toString() +
+			Utils.log("Recognised " + gesture.toString() +
 					" between frames " + (framecounter - windowsize) +
 					" and " + framecounter);
 			return true;

@@ -108,6 +108,7 @@ class SimGesture
 			f = interpolate_frames(from, to,
 					(double)(i + 1) / (double)(num_frames + 1));
 			scop.emit(f.toString());
+						
 			framesync();
 		}
 	}
@@ -133,7 +134,7 @@ class SimGesture
 		Frame f;
 		boolean dropout; // DBG
 
-		System.out.println("Replaying gesture " + gesture.filename +
+		Utils.log("Replaying gesture " + gesture.filename +
 				" (frames " + framecounter + " to " + (framecounter +
 				gesture.data.size()) + ")");		
 		for(int i = 0; i < gesture.data.size(); i++)
@@ -150,6 +151,7 @@ class SimGesture
 			// ...DBG
 			
 			scop.emit(f.toString());
+						
 			framesync();
 		}
 	}
@@ -189,16 +191,16 @@ class SimGesture
 		FRAME_RATE = Integer.valueOf(Config.lookup("framerate"));
 		scopserver = Config.lookup("coordserver");
 		gestures = read_gestures(gesture_dir);
-		System.out.println("Read in " + gestures.size() + " gestures");
+		Utils.log("Read in " + gestures.size() + " gestures");
 		scop = new SCOP(scopserver, "simulatep" + player);
 		if(scop.connection_ok() == false)
 		{
-			System.out.println("Can't connect to scopserver");
+			Utils.error("Can't connect to scopserver");
 			System.exit(0);
 		}
 		endpoint = "p" + player + "coords";
 		scop.set_source_hint(endpoint);
-		System.out.println("Sending stream to endpoint " + endpoint);
+		Utils.log("Sending stream to endpoint " + endpoint);
 		
 		random = new Random(System.currentTimeMillis());
 		

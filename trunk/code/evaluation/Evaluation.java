@@ -34,7 +34,7 @@ class Evaluation
 		System.out.println("person = " + User.all_usernames());
 		System.out.println("classifier = " + Classifier.all_classifiers());
 		System.out.println("criterion = accuracy error performance");
-		System.out.println("mode = training recognition recog-no-negs");		
+		System.out.println("mode = training recognition no-negs-recog");		
 		System.out.println("n_learner = 0{Basic} 1{Batch} 2{RProp}");
 		System.out.println("n_epochs = <integer>");
 		System.out.println("n_hidden_nodes = <integer>");
@@ -99,7 +99,7 @@ class Evaluation
 		boolean nostar = mode.equalsIgnoreCase("training");
 		boolean nobang = (Config.lookup("n_train_on_negs").equalsIgnoreCase("true") &&	classifier.name().equalsIgnoreCase("neural")) || 
 				(mode.equalsIgnoreCase("training") && classifier.name().equalsIgnoreCase("markov")) || 
-				(mode.equalsIgnoreCase("recog-no-negs") && criterion.equalsIgnoreCase("accuracy"));
+				(mode.equalsIgnoreCase("no-negs-recog") && criterion.equalsIgnoreCase("accuracy"));
 				
 		if (nostar && nobang)
 			{ escapedchars[0] = '*'; escapedchars[1] = '!'; }
@@ -127,19 +127,32 @@ class Evaluation
 		if (criterion.equalsIgnoreCase("error"))
 		{	
 			double result = error();
-			Utils.results("RMSE = " + String.format("%.5f", result));
+			//Utils.results("RMSE = " + String.format("%.5f", result));
 		}
 		else if (criterion.equalsIgnoreCase("accuracy"))
 		{	
 			double[] results = accuracy();
+			Utils.log("Correct False-pos False-neg Incorrect (in %)");
+			
+			String result = "";
+			for (double r : results)
+			{
+			    result += String.format("%.3f", r) + " ";
+			}
+			
+		    Utils.results(result);
+            /*			
 			Utils.results("Correct = " + String.format("%.3f", results[0]) + "%");
 			Utils.results("False positives = " + String.format("%.3f", results[1]) + "%");
 			Utils.results("False negatives = " + String.format("%.3f", results[2]) + "%");
+			Utils.results("Incorrect = " + String.format("%.3f", results[3]) + "%");
+			*/
 		}
 		else if (criterion.equalsIgnoreCase("performance"))
 		{	
 			long result = performance(); 
-			Utils.results("Time in microseconds: " + String.valueOf(result/1000));
+			Utils.log("Time in microseconds: ");
+			Utils.log(String.valueOf(result/1000));
 		}
 		
 		String[] attributes = new String[2];
@@ -152,7 +165,7 @@ class Evaluation
 				user_options += attributes[0] + "=" + attributes[1] + " ";
 		}
 		
-		Utils.results(user_options);		
+		Utils.log(user_options);		
 		
 	}
 	
@@ -172,7 +185,7 @@ class Evaluation
 				"training the neural classifier.");
 		
 		Neural neural = new Neural();
-		neural.train(samples, temp_file);
+		neural.train(samples, person.neural_file);
 		return neural.err;
 	}
 	
@@ -181,8 +194,7 @@ class Evaluation
 		if (mode.equalsIgnoreCase("training"))
 			Utils.error("Accuracy criterion is only valid for " + 
 				"the recognition mode.");
-		assert(mode.equalsIgnoreCase("recognition"));
-				
+				 
 		double[] counts = new double[4];
 		Sample s;
 		Gesture g;

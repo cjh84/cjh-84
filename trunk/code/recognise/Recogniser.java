@@ -382,7 +382,7 @@ class Person
 		Person dmi = new Person();
 
 		dmi.neural_file = "/home/cheryl/project/testing/David/david.net";
-		dmi.markov_root = "/home/cheryl/project/testing/David/David.Markov.out_";
+		dmi.markov_root = "/home/cheryl/project/testing/David/David_Markov.out_";
 
 		dmi.left[Gesture.TurnLeft].setX(20,35);
 		dmi.left[Gesture.TurnLeft].setY(0,18);
@@ -419,7 +419,8 @@ class Person
 		Person ch = new Person();
 		
 		ch.neural_file = "/home/cheryl/project/testing/Cheryl/cheryl.net";
-		ch.markov_root = "/home/cheryl/project/testing/Cheryl/Cheryl_Markov.out_";
+		ch.markov_root = "/home/cheryl/project/code/evaluation/temp_file.out_";
+	    //ch.markov_root = "/home/cheryl/project/testing/Cheryl/Cheryl_Markov.out_";
 		
 		ch.left[Gesture.TurnLeft].setX(15,30);
 		ch.left[Gesture.TurnLeft].setY(0,18);

@@ -145,7 +145,7 @@ class Neural extends Recogniser implements NeuralNetListener
 		monitor.addLearner(2, "org.joone.engine.RpropLearner"); // RPROP
 		
 		monitor.setLearningMode(LEARNING_MODE);
-		
+				
 		monitor.setSingleThreadMode(true);
 		monitor.addNeuralNetListener(this);
 			
@@ -166,6 +166,11 @@ class Neural extends Recogniser implements NeuralNetListener
 			MOMENTUM = Double.valueOf(Config.lookup("n_momentum"));
 		if(TRAIN_ON_NEGS == false)
 			TRAIN_ON_NEGS = Boolean.valueOf(Config.lookup("n_train_on_negs"));
+		
+		if (LEARNING_MODE == 2)
+		{
+			LEARNING_RATE = 1.0;
+		}
 	}
 	
 	void set_columns(MemoryInputSynapse syn, int first, int last)
@@ -190,12 +195,12 @@ class Neural extends Recogniser implements NeuralNetListener
 		
 		Monitor mon = (Monitor)e.getSource();
 		cycle = mon.getCurrentCicle();
-		if(cycle % 200 == 0 || cycle >= NUM_EPOCHS - 10)
+		if(cycle % (NUM_EPOCHS/10) == 0 || cycle >= NUM_EPOCHS - 10)
 		{
 			err = mon.getGlobalError();
-			if (Utils.verbose)
-				System.out.printf("%d epochs remaining; RMSE = %5f\n", cycle, err);
-		}
+			Utils.log(String.format("%d", cycle) + " epochs remaining; RMSE = " 
+			    + String.format("%5f", err));
+	    }
 	}
 	
 	public void netStarted(NeuralNetEvent e)
@@ -207,7 +212,8 @@ class Neural extends Recogniser implements NeuralNetListener
 	public void netStopped(NeuralNetEvent e)
 	{
 		timing = System.nanoTime() - timing;
-		Utils.log("Training finished in " + timing/1000000 + " ms");
+		Utils.log("Learning-mode Learning-rate Momentum Epochs Hidden-nodes ms RMSE");
+		Utils.results(LEARNING_MODE + " " + LEARNING_RATE + " " + MOMENTUM + " " + NUM_EPOCHS + " " + NUM_HIDDEN_NEURONS + " " + timing/1000000 + " " + String.format("%5f", err));
 		saveNeuralNet(nnet, output_file);
 	}
 	
