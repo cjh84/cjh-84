@@ -38,7 +38,7 @@ class Markov extends Recogniser
 			probabilities[i] = calc_prob(recog_hmm, framedata);
 		}
 
-		//dump_results(probabilities);
+		dump_results(probabilities);
 
 		int command = Gesture.NoMatch;
 				
@@ -69,8 +69,7 @@ class Markov extends Recogniser
 		for(int i = 0; i < Gesture.num_gestures; i++)
 		{
 			gest.command = i;
-			if (Utils.verbose)
-				System.out.printf(gest.toString() + ": %5f\n", a[i]);
+			Utils.log(gest.toString() + ": " + String.format("%5f", a[i]));
 		}
 	}
 
@@ -87,6 +86,8 @@ class Markov extends Recogniser
 			 " to learner for " + learner.gesture.toString());
 		}
 		
+		long timing = System.nanoTime();
+		
 		for (Learner learner : learners)
 		{
 			Utils.log("Training " + learner.gesture.toString());
@@ -101,14 +102,16 @@ class Markov extends Recogniser
 			else
 			{
 				Utils.error("Unknown learner; valid options are " +
-					"Baulm-Welch and K-Means");
+					"0 for Baulm-Welch and 1 for K-Means");
 			}
 			
-			//System.out.println(learner.hmm.toString());
 			save_hmm(learner, output_root + "_" + learner.gesture.toAction());
 		}
-
 		
+        timing = System.nanoTime() - timing;
+        
+        Utils.log("Learner hidden-states iterations ms");
+        Utils.results(LEARNER + " " + NUM_STATES + " " + NUM_ITERATIONS + " " + timing);
 	}
 
 	static ArrayList<ObservationVector> toObservationVectors(ArrayList<Frame> frames)
@@ -133,6 +136,7 @@ class Markov extends Recogniser
 	{
 		try
 		{
+		    Utils.log("Hmm saved to " + filename);
 			FileOutputStream stream = new FileOutputStream(filename);
 			ObjectOutputStream out = new ObjectOutputStream(stream);
 			out.writeObject(learner.hmm);
@@ -148,6 +152,7 @@ class Markov extends Recogniser
 	{
 		try
 		{
+		    Utils.log("Hmm loaded from " + filename);
 			FileInputStream stream = new FileInputStream(filename);
 			ObjectInputStream in = new ObjectInputStream(stream);
 			return (Hmm)in.readObject();

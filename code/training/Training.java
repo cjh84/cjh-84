@@ -32,7 +32,7 @@ class Training
 	static User user;
 	static Classifier classifier;
 
-	static String gesture_dir, output_file = "temp_file.dat";
+	static String gesture_dir, output_file = "temp_file.out";
 	
 	static void usage()
 	{
@@ -75,6 +75,7 @@ class Training
 			usage();
 		}
 		gesture_dir = argv[argv.length - 1];
+		
 		output_file = user.name() + "_" + classifier.name() + ".out";
 		
 		
