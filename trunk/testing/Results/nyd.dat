@@ -1,0 +1,449 @@
+person = Cheryl
+classifier = Hybrid
+criterion = accuracy
+mode = recognition
+n_momentum = 0.3
+index_filename = training.dat
+n_learning_rate = 0.8
+m_hidden_states = 5
+m_learner = 0
+m_iterations = 10
+n_epochs = 1000
+n_train_on_negs = false
+neuralthreshold = 0.5
+ctrlserver = www.srcf.ucam.org
+coordserver = www.srcf.ucam.org
+n_learner = 0
+verbose = true
+n_hidden_nodes = 20
+framerate = 100
+closedthreshold = 3000
+escaping chars at eval = 
+/home/cheryl/project/testing/Cheryl//accel1.csv = Accelerate
+/home/cheryl/project/testing/Cheryl//accel2.csv = Accelerate
+/home/cheryl/project/testing/Cheryl//accel3.csv = Accelerate
+/home/cheryl/project/testing/Cheryl//accel4.csv = Accelerate
+/home/cheryl/project/testing/Cheryl//accel5.csv = Accelerate
+/home/cheryl/project/testing/Cheryl//accel6.csv = Accelerate
+/home/cheryl/project/testing/Cheryl//decel1.csv = Decelerate
+/home/cheryl/project/testing/Cheryl//decel2.csv = Decelerate
+/home/cheryl/project/testing/Cheryl//decel3.csv = Decelerate
+/home/cheryl/project/testing/Cheryl//decel4.csv = Decelerate
+/home/cheryl/project/testing/Cheryl//decel5.csv = Decelerate
+/home/cheryl/project/testing/Cheryl//decel6.csv = Decelerate
+/home/cheryl/project/testing/Cheryl//startstop2.csv = Start/Stop
+/home/cheryl/project/testing/Cheryl//startstop3.csv = Start/Stop
+/home/cheryl/project/testing/Cheryl//startstop4.csv = Start/Stop
+/home/cheryl/project/testing/Cheryl//startstop5.csv = Start/Stop
+/home/cheryl/project/testing/Cheryl//startstop6.csv = Start/Stop
+/home/cheryl/project/testing/Cheryl//turnleft1.csv = Turn left
+/home/cheryl/project/testing/Cheryl//turnleft2.csv = Turn left
+/home/cheryl/project/testing/Cheryl//turnleft3.csv = Turn left
+/home/cheryl/project/testing/Cheryl//turnleft4.csv = Turn left
+/home/cheryl/project/testing/Cheryl//turnleft5.csv = Turn left
+/home/cheryl/project/testing/Cheryl//turnleft6.csv = Turn left
+/home/cheryl/project/testing/Cheryl//turnright1.csv = Turn right
+/home/cheryl/project/testing/Cheryl//turnright2.csv = Turn right
+/home/cheryl/project/testing/Cheryl//turnright3.csv = Turn right
+/home/cheryl/project/testing/Cheryl//turnright4.csv = Turn right
+/home/cheryl/project/testing/Cheryl//turnright5.csv = Turn right
+/home/cheryl/project/testing/Cheryl//turnright6.csv = Turn right
+/home/cheryl/project/testing/Cheryl//doubleturn1.csv = No match
+/home/cheryl/project/testing/Cheryl//doubleturn2.csv = No match
+/home/cheryl/project/testing/Cheryl//leftpoint1.csv = No match
+/home/cheryl/project/testing/Cheryl//leftpoint2.csv = No match
+/home/cheryl/project/testing/Cheryl//leftpoint3.csv = No match
+/home/cheryl/project/testing/Cheryl//missing1.csv = No match
+/home/cheryl/project/testing/Cheryl//missing2.csv = No match
+/home/cheryl/project/testing/Cheryl//neutral1.csv = No match
+/home/cheryl/project/testing/Cheryl//neutral2.csv = No match
+/home/cheryl/project/testing/Cheryl//neutral3.csv = No match
+/home/cheryl/project/testing/Cheryl//neutral4.csv = No match
+/home/cheryl/project/testing/Cheryl//neutral5.csv = No match
+/home/cheryl/project/testing/Cheryl//neutral6.csv = No match
+/home/cheryl/project/testing/Cheryl//panic1.csv = No match
+/home/cheryl/project/testing/Cheryl//panic2.csv = No match
+/home/cheryl/project/testing/Cheryl//rightpoint1.csv = No match
+/home/cheryl/project/testing/Cheryl//rightpoint2.csv = No match
+/home/cheryl/project/testing/Cheryl//rightpoint3.csv = No match
+Number of samples read in: 47
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: Accelerate
+Neural result: No match
+Markov result: No match
+Turn left: 0.001340
+Turn right: 0.022794
+Accelerate: 0.965452
+Decelerate: 0.012472
+Start/Stop: 0.012395
+Heuristic result: Accelerate
+Neural result: Accelerate
+Markov result: Accelerate
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: Accelerate
+Neural result: No match
+Markov result: Accelerate
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: Accelerate
+Neural result: No match
+Markov result: Accelerate
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: No match
+Neural result: No match
+Markov result: No match
+Turn left: 0.001340
+Turn right: 0.022794
+Accelerate: 0.965452
+Decelerate: 0.012472
+Start/Stop: 0.012395
+Heuristic result: Accelerate
+Neural result: Accelerate
+Markov result: Accelerate
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: Decelerate
+Neural result: No match
+Markov result: Start/Stop
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: No match
+Neural result: No match
+Markov result: No match
+Turn left: 0.007596
+Turn right: 0.016946
+Accelerate: 0.000619
+Decelerate: 0.974182
+Start/Stop: 0.012057
+Heuristic result: Decelerate
+Neural result: Decelerate
+Markov result: Decelerate
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: Decelerate
+Neural result: No match
+Markov result: Decelerate
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: No match
+Neural result: No match
+Markov result: No match
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: Decelerate
+Neural result: No match
+Markov result: Decelerate
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: Start/Stop
+Neural result: No match
+Markov result: Start/Stop
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: Start/Stop
+Neural result: No match
+Markov result: Start/Stop
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: Start/Stop
+Neural result: No match
+Markov result: Start/Stop
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: Start/Stop
+Neural result: No match
+Markov result: Start/Stop
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: Start/Stop
+Neural result: No match
+Markov result: Start/Stop
+Turn left: 0.975833
+Turn right: 0.008340
+Accelerate: 0.007207
+Decelerate: 0.000007
+Start/Stop: 0.000157
+Heuristic result: Turn left
+Neural result: Turn left
+Markov result: No match
+Turn left: 0.992926
+Turn right: 0.003588
+Accelerate: 0.000141
+Decelerate: 0.007428
+Start/Stop: 0.000052
+Heuristic result: Turn left
+Neural result: Turn left
+Markov result: Turn left
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: No match
+Neural result: No match
+Markov result: No match
+Turn left: 0.975833
+Turn right: 0.008340
+Accelerate: 0.007207
+Decelerate: 0.000007
+Start/Stop: 0.000157
+Heuristic result: Turn left
+Neural result: Turn left
+Markov result: Turn left
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: No match
+Neural result: No match
+Markov result: No match
+Turn left: 0.992926
+Turn right: 0.003588
+Accelerate: 0.000141
+Decelerate: 0.007428
+Start/Stop: 0.000052
+Heuristic result: Turn left
+Neural result: Turn left
+Markov result: Turn left
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: Turn right
+Neural result: No match
+Markov result: No match
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: Turn right
+Neural result: No match
+Markov result: Turn right
+Turn left: 0.001431
+Turn right: 0.970813
+Accelerate: 0.018507
+Decelerate: 0.004424
+Start/Stop: 0.000610
+Heuristic result: Turn right
+Neural result: Turn right
+Markov result: Turn right
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: Turn right
+Neural result: No match
+Markov result: Turn right
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: No match
+Neural result: No match
+Markov result: No match
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: Turn right
+Neural result: No match
+Markov result: Turn right
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: No match
+Neural result: No match
+Markov result: Start/Stop
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: No match
+Neural result: No match
+Markov result: No match
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: No match
+Neural result: No match
+Markov result: No match
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: No match
+Neural result: No match
+Markov result: No match
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: No match
+Neural result: No match
+Markov result: No match
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: No match
+Neural result: No match
+Markov result: No match
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: No match
+Neural result: No match
+Markov result: No match
+Turn left: 0.015643
+Turn right: 0.028542
+Accelerate: 0.023187
+Decelerate: 0.006100
+Start/Stop: 0.012159
+Heuristic result: No match
+Neural result: No match
+Markov result: Start/Stop
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: No match
+Neural result: No match
+Markov result: Start/Stop
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: No match
+Neural result: No match
+Markov result: Start/Stop
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: No match
+Neural result: No match
+Markov result: Start/Stop
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: No match
+Neural result: No match
+Markov result: Start/Stop
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: No match
+Neural result: No match
+Markov result: Accelerate
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: No match
+Neural result: No match
+Markov result: No match
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: No match
+Neural result: No match
+Markov result: No match
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: Turn right
+Neural result: No match
+Markov result: No match
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: No match
+Neural result: No match
+Markov result: No match
+Turn left: 0.002197
+Turn right: 0.038699
+Accelerate: 0.030956
+Decelerate: 0.033021
+Start/Stop: 0.035593
+Heuristic result: No match
+Neural result: No match
+Markov result: No match
+Correct = 80.851%
+False positives = 0.000%
+False negatives = 19.149%
+mode=recognition criterion=accuracy classifier=hybrid 

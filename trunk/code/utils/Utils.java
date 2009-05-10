@@ -9,7 +9,8 @@ class Utils
 	{
 		if (verbose)
 			System.out.println(msg);
-		System.exit(0);
+		System.out.flush();
+		System.exit(1);
 	}
 
 	static double square(double d)
@@ -27,6 +28,11 @@ class Utils
 	{
 		if (verbose)
 			System.out.println(msg);
+	}
+	
+	public static void results(String msg)
+	{
+		System.out.println(msg);
 	}
 
 	static ArrayList<Sample> read_index(String gesture_dir, char[] escapechars)
@@ -59,7 +65,7 @@ class Utils
 			BufferedReader in = new BufferedReader(new FileReader(index_pathname));
 			while((line = in.readLine()) != null)
 			{
-				if(line.length() == 0 || in(line.charAt(0), escapechars))
+				if(line.length() == 0 || line.charAt(0) == '#' || in(line.charAt(0), escapechars))
 					continue;
 				parts = line.split(":");
 				if(parts.length != 2)
@@ -70,7 +76,7 @@ class Utils
 					Utils.error("Invalid gesture name <" + parts[1] + ">");
 				
 				//Remove any unescaped characters
-				if (in(line.charAt(0), new char[] {'*', '#'}))
+				if (in(line.charAt(0), new char[] {'*', '!'}))
 				{
 					parts[0] = parts[0].substring(1);
 				}

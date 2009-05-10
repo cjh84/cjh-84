@@ -17,7 +17,7 @@ class Markov extends Recogniser
 	static final int NUM_DIMENSIONS = 9;
 	static int NUM_STATES = -1;
 	static int NUM_ITERATIONS = -1;
-	static String LEARNER = "Baulm-Welch";
+	static int LEARNER = -1;
 	
 	String output_root;
 	
@@ -90,11 +90,11 @@ class Markov extends Recogniser
 		for (Learner learner : learners)
 		{
 			Utils.log("Training " + learner.gesture.toString());
-			if (LEARNER.equalsIgnoreCase("Baulm-Welch"))
+			if (LEARNER == 0)
 			{	
 				learner.learnbw();
 			}
-			else if (LEARNER.equalsIgnoreCase("K-Means"))
+			else if (LEARNER == 1)
 			{
 				learner.learnkm();
 			}
@@ -167,6 +167,8 @@ class Markov extends Recogniser
 			NUM_STATES = Integer.valueOf(Config.lookup("m_hidden_states"));
 		if(NUM_ITERATIONS < 0)
 			NUM_ITERATIONS = Integer.valueOf(Config.lookup("m_iterations"));
+		if(LEARNER < 0)
+			LEARNER = Integer.valueOf(Config.lookup("m_learner"));
 
 		learners = new ArrayList<Learner>(5);
 

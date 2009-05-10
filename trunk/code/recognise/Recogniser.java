@@ -207,9 +207,10 @@ class Classifier
 	{
 		switch(id)
 		{
-			case NEURAL:    (new Neural()).train(samples, out_file); break;
+			case HEURISTIC:	Utils.error("Cannot train on heuristic recogniser"); break;
+			case NEURAL:	(new Neural()).train(samples, out_file); break;
 			case MARKOV:    (new Markov()).train(samples, out_file); break;
-			default:    	Utils.log("Cannot train on this recogniser"); break;
+			case HYBRID: 	(new Heuristic()).train(samples, out_file); break;
 		}
 		return;
 	}
@@ -380,8 +381,8 @@ class Person
 	{
 		Person dmi = new Person();
 
-		dmi.neural_file = "david.net";
-		dmi.markov_root = "David.Markov.out_";
+		dmi.neural_file = "/home/cheryl/project/testing/David/david.net";
+		dmi.markov_root = "/home/cheryl/project/testing/David/David.Markov.out_";
 
 		dmi.left[Gesture.TurnLeft].setX(20,35);
 		dmi.left[Gesture.TurnLeft].setY(0,18);
@@ -417,8 +418,8 @@ class Person
 	{
 		Person ch = new Person();
 		
-		ch.neural_file = "cheryl.net";
-		ch.markov_root = "Cheryl_Markov.out_";
+		ch.neural_file = "/home/cheryl/project/testing/Cheryl/cheryl.net";
+		ch.markov_root = "/home/cheryl/project/testing/Cheryl/Cheryl_Markov.out_";
 		
 		ch.left[Gesture.TurnLeft].setX(15,30);
 		ch.left[Gesture.TurnLeft].setY(0,18);
