@@ -6,6 +6,7 @@ class Result
 	static final int CORRECT = 0;
 	static final int FALSE_POS = 1;
 	static final int FALSE_NEG = 2;
+	static final int INCORRECT = 3;
 }
 
 class Evaluation
@@ -32,28 +33,28 @@ class Evaluation
 		System.out.println("Options are <key=value> pairs:");
 		System.out.println("person = " + User.all_usernames());
 		System.out.println("classifier = " + Classifier.all_classifiers());
-		System.out.println("criterion = error accuracy performance");
-		System.out.println("mode = training recognition");		
-		System.out.println("n_learner = <integer>");
+		System.out.println("criterion = accuracy error performance");
+		System.out.println("mode = training recognition recog-no-negs");		
+		System.out.println("n_learner = 0{Basic} 1{Batch} 2{RProp}");
 		System.out.println("n_epochs = <integer>");
 		System.out.println("n_hidden_nodes = <integer>");
 		System.out.println("n_learning_rate = <double>");
 		System.out.println("n_momentum = <double>");
 		System.out.println("n_train_on_negs = true false");
-		System.out.println("m_learner = baulm-welch k-means");
+		System.out.println("m_learner = 0{Baulm-Welch} 1{K-Means}");
 		System.out.println("m_hidden_states = <integer>");
 		System.out.println("m_iterations = <integer>");
 		System.exit(0);
 	}
-	
+
 	static void parse_args(String[] argv)
 	{
 		if(argv.length < 1)
 			usage();
 		
 		String[] attributes = new String[2];
-		String key, value;
 		String arg;
+		String key, value;
 		
 		for (int i = 1; i < argv.length; i++)
 		{
@@ -88,6 +89,7 @@ class Evaluation
 	public static void main(String[] args)
 	{
 		parse_args(args);
+		user_args = args;
 		dump_options();
 		
 		Utils.verbose = Boolean.valueOf(Config.lookup("verbose"));
@@ -95,17 +97,16 @@ class Evaluation
 		char[] escapedchars = new char[2];
 		
 		boolean nostar = mode.equalsIgnoreCase("training");
-		boolean nohash = Config.lookup("n_train_on_negs").equals("true") || 
-			!classifier.name().equalsIgnoreCase("neural");
-		if (nohash)
-			assert(classifier.name().equalsIgnoreCase("neural"));
-		
-		if (nostar && nohash)
-			{ escapedchars[0] = '*'; escapedchars[1] = '#'; }
+		boolean nobang = (Config.lookup("n_train_on_negs").equalsIgnoreCase("true") &&	classifier.name().equalsIgnoreCase("neural")) || 
+				(mode.equalsIgnoreCase("training") && classifier.name().equalsIgnoreCase("markov")) || 
+				(mode.equalsIgnoreCase("recog-no-negs") && criterion.equalsIgnoreCase("accuracy"));
+				
+		if (nostar && nobang)
+			{ escapedchars[0] = '*'; escapedchars[1] = '!'; }
 		else if (nostar)
 			escapedchars[0] = '*';
-		else if (nohash)
-			escapedchars[0] = '#';
+		else if (nobang)
+			escapedchars[0] = '!';
 		else
 			escapedchars = new char[0];
 
@@ -114,25 +115,45 @@ class Evaluation
 		samples = Utils.read_index(gesture_dir, escapedchars);
 		num_samples = samples.size();
 		
-		System.out.println("Number of samples read in: " + num_samples);
-		
+		Utils.log("Number of samples read in: " + num_samples);
+				
+		print_results();
+	}
+	
+	static String[] user_args;
+	
+	private static void print_results()
+	{
 		if (criterion.equalsIgnoreCase("error"))
 		{	
 			double result = error();
-			System.out.printf("RMSE = %.5f\n", result);
+			Utils.results("RMSE = " + String.format("%.5f", result));
 		}
 		else if (criterion.equalsIgnoreCase("accuracy"))
 		{	
 			double[] results = accuracy();
-			System.out.printf("Correct = %.3f %% \n", results[0]);
-			System.out.printf("False positives = %.3f %% \n", results[1]);
-			System.out.printf("False negatives = %.3f %% \n", results[2]);
+			Utils.results("Correct = " + String.format("%.3f", results[0]) + "%");
+			Utils.results("False positives = " + String.format("%.3f", results[1]) + "%");
+			Utils.results("False negatives = " + String.format("%.3f", results[2]) + "%");
 		}
 		else if (criterion.equalsIgnoreCase("performance"))
 		{	
 			long result = performance(); 
-			System.out.println("Time in microseconds: " + String.valueOf(result/1000));
+			Utils.results("Time in microseconds: " + String.valueOf(result/1000));
 		}
+		
+		String[] attributes = new String[2];
+		String user_options = "";
+				
+		for (int i = 1; i < user_args.length; i++)
+		{
+			attributes = user_args[i].split("=");
+			if (!attributes[0].equalsIgnoreCase("verbose"))
+				user_options += attributes[0] + "=" + attributes[1] + " ";
+		}
+		
+		Utils.results(user_options);		
+		
 	}
 	
 	private static void dump_options()
@@ -143,11 +164,12 @@ class Evaluation
 		Utils.log("mode = " + mode);
 		Config.dump_options();
 	}
-	
+		
 	static double error()
 	{
-		assert(classifier.name().equalsIgnoreCase("neural"));
-		assert(mode.equalsIgnoreCase("training"));
+		if(!classifier.name().equalsIgnoreCase("neural") || !mode.equalsIgnoreCase("training"))
+			Utils.error("Error criterion is only valid for " +
+				"training the neural classifier.");
 		
 		Neural neural = new Neural();
 		neural.train(samples, temp_file);
@@ -156,9 +178,12 @@ class Evaluation
 	
 	static double[] accuracy()
 	{
+		if (mode.equalsIgnoreCase("training"))
+			Utils.error("Accuracy criterion is only valid for " + 
+				"the recognition mode.");
 		assert(mode.equalsIgnoreCase("recognition"));
 				
-		double[] counts = new double[3];
+		double[] counts = new double[4];
 		Sample s;
 		Gesture g;
 				
@@ -192,6 +217,10 @@ class Evaluation
 		{
 			return Result.FALSE_NEG;
 		}
+		else if (!s.gesture.equals(g))
+		{
+			return Result.INCORRECT;
+		}
 		return -1;
 	} 
 	
@@ -201,11 +230,17 @@ class Evaluation
 
 		if (mode.equalsIgnoreCase("training"))
 		{
-			assert(classifier.name().equalsIgnoreCase("neural") || 
-				classifier.name().equalsIgnoreCase("markov"));
-			tr = new Training(samples, classifier);
+			if (!classifier.name().equalsIgnoreCase("heuristic"))
+			{
+				tr = new Training(samples, classifier);
+			}
+			else
+			{
+				Utils.error("Performance criterion when training is " +
+				"not valid for heuristic.");
+			}
 		}
-		else if (mode.equalsIgnoreCase("recognition"))
+		else
 		{
 			for (int i = 0; i < num_samples; i++)
 			{

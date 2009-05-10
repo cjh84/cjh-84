@@ -750,32 +750,24 @@ The Recogniser.java file holds defines the Recogniser interface containing a sin
 
 The file also holds Gesture, Person and Classifier classes which are enumerations of the valid inputs:
 
-\begin{minipage}[t]{4cm}
-\begin{tabular}{|c|} \hline 
+\begin{tabular}[t]{|c|} \hline 
 \class{Gesture} \\ \hline
 \multicolumn{1}{|p{4cm}|}
 {\variable{TurnLeft \newline TurnRight \newline Accelerate \newline Decelerate \newline StartStop \newline NoMatch \newline MultiMatch
 } } \\ \hline
-\end{tabular}
-\end{minipage} \hfill
-
-\begin{minipage}[t]{4cm}
-\begin{tabular}{|c|} \hline 
+\end{tabular}\hfill
+\begin{tabular}[t]{|c|} \hline 
 \class{User} \\ \hline
 \multicolumn{1}{|p{4cm}|}
 {\variable{CHERYL \newline DAVID
 } } \\ \hline
-\end{tabular}
-\end{minipage} \hfill
-
-\begin{minipage}[t]{4cm}
-\begin{tabular}{|c|} \hline 
+\end{tabular}\hfill
+\begin{tabular}[t]{|c|} \hline 
 \class{Classifier} \\ \hline
 \multicolumn{1}{|p{4cm}|}
 {\variable{HEURISTIC \newline NEURAL \newline MARKOV \newline HYBRID
 } } \\ \hline
 \end{tabular}
-\end{minipage} \hfill
 
 The Person class is the union of all trained data related to a single specified user. It aggregates Intervals, neural network and Hidden Markov Model parameters, and also contains static methods to populate these fields from data files.
 

@@ -50,7 +50,8 @@ class Neural extends Recogniser implements NeuralNetListener
 		pin.setCount(person.neural_seq++);
 		person.nnet.singleStepForward(pin);
 		pout = person.netout.fwdGet();
-		//dump_results(pout);
+		
+		dump_results(pout);
 				
 		if(NEURAL_THRESHOLD < 0)
 			NEURAL_THRESHOLD = Double.valueOf(Config.lookup("neuralthreshold"));
@@ -72,9 +73,6 @@ class Neural extends Recogniser implements NeuralNetListener
 		
 		return new Gesture(command);
 
-		// Look at pout.getArray() to decide what to do
-				
-		//return new Gesture(Gesture.NoMatch);
 	}
 		
 	void train(ArrayList<Sample> sampleslist, String out_file)
@@ -209,7 +207,7 @@ class Neural extends Recogniser implements NeuralNetListener
 	public void netStopped(NeuralNetEvent e)
 	{
 		timing = System.nanoTime() - timing;
-		Utils.log("Training finished in " + timing/1000 + " microseconds");
+		Utils.log("Training finished in " + timing/1000000 + " ms");
 		saveNeuralNet(nnet, output_file);
 	}
 	
