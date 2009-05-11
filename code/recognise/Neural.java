@@ -1,4 +1,4 @@
-import java.io.*;
+\	import java.io.*;
 import java.util.*;
 
 import org.joone.log.*;
@@ -173,7 +173,7 @@ class Neural extends Recogniser implements NeuralNetListener
 		}
 	}
 	
-	void set_columns(MemoryInputSynapse syn, int first, int last)
+	private void set_columns(MemoryInputSynapse syn, int first, int last)
 	{
 		String cols = "";
 		
@@ -224,7 +224,7 @@ class Neural extends Recogniser implements NeuralNetListener
 	
 	public void cicleTerminated(NeuralNetEvent e) {}
 	
-	static void saveNeuralNet(NeuralNet nnet, String filename)
+	
 	{
 		try
 		{

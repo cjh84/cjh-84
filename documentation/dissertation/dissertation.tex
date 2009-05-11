@@ -29,7 +29,10 @@
 \newcommand{\class}[1]{\textbf{#1}}
 \newcommand{\scopendpoint}[1]{\texttt{#1}}
 \newcommand{\variable}[1]{\texttt{#1}}
+\newenvironment{pseudocode}[1]{\begin{tabbing}\hspace*{0.5cm}\=\hspace*{0.5cm}\=\hspace*{0.5cm}\= \kill\textsl{#1}}{\end{tabbing}}
 \newcommand{\implies}{\Rightarrow}
+
+\includeonly{propbody}
 
 %\renewcommand{\baselinestretch}{1.1}    % adjust line spacing to make
 %                                        % more readable
@@ -84,6 +87,8 @@ Supervisor:         & Cecily Morrison, Laurel Riek                    \\
 
 \section*{Original Aims of the Project}
 
+The original 
+
 To write a gesture recognition system which converts a stream of coordinates into commands to drive a robot.
 
 \section*{Work Completed}
@@ -135,7 +140,7 @@ New paradigms for human-computer interaction are becoming a reality. Amongst con
 
 The philosophy which is common to these systems is defined by the term ``ubiquitous computing''. The aim is to allow intuitive, natural interaction so that anybody (in theory) can use them without training, but instead by mirroring or mimicking behaviour of the real world.
 
-Conversely, robots have generally been operated by skilled engineers and researchers. The motivation was to bring the power of human intuition, using techniques from machine learning, to the human-machine interface. The medium that we chose to investigate and exploit is gesture recognition, a specialization of pattern recognition.
+Conversely, robots have generally been operated by skilled engineers and researchers. The motivation was to bring the power of human intuition, using techniques from machine learning, to the human-machine interface. The medium that I chose to investigate and exploit is gesture recognition, a specialization of pattern recognition.
 
 While machine vision is one option for solving this problem, motion capture systems provide far more detailed location data, down to hundredths of a millimeter. Rather than allowing users full freedom of gestures, I chose to train on a finite set of predefined gestures, converting these into commands that are used to drive the robot. 
 
@@ -193,15 +198,18 @@ The objects needed firstly for input to a gesture, and secondly representing the
 
 The data outputted is six data values per object; an Axis Angle triplet for rotation and a triplet for global translation in mm. An alternative rotation system which is also available is Euler angles.
 
-In order to simplify data processing while providing adequate control over the robot, most of the pre-set gestures were constrained to one arm movement within two dimensions (x-z or y-z planes in a z-up world):
-\begin{enumerate}
-\item accelerate
-\item decelerate
-\item turn left
-\item turn right
-\item start/stop - a test case for a more complex gesture, in this case a single clap at chest level.
-\end{enumerate}
-{diagram: gestures}
+In order to simplify data processing while providing adequate control over the robot, most of the pre-set gestures were constrained to one arm movement within two dimensions (x-z or y-z planes in a z-up world). The commands chosen to provide basic steering and speed were accelerate, decelerate, turn left, turn right and start/stop, the last being a test case for a more complex gesture, in this case a single clap at chest level. Figure \ref{gestures} shows the arm gestures for each command.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.3,angle=0]{images/accel.ps}
+\includegraphics[scale=0.3,angle=0]{images/decel.ps}
+\includegraphics[scale=0.3,angle=0]{images/left.ps}
+\includegraphics[scale=0.3,angle=0]{images/right.ps}
+\includegraphics[scale=0.3,angle=0]{images/startstop.ps}
+\caption{Left to right: arm gestures for \textit{accelerate}, \textit{decelerate}, \textit{turn left}, \textit{turn right}, and \textit{start/stop}.}
+\label{gestures}
+\end{figure}
 
 \subsection{Axis Angles}
 
@@ -256,14 +264,14 @@ Among the more popular techniques are Support Vector Machines, naive Bayes class
 
 \subsection{Neural Networks}
 
-An artificial neural network is an interconnected set of nodes which individually perform simple processing, but exhibits complex behaviour as a whole system. This is the connectionist approach to pattern recognition from large sets of data; it was inspired by the biological neural network. Each unit combines the inputs by means of an activation function, which fires non-linearly given sufficient input. Common choices for the activation function are the tanh function or the sigmoid function, which have the property of being differentiable:
+An artificial neural network is an interconnected set of nodes which individually perform simple processing, but exhibits complex behaviour as a whole system. This is the connectionist approach to pattern recognition from large sets of data, inspired by  biological neural networks. Each unit combines the inputs by means of an activation function, which fires non-linearly given sufficient input. Common choices for the activation function are the tanh function or the sigmoid function, which have the property of being differentiable:
 
 \[ \phi(v_i) = 1/(1+e^{-v_i}) \]
 
 {diagram: single neuron}
 
 $w_{ji}$ connects node $i$ to node $j$ \\
-$a_{ij}$ is the activation for node, the weighted sum of the inputs \\
+$a_{ij}$ is the activation for node, the weighted sum of the inputs = $\sum_i {w_{ji}z_i}$ \\
 $g$ is the activation function \\
 $z_j = g(a_j)$ \\
 bias input = 1
@@ -311,6 +319,13 @@ There are two cases for calculating $\partial_j$:
 
 since $ \frac {\partial a_k} {\partial a_j} = \frac {\partial} {\partial a_j} \left( \sum_{k \in \{k_1, k_2,\ldots,k_q\}} { w_{ki} g(a_i) } \right) = w_{kj} g'(a_j) $
 
+This gives the \textit{back-propagation formula}\cite{NeuralPat}:
+\[
+\delta j = g'(a_j) \sum_{k \in \{k_1, k_2,\ldots,k_q\}} {\delta_k w_{kj}}
+\]
+
+The importance of this result is the resulting reduction in time complexity, as training neural networks is very time consuming. The majority of the work is done calculating $a_{ij} = \sum_i {w_{ji}z_i}$. There are $W$ derivatives to calculate for $W$, letting $W$ be the total number of weights and biases. The naive approach of explicit evaluating each derivative in $O(W)$ operations is therefore $O(W^2)$ in time complexity. By contrast,  backpropagation (using $\frac {\partial E_p(\mathbf w)} {\partial w_{ji}} = \delta_j z_i$ to calculate the derivatives) reduces the computational complexity to $O(W)$.
+
 \subsection{Hidden Markov Models}
 
 First order Markov processes are a class of statistical model which state that the probability of being in some future state is only dependant on the current state, also known as the memoryless model since the ``memory" or past states have no effect on the next state.
@@ -326,7 +341,7 @@ At each time $t$, a symbol is emitted from state $i$. For a Bakis HMM, at $t+1$ 
 
 A Hidden Markov Model is one where these probabilities characterizing the states are unknown, and for a training sequence, it is unknown which state the observation lies in. To find the probabilities, the Baulm-Welch algorithm takes a vector of training sequences and iterates using Expectation-Maximization. The expectation is calculated by the forward-backward algorithm, which is an example of dynamic programming - the use of memoization to save recomputing solutions to sub-problems.
 
-For a Markov Model, $Pr(E_t|S_t)$ is the sensor model and $Pr(S_t|S_{t-1})$ is the transition model. $Pr(S_0)$ denotes the prior state. The assumption is that the probabilities do not change over time, as the observations are stationary processes.
+For a Markov Model, $Pr(E_t|S_t)$ is the sensor model and $Pr(S_t|S_{t-1})$ is the transition model. $Pr(S_0)$ denotes the prior state.\cite{AIModern} The assumption is that the probabilities do not change over time, as the observations are stationary processes.
 
 The forward-backward algorithm solves the task of smoothing; deducing the previous states from the current state, $Pr(S_t|e_{1:t})$ for $0 \leq T < t$. 
 
@@ -463,7 +478,7 @@ This stream is a direct transcription of the ``ok"/``dropout" field of the coord
 
 \begin{figure}
 \centering
-\includegraphics[scale=0.8,angle=0]{diagrams/dataflowdiagram.ps}
+\includegraphics[scale=0.75,angle=0]{diagrams/dataflowdiagram.ps}
 \caption{Data flow diagram}
 \label{dfd}
 \end{figure}
@@ -598,27 +613,20 @@ The data requires significant preprocessing to convert the feature vector from w
 } } \\ \hline
 \end{tabular}
 
-The SixDOF class holds doubles for \variable{ax,ay,az,tx,ty,tz} and contains the following code, which converts the \variable{ax,ay,az} Axis Angle triplet into a normalised vector plus an angle for the rotation magnitude:
+The SixDOF class holds doubles for \variable{ax,ay,az,tx,ty,tz} and contains the following code, which converts the \variable{ax,ay,az} Axis Angle triplet into a normalised vector plus an angle for the rotation magnitude. It converts small rotations into a zero rotation about the z-axis in order to avoid floating point errors.
 
-%\parbox[20cm]{
-\begin{verbatim}
-double angle = 1.0
-angle *= Math.sqrt(ax * ax + ay * ay + az * az);
-if (angle > EPSILON)
-{
-    ax /= angle;
-    ay /= angle;
-    az /= angle;
-}
-else
-{
-    //Convert small rotations into a zero rotation about the z-axis 
-    to avoid floating point errors
-    angle = 0.0;
-    ax = ay = 0.0;
-    az = 1.0
-}
-\end{verbatim}
+\begin{pseudocode}
+double angle = 1.0 \\
+angle *= Math.sqrt(ax * ax + ay * ay + az * az) \\
+if (angle \> EPSILON): \\
+\>    ax /= angle; \\
+\>    ay /= angle; \\
+\>    az /= angle; \\
+else:
+\>    angle = 0.0; \\
+\>   ax = ay = 0.0; \\
+\>    az = 1.0 \\
+\end{pseudocode}
 
 \begin{tabular}{|c|} \hline 
 \class{Frame} \\ \hline
@@ -642,7 +650,7 @@ The Frame class contains three of these SixDOFs for body, left arm and right arm
 
 Point contains a static rotatePoint method which implements the conversion from axis-angle triplets to matrix rotations. It takes an axis angle and a point to be rotated and returns a Point.
 
-\begin{verbatim}
+\begin{pseudocode}
 double ax, ay, az, angle; //axis angle
 double x0, xy, xz; //Point
 
@@ -655,7 +663,7 @@ Point p = new Point()
 p.x = (t*ax*ax + c)*x0 + (t*ax*ay + s*az)*y0 + (t*ax*az - s*ay)*z0;
 p.y = (t*ax*ay - s*az)*x0 + (t*ay*ay + c)*y0 + (t*ay*az + s*ax)*z0;
 p.z = (t*ax*az + s*ay)*x0 + (t*ay*az - s*ax)*y0 + (t*az*az + c)*z0;
-\end{verbatim}
+\end{pseudocode}
 
 \subsection{Gesture segmentation}
 
@@ -682,18 +690,14 @@ A circular buffer holds a list of frames and a pointer to indicate the next posi
 
 Every ten frames, SlidingWindow runs the specified recogniser on the circular buffer with window sizes of 50 frames (0.5 seconds) to 350 frames (3.5 seconds), with trials showing that almost all clearly defined gestures fall within these boundaries.
 
-\begin{verbatim}
-while (true)
-{
-    msg = scop.get_message();
-    circbuffer.add(Frame(msg));
-    for windowsize = 50; windowsize < 350; windowsize += 10
-        {
-            if recognised(circbuffer, windowsize)
-                break; //recognised emits the command to ctrlserver
-        }
-}
-\end{verbatim}
+\begin{pseudocode}
+Loop forever: \\
+\>	Get message from SCOP \\
+\>	Add received frame to circular buffer \\
+\>\>    for windowsize = 50 to 350, step size = 10 \\
+\>\>        if (command recognised in circular buffer window) \\
+\>\>\>           emit the command to ctrlserver
+\end{pseudocode}
 
 If a gesture is recognised from the current window, the buffer continues to fill with arriving data but no more attempts at recognition are made until the minimum windowsize is exceeded. In addition, SlidingWindow monitors the frames for a flag indicating a dropout; if a frame contains data where at least one object is unavailable, it emits an "dropout" message to the \variable{statusserver}, and "ok" when the object returns.
 
@@ -817,7 +821,79 @@ When given a Person and Features calculated from a list of frames, the first che
 \begin{tabular}{|c|} \hline 
 \class{Neural extends Recogniser} \\ \hline
 \multicolumn{1}{|p{16cm}|}
-{ \variable{+ static Gesture recognise(Person person, Features features)
+{ \variable{+ static Gesture recognise(Person person, Features features) \newline
++ void train(ArrayList<Sample> sampleslist, String out\_file) \newline
+- void init\_parameters() \newline
+static void saveNeuralNet(NeuralNet nnet, String filename) \newline
+static NeuralNet restoreNeuralNet(String filename) \newline
+void set\_columns(MemoryInputSynapse syn, int first, int last) \newline
++ void errorChanged(NeuralNetEvent e) \newline
++ void netStarted(NeuralNetEvent e) \newline
++ void netStopped(NeuralNetEvent e) \newline
++ void netStoppedError(NeuralNetEvent e, String error) \newline
++ void cicleTerminated(NeuralNetEvent e)
+} } \\ \hline
+\end{tabular}
+
+There are six input nodes for LeftArm {dx,dy,dz} and RightArm {dx,dy,dz}, a layer of hidden nodes and five output nodes corresponding to the five gestures. Each gesture is labelled with a vector of expected output; for example, an accelerate gesture is (1,0,0,0,0), a Turn Right gesture is (0,0,0,1,0) and a non-gesture is (0,0,0,0,0).
+
+I researched several neural network libraries, including Joone and JavaNNS. The Joone library has particularly good tools for writing third party modules, as well as support for distributed training, which would be useful for higher performance in the CPU intensive training stage.
+
+\newpage
+
+\subsection{Hidden Markov Model recogniser}
+
+\begin{tabular}{|c|} \hline 
+\class{Markov extends Recogniser} \\ \hline
+\multicolumn{1}{|p{16cm}|}
+{ \variable{+ static Gesture recognise(Person person, Features features) \newline
++ void train(ArrayList<Sample> samples, String out\_file) \newline
+- static ArrayList<ObservationVector> toObservationVectors(ArrayList<Frame> frames) \newline
+static void save\_hmm(Learner learner, String filename) \newline
+static Hmm restore\_hmm(String filename) \newline
+- void init\_parameters()
+} } \\ \hline
+\end{tabular}
+
+\begin{tabular}{|c|} \hline 
+\class{Learner} \\ \hline
+\multicolumn{1}{|p{16cm}|}
+{ \variable{Learner(int states, int dimensions, int iterations, Gesture g) \newline
+void add\_sequence(ArrayList<ObservationVector> seq) \newline
+void learnbw() \newline
+void learnkm()
+} } \\ \hline
+\end{tabular}
+
+
+Each gesture is modelled by a different Markov process, so five Hidden Markov Models are created for the five gestures. This recogniser uses the raw data rather than the extracted data, since it is highly dependant on the temporal characteristics of the input vector.
+
+Alternative Java libraries for Hidden Markov Models include Jahmm, jHMM, and HmmSDK.
+
+\newpage
+
+\subsection{Decision logic}
+
+\begin{tabular}{|c|} \hline 
+\class{Hybrid extends Recogniser} \\ \hline
+\multicolumn{1}{|p{16cm}|}
+{ \variable{+ static Gesture recognise(Person person, Features features) \newline
++ void train(ArrayList<Sample> samples, String out\_file)
+} } \\ \hline
+\end{tabular}
+
+This aggregates the results from each recogniser and uses a majority voting system to decide which, if any, are correct. The output of each recogniser is a single gesture, so any two recognisers matching is considered correct. The training method calls the \variable{train} on the neural network and hidden Markov model recognisers, as training is not valid for the heuristic recogniser.
+
+This is an application of the safety engineering technique of triple modular redundancy. If any one of the methods fails to recognise the gesture or comes to an incorrect decision, the voting logic can use the other two pattern recognition techniques to mask the failure.
+
+\subsection{Training}
+
+\begin{tabular}{|c|} \hline 
+\class{Training} \\ \hline
+\multicolumn{1}{|p{12cm}|}
+{\variable{User user \newline
+Classifier classifier \newline
+Training(ArrayList<Sample> samples, Classifier clf)
 } } \\ \hline
 \end{tabular}
 
@@ -832,65 +908,32 @@ Sample(String pathname, Gesture g)
 } } \\ \hline
 \end{tabular}
 
-\begin{tabular}{|c|} \hline 
-\class{Training implements NeuralNetListener} \\ \hline
-\multicolumn{1}{|p{16cm}|}
-{\variable{Training(double[][] inputdata, double[][] outputdata) \newline
-String gesture\_dir, output\_file \newline
-static final String index\_filename = "training.dat" \newline
-static final int num\_epochs = 2000 \newline
-static final int num\_hidden\_neurons = 20 \newline
-LinearLayer input \newline
-SigmoidLayer hidden, output \newline
-FullSynapse synapse\_IH, synapse\_HO \newline
-NeuralNet nnet \newline
-Monitor monitor \newline
-MemoryInputSynapse inputStream, samples \newline
-TeachingSynapse trainer \newline
-static ArrayList<Sample> read\_index(String gesture\_dir, String index\_filename) \newline
-void set\_columns(MemoryInputSynapse syn, int first, int last) \newline
-+ void errorChanged(NeuralNetEvent e) \newline
-+ void netStarted(NeuralNetEvent e) \newline
-+ void netStopped(NeuralNetEvent e) \newline
-+ void netStoppedError(NeuralNetEvent e, String error) \newline
-+ void cicleTerminated(NeuralNetEvent e) \newline
-static void saveNeuralNet(NeuralNet nnet, String filename) \newline
-static NeuralNet restoreNeuralNet(String filename)
-} } \\ \hline
-
-\end{tabular}
-
-There are six input nodes for LeftArm {dx,dy,dz} and RightArm {dx,dy,dz}, a layer of hidden nodes and five output nodes corresponding to the five gestures. Each gesture is labelled with a vector of expected output; for example, an accelerate gesture is (1,0,0,0,0), a Turn Right gesture is (0,0,0,1,0) and a non-gesture is (0,0,0,0,0).
-
-I researched several neural network libraries, including Joone and JavaNNS. The Joone library has particularly good tools for writing third party modules, as well as support for distributed training, which would be useful for higher performance in the CPU intensive training stage.
-
-\newpage
-
-\subsection{Hidden Markov Model recogniser}
-
-Each gesture is modelled by a different Markov process, so five Hidden Markov Models are created for the five gestures. All the gestures empirically can be modelled by either two states (rising and falling) or four states (including a neutral start and end). This recogniser uses the raw data rather than the extracted data, since it is highly dependant on the temporal characteristics of the input vector.
-
-Alternative Java libraries for Hidden Markov Models include Jahmm, jHMM, and HmmSDK.
-
-\subsection{Decision logic}
-
-This aggregates the results from each recogniser and uses a majority voting system to decide which, if any, are correct. The output of the stochastic recognisers are probabilities rather than hard binary decisions, as from the heuristic recogniser. Therefore exceeding a minimum threshold is required for a valid gesture to be selected.
-
-This is an application of the safety engineering technique of triple modular redundancy. If any one of the methods fails to recognise the gesture or comes to an incorrect decision, the voting logic can use the other two pattern recognition techniques to mask the failure.
+The offline training phase is implemented with a Training class and a set of Samples. The constructor calls the \variable{train()} method on the specified classifier, and can be used as a command line tool on a directory of gestures.
 
 \section{Framework}
 
 \subsection{Simulated control}
 
-Two graphical user interfaces was created which simulated input (via mouse and keyboard) and output (turtle graphics) respectively for alternative feedback. These were completely decoupled and communicated only via the SRCF. Since these were independent from the rest of the system, they are written in Python using the Python SCOP library and Tkinter, the Python graphical libraries. The Model-View-Controller design pattern is used to separate display from control.
+Two graphical user interfaces was created which simulated input (via mouse and keyboard) and output (turtle graphics) respectively for alternative feedback. These were completely decoupled and communicated only via the SRCF. Since these were independent from the rest of the system, they are written in Python using the Python SCOP library and Tkinter, the Python graphical libraries. I used the Model-View-Controller design pattern to separate display from control.
 
-Control.py displays a control panel which accepts either keystrokes or mouse clicks and emits commands on either the \scopendpoint{p1ctrl} or the \scopendpoint{p2ctrl} streams.
+\class{Control.py} displays a control panel which accepts either keystrokes or mouse clicks and emits commands on either the \scopendpoint{p1ctrl} or the \scopendpoint{p2ctrl} streams.
 
-{diagram: screenshot of control keys for P1 and P2}
+\begin{figure}[hb]
+\centering
+\includegraphics[scale=0.5,angle=0]{images/ControlP1.ps}
+\includegraphics[scale=0.5,angle=0]{images/ControlP2.ps}
+\caption{Control.py emitting actions to \scopendpoint{p1ctrl} and \scopendpoint{p2ctrl}}
+\label{control}
+\end{figure}
 
-View.py listens to both streams and uses turtle graphics to represent the two players which can change in velocity or angle; an instance of Arena.py holds two instances of Turtle.py and directs the appropriate commands to update each turtle.
+\class{View.py} listens to both streams and uses turtle graphics to represent the two players which can change in velocity or angle; an instance of Arena.py holds two instances of Turtle.py and directs the appropriate commands to update each turtle.
 
-{diagram: screenshot of turtle graphics showing two turtles}
+\begin{figure}[hb]
+\centering
+\includegraphics[scale=0.5,angle=0]{images/View.ps}
+\caption{View.py listening to \scopendpoint{p1ctrl} and \scopendpoint{p2ctrl}}
+\label{control}
+\end{figure}
 
 {reference: Berkley}
 
@@ -898,7 +941,7 @@ View.py listens to both streams and uses turtle graphics to represent the two pl
 
 {diagram: relay.py}
 
-Relay.py uses the Python implementation of SCOP to open a socket to SRCF:51234. Each robot runs a separate instance of relay.py and listens to either \scopendpoint{p1ctrl} or \scopendpoint{p2ctrl}, depending on which one is assigned to which user. 
+\class{Relay.py} uses the Python implementation of SCOP to open a socket to SRCF:51234. Each robot runs a separate instance of \class{relay.py} and listens to either \scopendpoint{p1ctrl} or \scopendpoint{p2ctrl}, depending on which one is assigned to which user. 
 
 Since the laptops are separate from the desktop PC running all other components, the robot's player numbers are assigned from an environment variable.
 
@@ -913,8 +956,31 @@ This meant that turning should also be a smooth turn, rather than stop/turn in p
 \label{tradius}
 \end{figure}
 
-
 Furthermore, since users issue commands asynchronously, a turn command may be issued while the robot is in the middle of a turn. For this case, an alarm is set for when the turn completes and the robot resumes straight line motion, and the alarm is incremented by 1 second per turn instruction. 
+
+\begin{figure}
+\begin{pseudocode}
+\variable{Update(speed, turn)}: \\
+\>	Calculate robot \variable{velocity} and \variable{radius} parameters from \variable{speed} and \variable{turn} \\
+\>	If \variable{speed} = 0, simulates turning on spot with turning radius = $\epsilon$ \\
+Loop forever: \\
+\>	If currently turning, check if alarm time has occured yet \\
+\>\>		If so, cancel turn direction and call \variable{Update()} \\
+\>	Wait for input from SCOP, with a \variable{timeout} of when the alarm will expire \\
+\>	If \variable{timeout} occurs first, cancel any current turn direction and call \variable{Update()} \\
+\>	Else if input arrives first, get message from SCOP \\
+\>\>		Start/stop, Accelerate or Decelerate messages: \\
+\>\>\>			Adjust speed appropriately and call \variable{Update()} \\
+\>\>		Turn left and Turn right messages: \\
+\>\>\>			If not currently turning, record \variable{turn} direction and	set \variable{alarm} for current time + 0.5 secs \\
+\>\>\>			If currently turning, extend existing \variable{alarm} until current time + 0.5 secs \\
+\>\>\>			If currently turning in opposite direction, cancel \variable{turn} \\
+\>\>\>			Call \variable{Update()}
+\end{pseudocode}
+\caption{Turn time algorithm}
+\label{turntime}
+\end{figure}
+
 
 Accelerate and decelerates increment and decrement the velocity; turn left and right increment and decrement the radius; and start/stop either performs an initialising acceleration, or sets the velocity to zero. The PyRobot library converts the Drive(velocity, radius) commands into 4 byte opcodes and operands. It serialises these for transmission over the USB-to-serial link in order to control the wheel motors.
 
@@ -927,7 +993,7 @@ SCOP assigns a name to each resource and an optional source hint to each stream.
 \scopendpoint{p1coords} and \scopendpoint{p2coords} represent the raw input streams from two users.
 \scopendpoint{p1ctrl} and \scopendpoint{p2ctrl} are the {a,d,l,r,s} commands as interpreted from the two users.
 
-The SRCF was used to provide a SCOP server running on a domain name, so that all units can reach it irrespective of whether they were wired or wireless and without knowing IP addresses. When testing on the King's College wifi network, it was found that broadcasting on non-standard ports is refused, including 51234. To compensate for this, tunnel.sh sets up port forwarding to the SRCF, so that sockets opened on the OLPC XO appear as if connected from the SRCF's port 51234.
+The SRCF was used to provide a SCOP server running on a domain name, so that all units can reach it irrespective of whether they were wired or wireless and without knowing IP addresses. When testing on the King's College wifi network, it was found that broadcasting on non-standard ports is refused, including 51234. To compensate for this, \class{tunnel.sh} sets up port forwarding to the SRCF, so that sockets opened on the OLPC XO appear as if connected from the SRCF's port 51234.
 
 The three streams used for interprocess communication are \scopendpoint{p1coords}, \scopendpoint{p1ctrl} and \scopendpoint{p1status} (and their equivalents for \scopendpoint{p2}). In order to allow these to be distributed, three constants are defined in the configuration file: \variable{coordserver}, \variable{ctrlserver} and \variable{statusserver}. 
 
@@ -955,7 +1021,22 @@ closedthreshold = 3000 \\
 
 In order to ensure that all classes read from the same configuration values, the Config.java file uses the Singleton design pattern. A static variable of type \class{Config} is set to null, and the first lookup initialises it from the configuration file. Subsequent requests only perform lookups on the instantiated object.
 
-\chapter{Evaluation [TODO]}
+\chapter{Evaluation}
+
+\section{Methodology}
+
+\begin{tabular}{|c|} \hline 
+\class{Evaluation} \\ \hline
+\multicolumn{1}{|p{12cm}|}
+{\variable{static double error() \newline
+static double[] accuracy() \newline
+- static int match(Sample s, Gesture g) \newline
+static long performance() \newline
+- static void print\_results()
+} } \\ \hline
+\end{tabular}
+
+The 
 
 \section{Training data}
 
@@ -981,10 +1062,8 @@ Optimal number of hidden nodes (ANNs) and hidden states (HMMs)
 
 \chapter{Conclusions [TODO]}
 
-\chapter{Bibliography [TODO]}
-
-%\addcontentsline{toc}{chapter}{Bibliography}
-%\bibliography{refs}
+\addcontentsline{toc}{chapter}{Bibliography}
+\bibliography{dissertation}
 
 \appendix
 
@@ -995,6 +1074,8 @@ Sample code
 \cleardoublepage
 
 \chapter{Project Proposal}
+
+\include{propbody}
 
 %\input{...}
 

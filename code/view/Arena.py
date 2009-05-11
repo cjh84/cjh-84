@@ -13,7 +13,7 @@ class Arena(Frame):
         self.width, self.height = width, height
         self.canvas = Canvas(self, width=width, height=height)
         self.canvas.pack()
-        parent.title("UC Bereley CS9H Turtle Arena")
+        parent.title("Viewing p1ctrl and p2ctrl")
         self.parent = parent
         self.sock1 = sock1
         self.sock2 = sock2
