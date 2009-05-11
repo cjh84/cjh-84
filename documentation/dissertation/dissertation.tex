@@ -1,6 +1,6 @@
 \documentclass[12pt,a4,notitlepage]{report}
 
-\usepackage{verbatim,graphicx}
+\usepackage{verbatim,graphicx,fancyvrb}
 
 % \input{epsf}            % to allow postscript inclusions
 
@@ -29,7 +29,8 @@
 \newcommand{\class}[1]{\textbf{#1}}
 \newcommand{\scopendpoint}[1]{\texttt{#1}}
 \newcommand{\variable}[1]{\texttt{#1}}
-\newenvironment{pseudocode}[1]{\begin{tabbing}\hspace*{0.5cm}\=\hspace*{0.5cm}\=\hspace*{0.5cm}\= \kill\textsl{#1}}{\end{tabbing}}
+\newenvironment{pseudocode}{\begin{slshape}\begin{tabbing}\hspace*{0.5cm}\=\hspace*{0.5cm}\=\hspace*{0.5cm}\= \kill }{\end{tabbing}\end{slshape}}
+\DefineVerbatimEnvironment{code}{Verbatim}{}
 \newcommand{\implies}{\Rightarrow}
 
 \includeonly{propbody}
@@ -615,18 +616,18 @@ The data requires significant preprocessing to convert the feature vector from w
 
 The SixDOF class holds doubles for \variable{ax,ay,az,tx,ty,tz} and contains the following code, which converts the \variable{ax,ay,az} Axis Angle triplet into a normalised vector plus an angle for the rotation magnitude. It converts small rotations into a zero rotation about the z-axis in order to avoid floating point errors.
 
-\begin{pseudocode}
-double angle = 1.0 \\
-angle *= Math.sqrt(ax * ax + ay * ay + az * az) \\
-if (angle \> EPSILON): \\
-\>    ax /= angle; \\
-\>    ay /= angle; \\
-\>    az /= angle; \\
+\begin{code}
+double angle = 1.0
+angle *= Math.sqrt(ax * ax + ay * ay + az * az)
+if (angle > EPSILON):
+    ax /= angle;
+    ay /= angle;
+    az /= angle;
 else:
-\>    angle = 0.0; \\
-\>   ax = ay = 0.0; \\
-\>    az = 1.0 \\
-\end{pseudocode}
+    angle = 0.0;
+    ax = ay = 0.0;
+    az = 1.0
+\end{code}
 
 \begin{tabular}{|c|} \hline 
 \class{Frame} \\ \hline
@@ -650,7 +651,7 @@ The Frame class contains three of these SixDOFs for body, left arm and right arm
 
 Point contains a static rotatePoint method which implements the conversion from axis-angle triplets to matrix rotations. It takes an axis angle and a point to be rotated and returns a Point.
 
-\begin{pseudocode}
+\begin{code}
 double ax, ay, az, angle; //axis angle
 double x0, xy, xz; //Point
 
@@ -663,7 +664,7 @@ Point p = new Point()
 p.x = (t*ax*ax + c)*x0 + (t*ax*ay + s*az)*y0 + (t*ax*az - s*ay)*z0;
 p.y = (t*ax*ay - s*az)*x0 + (t*ay*ay + c)*y0 + (t*ay*az + s*ax)*z0;
 p.z = (t*ax*az + s*ay)*x0 + (t*ay*az - s*ax)*y0 + (t*az*az + c)*z0;
-\end{pseudocode}
+\end{code}
 
 \subsection{Gesture segmentation}
 

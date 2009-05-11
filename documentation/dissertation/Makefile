@@ -1,6 +1,6 @@
 TARGET=dissertation
 
-all: pdf
+all: ps
 
 ps: dissertation.ps
 
