@@ -141,12 +141,6 @@ class Evaluation
 			}
 			
 		    Utils.results(result);
-            /*			
-			Utils.results("Correct = " + String.format("%.3f", results[0]) + "%");
-			Utils.results("False positives = " + String.format("%.3f", results[1]) + "%");
-			Utils.results("False negatives = " + String.format("%.3f", results[2]) + "%");
-			Utils.results("Incorrect = " + String.format("%.3f", results[3]) + "%");
-			*/
 		}
 		else if (criterion.equalsIgnoreCase("performance"))
 		{	

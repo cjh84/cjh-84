@@ -81,20 +81,15 @@ class Training
 		
 	}
 	
-	static ArrayList<Sample> read_index(String gesture_dir)
-	{
-		char[] escapechars = {'#', '*'};
-		return Utils.read_index(gesture_dir, escapechars);
-	}
-	
 	public static void main(String[] args)
 	{
 		ArrayList<Sample> samples;		
 		parse_args(args);
 		Utils.log("Training using user " + user.name() +
 				" and classifier " + classifier.name());
-		
-		samples = read_index(gesture_dir);
+					
+		char[] escapechars = {'#', '*'};
+		samples = Utils.read_index(gesture_dir, escapechars);
 		
 		Training tr = new Training(samples, classifier);
 				

@@ -5,6 +5,7 @@ from Arena import Arena
 from WalkingTurtle import WalkingTurtle
 from Vector import *
 import scop
+import os
 
 scopserver = os.getenv("SCOPCTRLSERVER", "www.srcf.ucam.org")
 

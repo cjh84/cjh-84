@@ -35,7 +35,7 @@ class Markov extends Recogniser
 		{
 			filename  = person.markov_root + new Gesture(i).toAction();
 			recog_hmm = restore_hmm(filename);
-			probabilities[i] = calc_prob(recog_hmm, framedata);
+			probabilities[i] = recog_hmm.lnProbability(framedata);
 		}
 
 		dump_results(probabilities);
@@ -56,11 +56,6 @@ class Markov extends Recogniser
 		return new Gesture(command);
 	}
 
-	private static double calc_prob(Hmm hmm, ArrayList<ObservationVector> framedata)
-	{
-		return hmm.lnProbability(framedata);
-	}
-
 	static void dump_results(double[] a)
 	{
 		Gesture gest = new Gesture(0);
@@ -75,7 +70,7 @@ class Markov extends Recogniser
 
 	void train(ArrayList<Sample> samples, String out_file)
 	{
-		init();
+		init_parameters();
 		output_root = out_file;
 
 		for (Sample sample : samples)
@@ -114,7 +109,7 @@ class Markov extends Recogniser
         Utils.results(LEARNER + " " + NUM_STATES + " " + NUM_ITERATIONS + " " + timing);
 	}
 
-	static ArrayList<ObservationVector> toObservationVectors(ArrayList<Frame> frames)
+	private static ArrayList<ObservationVector> toObservationVectors(ArrayList<Frame> frames)
 	{
 		ArrayList<ObservationVector> ovs = new ArrayList<ObservationVector>();
 		double[] values;
@@ -148,7 +143,8 @@ class Markov extends Recogniser
 		}
 	}
 	
-	static Hmm restore_hmm(String filename)
+	
+
 	{
 		try
 		{
@@ -166,7 +162,7 @@ class Markov extends Recogniser
 		return null;
 	}
 
-	private void init()
+	private void init_parameters()
 	{
 		if(NUM_STATES < 0)
 			NUM_STATES = Integer.valueOf(Config.lookup("m_hidden_states"));
@@ -185,7 +181,7 @@ class Markov extends Recogniser
 	}
 };
 
-class Learner implements Serializable
+class Learner
 {
 	Hmm<ObservationVector> hmm;
 	ArrayList<ArrayList<ObservationVector>> sequences;

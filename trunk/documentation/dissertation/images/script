@@ -1,0 +1,10 @@
+#!/bin/bash
+
+for file in *.JPG; do
+	echo $file
+	convert -resize 408x306 $file ${file%.JPG}_sml.jpg
+done
+for file in *_sml.jpg; do
+	echo $file
+	convert $file ${file%_sml.jpg}.ps
+done
