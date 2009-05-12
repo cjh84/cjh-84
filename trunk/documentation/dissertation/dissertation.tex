@@ -270,12 +270,12 @@ $g$ is the activation function \\
 $z_j = g(a_j)$ \\
 bias input = 1
 
-The most common model is the multilayer perceptron, where the overall structure is feedforward and there are three layers of nodes; an input layer, a hidden layer and an output layer. 
+The most common model is the multilayer perceptron, where the overall structure is feedforward and there are three layers of nodes; an input layer, a hidden layer and an output layer.
 
 \begin{figure}
 \centering
 \includegraphics[scale=0.6,angle=0]{diagrams/neural.ps}
-\caption{Multilayer perceptron, with a single layer of hidden nodes.}
+\caption{Multilayer perceptron, with a single layer of hidden nodes. Each layer of nodes is fully connected with the next layer.}
 \label{mlp}
 \end{figure}
 
@@ -353,26 +353,24 @@ There are four basic inference tasks that can be calculated using this formalism
 \begin{enumerate}
 \item filtering: deducing the current state that we might be in, $Pr(S_t|e|{1:t})$
 \item prediction: deducing the future state that we might be in, $Pr(S_t|e|{1:t})$ for some $T>0$
-\item smoothing: deducing the past state that we might have been in at time $T$, $Pr(S_t|e|{1:t})$ for some $0 \le T < T$
-\item Viterbi path : deducing the most likely sequence of states so far, $\underset{s_{1:t}}{\operatornamewithlimits{argmax}}Pr(S_t|e|{1:t})$
+\item smoothing: deducing the past state that we might have been in at time $T$, $Pr(S_t|e_{1:t})$ for some $0 \le T < T$
+\item Viterbi path : deducing the most likely sequence of states so far, $\underset{s_{1:t}}{\operatornamewithlimits{argmax}}Pr(S_t|e_{1:t})$
 \end{enumerate}
 
 The Viterbi algorithm solves the final task, which finds the maximum of the probabilities of taking each path through the states.
 
 \begin{eqnarray*}
-\max_{s_{1:t}} Pr(s_{1:t},S{t+1}|e{1:t+1}) &=& c \max_{s_{1:t}} Pr(S_{t+1},s_t) Pr(e{t+1}|S{t+1}) Pr(s_{1:t}|e_{1:t}) \\
- &=& c Pr (e{t+1}|S{t+1}) \max_{s_t}\left( Pr(S_{t+1}|s_t) \max_{s_{1:t-1} Pr(s_{1:t-1}|e_{1:t}}) \right) \\
+\max_{s_{1:t}} Pr(s_{1:t},S_{t+1}|e_{1:t+1}) &=& c \max_{s_{1:t}} Pr(S_{t+1},s_t) Pr(e_{t+1}|S_{t+1}) Pr(s_{1:t}|e_{1:t}) \\
+ &=& c Pr (e_{t+1}|S_{t+1}) \max_{s_t}\left( Pr(S_{t+1}|s_t) \max_{s_{1:t-1}} Pr(s_{1:t-1}|e_{1:t}) \right) \\
 \end{eqnarray*}
 
 The algorithm therefore walks forwards over all possible sequences, calculating the most likely sequence for reaching the final states and selecting the most likely sequence of states. The time of complexity of the Viterbi algorithm is $O(t)$ in the length of the sequence, t, since it performs the forward message pass phase once per possible path. The space complexity is also linear in $t$, for storing the $t$ pointers which indicate the best stage sequence.
-
 \begin{pseudocode}
 for each possible state sequence: \\
 \>  for each state at time t, $s_t$: \\
-\>\>    forward a message $m_{1:t}$ combining the filtered estimate $Pr(S_t|e_{1:t})$ and \\\ \>\> updated with the new observation, giving the probability of the best sequence reaching this state \\
+\>\>    forward a message $m_{1:t}$ combining the filtered estimate $Pr(S_t|e_{1:t})$ and updated with \\\>\>the new observation, giving the probability of the best sequence reaching this state \\
 \> return maximum of the probabilities, following the pointers back to find most likely sequence \\
 \end{pseudocode}
-
 There are two major training algorithms, Baum-Welch\cite{Baum-Welch} and K-Means\cite{K-Means}. Both of 
 them are implementations of the Expectation-Maximization phase described above.
 
@@ -394,7 +392,7 @@ Alternative Java libraries for Hidden Markov Models include Jahmm, jHMM, and Hmm
 
 \section{Feature extraction}
 
-Neural networks have a fixed number of input nodes and so variable length data must be converted to a fixed size feature vector. This technique, known as dimension reduction, also reduces the search space significantly, which reduces training times and can improve recognition rates.
+Neural networks have a fixed number of input nodes and so variable length data must be converted to a fixed size feature vector. This technique, known as dimension reduction, also reduces the search space significantly, which reduces training times and can improve recognition rates.\cite{NeuralPat}
 
 There are several ways of doing this. For a discretely sampled time series, as the position data, the Discrete Fourier Transform encodes the signal as a coefficients of linear combinations of basis functions in a new frequency domain. Haar wavelets are an alternative method which also uses linear combinations of wavelet functions, which can represent discontinuities better than the Fourier method.
 
@@ -422,7 +420,7 @@ This dissertation was typeset using \LaTeX, together with \texttt{bibtex}. The g
 
 The choice of languages was based on ease of development, portability, availability of libraries, and type safety. Python was chosen for readability and rapid prototyping, while Java was used for interfacing with powerful libraries. In a few cases certain classes have been prototyped in Python before being ported to Java.
 
-The robot control library, PyRobot, is written in Python. The client\cite{bodyPaint} used to interface with the TARSUS system is written in Java. Message passing of simple string data is handled by SCOP, which has ports to both Python and Java.
+The robot control library, PyRobot, is written in Python. The client used to interface with the TARSUS system is written in Java\cite{bodyPaint}. Message passing of simple string data is handled by SCOP, which has ports to both Python and Java.
 
 Since the OLPC XO runs a modified version of Fedora Linux, the Tarsus system runs on Windows XP and the development environment was Ubuntu Linux, using architecture independent languages makes it easy to perform processing on a more powerful computer to the XO laptop.
 
@@ -445,7 +443,7 @@ Message passing provides inter-language communication via an SCOP server running
 
 \subsection{Component Interfaces}
 
-All SCOP messages are ASCII string messages. Each class that interacts with the server has a name and can express an interest in one or more streams, or endpoints by opening sockets.
+All SCOP messages are ASCII string messages. Each class that interacts with the server has a name and can express an interest in one or more streams, or \scopendpoint{endpoints}, by opening sockets.
 
 NB: All names in the following discussions containing \verb^p1^ have \verb^p2^ equivalents.
 
@@ -621,6 +619,14 @@ The SimGesture class is used to replay the data in the same format as a Vicon st
 The data requires significant preprocessing to convert the feature vector from world coordinates to body coordinates. This is performed by the Transform.java file together with the Geometry.java file, which defines geometric classes for SixDOF, Frame, and Point.
 
 \begin{tabular}{|c|} \hline 
+\class{Transform} \\ \hline
+\multicolumn{1}{|p{16cm}|}
+{ \variable{static void process(ArrayList<Frame> data) \newline
+static void process(Frame f)
+} } \\ \hline
+\end{tabular}
+
+\begin{tabular}{|c|} \hline 
 \class{SixDOF} \\ \hline
 \multicolumn{1}{|p{8cm}|}
 {\variable{double ax, ay, az, angle, ty, ty, tz \newline
@@ -634,21 +640,26 @@ The data requires significant preprocessing to convert the feature vector from w
 } } \\ \hline
 \end{tabular}
 
-The SixDOF class holds doubles for \variable{ax,ay,az,tx,ty,tz} and contains the following code, which converts the \variable{ax,ay,az} Axis Angle triplet into a normalised vector plus an angle for the rotation magnitude. It converts small rotations into a zero rotation about the z-axis in order to avoid floating point errors.
-
+The SixDOF class holds doubles for \variable{ax,ay,az,tx,ty,tz} and contains the following code, which converts the \variable{ax,ay,az} Axis Angle triplet into a normalised vector plus an angle for the rotation magnitude. It converts small rotations into a zero rotation about the z-axis in order to avoid floating point errors:
 \begin{code}
-double angle = 1.0
-angle *= Math.sqrt(ax * ax + ay * ay + az * az)
-if (angle > EPSILON):
-    ax /= angle;
-    ay /= angle;
-    az /= angle;
-else:
-    angle = 0.0;
-    ax = ay = 0.0;
-    az = 1.0
+void normalise()
+{
+    double angle = 1.0;
+    angle *= Math.sqrt(ax * ax + ay * ay + az * az);
+    if (angle > EPSILON)
+    {
+        ax /= angle;
+        ay /= angle;
+        az /= angle;
+    }
+    else if(ax < EPSILON && ay < EPSILON && az < EPSILON)
+    {
+        angle = 0.0;
+        ax = ay = 0.0;
+        az = 1.0
+    }
+}
 \end{code}
-
 \begin{tabular}{|c|} \hline 
 \class{Frame} \\ \hline
 \multicolumn{1}{|p{16cm}|}
@@ -803,12 +814,12 @@ The file also holds Gesture, Person and Classifier classes which are enumeration
 } } \\ \hline
 \end{tabular}
 
-The Person class is the union of all trained data related to a single specified user. It aggregates Intervals, neural network and Hidden Markov Model parameters, and also contains static methods to populate these fields from data files.
+The Person class is the union of all trained data related to a single specified user. It aggregates Intervals, neural network and Hidden Markov Model parameters, and also contains a constructor populating these fields from data files.
 
 \begin{tabular}{|c|} \hline 
 \class{Person} \\ \hline
-\multicolumn{1}{|p{8    cm}|}
-{\variable{Intervals[] left, right \newline String neural\_file \newline NeuralNet nnet \newline DirectSynapse netout \newline int neural\_seq 
+\multicolumn{1}{|p{8cm}|}
+{\variable{Intervals[] left, right \newline String neural\_file \newline NeuralNet nnet \newline DirectSynapse netout \newline int neural\_seq  \newline String markov\_root
 } } \\ \hline
 \end{tabular}
 
@@ -869,6 +880,8 @@ There are seven input nodes corresponding to the seven features, a variable numb
 
 The output of this is the list of weights which can be saved to disk. The Joone library is structured using the callbacks \variable{errorChanged}, \variable{netStarted}, \variable{netStopped}, \variable{netStoppedError} and \variable{cicleTerminated} [sic], which are defined in the NeuralNetListener interface.
 
+Training can be done in one of three modes; the standard Backpropagation algorithm, batch mode, and Resilient Backpropagation, an alternative which only uses the sign of the gradient rather than the magnitude and thus generally converges much faster.
+
 \newpage
 
 \subsection{Hidden Markov Model recogniser}
@@ -897,7 +910,7 @@ void learnkm()
 
 Each gesture is modelled by a different Markov process, so five Hidden Markov Models are created for the five gestures. This recogniser uses the raw data rather than the extracted data, since it is highly dependent on the temporal characteristics of the input vector.
 
-Two learning algorithms are used, Baum-Welch (\variable{learnbw()}) and K-Means clustering (\variable{learnbw()}). The Baum-Welch iteratively improves on a starting hidden markov model, and so one iteration of k-means is used to initialise the Baum-Welch training.
+Two learning algorithms are used, Baum-Welch (\variable{learnbw()}) and K-Means clustering (\variable{learnbw()}). The Baum-Welch iteratively improves on a starting hidden Markov model, and so one iteration of k-means is used to initialise the Baum-Welch training. Since the training sequences used are relatively long, a modification known as the Baum-Welch Scaled Learner is used, and the results reported as natural logarithms of probabilities to avoid underflow.
 
 The recognition phase is an implementation of the Viterbi algorithm which finds the most likely state sequence, which corresponds to the most likely gesture issued by the user.
 
@@ -1008,7 +1021,6 @@ Loop forever: \\
 \label{turntime}
 \end{figure}
 
-
 Accelerate and decelerates increment and decrement the velocity; turn left and right increment and decrement the radius; and start/stop either performs an initialising acceleration, or sets the velocity to zero. The PyRobot library converts the Drive(velocity, radius) commands into 4 byte opcodes and operands. It serialises these for transmission over the USB-to-serial link in order to control the wheel motors.
 
 \subsection{Networking}
@@ -1079,7 +1091,9 @@ A note to bear in mind throughout this presentation of results is that the neura
 
 \textit{Hidden Markov models}: Baum-Welch, 5 hidden states, 10 iterations
 
-\section{Comparison of gesture recognition methods}
+\section{Experimental results}
+
+\subsection{Comparison of gesture recognition methods}
 
 \begin{figure}
 \centering
@@ -1093,7 +1107,7 @@ Figure \ref{all_recognisers} shows basic comparisons between each the four recog
 
 The data shows that the heuristic recogniser is by far the fastest and most accurate, which is unsurprising as the parameters are fine-tuned for the specific application and the comparing ranges method is cheap. In comparison, neural networks are cheap but rather less accurate, especially when it has only been trained on known gestures. Hidden Markov models are very expensive but provide good results, while the hybrid recogniser, being the aggregation of all the recognisers, takes the most computation and provides good results.
 
-\section{Neural network parameters}
+\subsection{Neural network training parameters}
 
 \begin{figure}
 \centering
@@ -1123,7 +1137,7 @@ Although the number of epochs does not make much difference to the accuracy, it 
 
 The neural networks may also be varied in their training parameters in internal settings. Setting a very low learning rate does increase accuracy, whilst setting a too high momentum means that the gradient descent oscillates wildly and doesn't settle down to a good minimum within the number of epochs specified.
 
-\section{Hidden Markov model parameters}
+\subsection{Hidden Markov model training parameters}
 \begin{figure}
 \centering
 \includegraphics[scale=0.3,angle=-90]{results/markov/m_hidden_states.ps}
@@ -1135,7 +1149,7 @@ The neural networks may also be varied in their training parameters in internal 
 
 Figure \ref{m_parameters} compares the number of hidden states and the number of iterations of which to perform the Baum-Welch algorithm. It is clear that a gesture can be successfully characterised in three states and the time taken increases exponentially when increasing states or number of iterations. The Baum-Welch algorithm is beaten by K-Means clustering, which performs equally as well despite taking a fraction of the time to train.
 
-\section{Real time control}
+\subsection{Real time control}
 \begin{figure}
 \centering
 \includegraphics[scale=0.3,angle=0]{images/cherylscreen.ps}
@@ -1144,8 +1158,17 @@ Figure \ref{m_parameters} compares the number of hidden states and the number of
 \label{demonstrations}
 \end{figure}
 
-Figure \ref{demonstrations} illustrates the alternative methods available for real time control; through arm gestures, or with a mobile device such as a laptop with Control.py running. The robots are connected wirelessly to the WGB network and are set to listen to a single player only, thus demonstrating the multiple user extension.
-
+Figure \ref{demonstrations} illustrates the alternative methods available for real time control; through arm gestures, or with a mobile device such as a laptop with Control.py running. The robots are connected wirelessly to the WGB network and are set to listen to a single player only, thus demonstrating the multiple user extension. Figure \ref{driving} demostrates using the live system; the infra-red cameras are placed around the room, the user wears a black top with twelve markers and the screen projection shows both TARSUS reconstruction and the feedback window, which shows that player 2 is currently not in play.
+\begin{figure}
+\centering
+\includegraphics[scale=0.15,angle=0]{images/live1.ps}
+\includegraphics[scale=0.15,angle=0]{images/live2.ps}
+\includegraphics[scale=0.15,angle=0]{images/live3.ps}
+\includegraphics[scale=0.15,angle=0]{images/live4.ps}
+\includegraphics[scale=0.15,angle=0]{images/live5.ps}
+\caption{A sequence of stills showing the user issuing an Accelerate and a Turn Right command. The robot responds by moving towards the camera and changing angle.}
+\label{driving}
+\end{figure}
 \section{Successes and failures}
 
 Overall, this project completed its original goals and surpassed them by also implementing extensions. It provides an end-to-end system for conversion of arm gestures into robot control with success rates of over 80 per cent. In addition to the two originally planned recognisers, I implemented a further two recognisers and a full simulation system for every component of the system.
@@ -1157,6 +1180,8 @@ A point to note is that rather than implementing all the algorithms from scratch
 \section{Achievements and reflection}
 
 This project implements a working, complete system which has been demonstrated at the Computer Laboratory Rainbow group Outreach day and tried with multiple users. It takes a multidisciplinary approach, rather than relying on a single technique, and all parts are fully modularised and cleanly separated.
+
+Wii
 
 \section{Further work}
 
