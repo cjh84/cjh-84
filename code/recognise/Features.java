@@ -27,6 +27,7 @@ class Features
 	
 	Features(CircularBuffer buf, int windowsize)
 	{
+	    rawdata = new ArrayList<Frame>();
 		Frame f;
 		leftarm = new Ranges();
 		rightarm = new Ranges();

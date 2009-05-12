@@ -1,4 +1,4 @@
-\	import java.io.*;
+import java.io.*;
 import java.util.*;
 
 import org.joone.log.*;
@@ -212,8 +212,8 @@ class Neural extends Recogniser implements NeuralNetListener
 	public void netStopped(NeuralNetEvent e)
 	{
 		timing = System.nanoTime() - timing;
-		Utils.log("Learning-mode Learning-rate Momentum Epochs Hidden-nodes ms RMSE");
-		Utils.results(LEARNING_MODE + " " + LEARNING_RATE + " " + MOMENTUM + " " + NUM_EPOCHS + " " + NUM_HIDDEN_NEURONS + " " + timing/1000000 + " " + String.format("%5f", err));
+		Utils.log("Learning-mode Learning-rate Momentum Epochs Hidden-nodes ns RMSE");
+		Utils.results(LEARNING_MODE + " " + LEARNING_RATE + " " + MOMENTUM + " " + NUM_EPOCHS + " " + NUM_HIDDEN_NEURONS + " " + timing + " " + String.format("%5f", err));
 		saveNeuralNet(nnet, output_file);
 	}
 	
@@ -224,7 +224,7 @@ class Neural extends Recogniser implements NeuralNetListener
 	
 	public void cicleTerminated(NeuralNetEvent e) {}
 	
-	
+	static void saveNeuralNet(NeuralNet nnet, String filename)	
 	{
 		try
 		{
@@ -238,7 +238,7 @@ class Neural extends Recogniser implements NeuralNetListener
 			Utils.error("Cannot save neural net to <" + filename + ">");
 		}
 	}
-	
+		
 	static NeuralNet restoreNeuralNet(String filename)
 	{
 		try

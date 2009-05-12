@@ -31,7 +31,7 @@ class SimGesture
 		if(dir.exists() == false || dir.canRead() == false ||
 				dir.isDirectory() == false)
 		{
-			System.out.println("Cannot read directory " + gesture_dir);
+			Utils.error("Cannot read directory " + gesture_dir);
 			System.exit(0);
 		}
 		contents = dir.listFiles();
@@ -99,7 +99,7 @@ class SimGesture
 		int num_frames;
 		Frame from, to, f;
 		
-		System.out.println("Interpolating for " + duration + " ms");
+		Utils.log("Interpolating for " + duration + " ms");
 		from = from_gesture.data.get(from_gesture.data.size() - 1);
 		to = to_gesture.data.get(0);
 		num_frames = (duration * FRAME_RATE) / 1000;
@@ -123,7 +123,7 @@ class SimGesture
 		if(current_time >= target_time)
 		{
 			if(current_time > target_time + 100)
-				System.out.println("Warning: SimGesture overload, lagging >10ms");
+				Utils.log("Warning: SimGesture overload, lagging >10ms");
 			return;
 		}
 		Utils.delay((int)(target_time - current_time));
@@ -133,27 +133,30 @@ class SimGesture
 	{
 		Frame f;
 		boolean dropout; // DBG
-
-		Utils.log("Replaying gesture " + gesture.filename +
-				" (frames " + framecounter + " to " + (framecounter +
-				gesture.data.size()) + ")");		
+		
+		Utils.log("Replaying gesture ");
+		Utils.results(gesture.filename);
+		Utils.log(" (frames " + framecounter + " to " + (framecounter +
+				gesture.data.size()) + ")");
 		for(int i = 0; i < gesture.data.size(); i++)
 		{
 			f = gesture.data.get(i);
-			
+
 			// DBG...
 			dropout = f.dropout();
 			if(dropout != dropped_out)
 			{
 				dropped_out = dropout;
-				System.out.println("Dropout status = " + dropout);
+				Utils.log("Dropout status = " + dropout);
 			}
 			// ...DBG
-			
+
 			scop.emit(f.toString());
-						
+
 			framesync();
+
 		}
+
 	}
 
 	static void usage()
@@ -213,8 +216,8 @@ class SimGesture
 			{
 				current_time = System.currentTimeMillis();
 				elapsed_time = current_time - start_time;
-				System.out.printf("FPS = %.1f\n", (double)(framecounter - lastfps)
-						/ (double)elapsed_time * 1000.0);
+				Utils.log("FPS = " + String.format("%.1f", (double)(framecounter - lastfps)
+						/ (double)elapsed_time * 1000.0));
 				lastfps = framecounter;
 				start_time = current_time;
 			}

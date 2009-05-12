@@ -177,8 +177,9 @@ class SlidingWindow
 				gesture.command != Gesture.MultiMatch)
 		{
 			scopout.emit(gesture.toAction());
-			Utils.log("Recognised " + gesture.toString() +
-					" between frames " + (framecounter - windowsize) +
+			Utils.log("Recognised ");
+			Utils.results(gesture.toString());
+			Utils.log(" between frames " + (framecounter - windowsize) +
 					" and " + framecounter);
 			return true;
 		}

@@ -19,6 +19,11 @@ dissertation.dvi: dissertation.tex
 #%.dvi: %.tex
 #	latex $<
 
+gp: m_hidden_states.ps
+
+%.ps: results/*/%.gp results/*/%.dat
+	gnuplot $<
+
 bib:
 	latex $(TARGET).tex
 	bibtex $(TARGET)
