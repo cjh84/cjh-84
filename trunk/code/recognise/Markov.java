@@ -106,7 +106,7 @@ class Markov extends Recogniser
         timing = System.nanoTime() - timing;
         
         Utils.log("Learner hidden-states iterations ms");
-        Utils.results(LEARNER + " " + NUM_STATES + " " + NUM_ITERATIONS + " " + timing);
+        Utils.results(LEARNER + " " + NUM_STATES + " " + NUM_ITERATIONS + " " + timing/1000);
 	}
 
 	private static ArrayList<ObservationVector> toObservationVectors(ArrayList<Frame> frames)
@@ -131,11 +131,11 @@ class Markov extends Recogniser
 	{
 		try
 		{
-		    Utils.log("Hmm saved to " + filename);
 			FileOutputStream stream = new FileOutputStream(filename);
 			ObjectOutputStream out = new ObjectOutputStream(stream);
 			out.writeObject(learner.hmm);
 			out.close();
+		    Utils.log("Hmm saved to " + filename);
 		}
 		catch (IOException e)
 		{
@@ -143,14 +143,13 @@ class Markov extends Recogniser
 		}
 	}
 	
-	
-
+	static Hmm restore_hmm(String filename)
 	{
 		try
 		{
-		    Utils.log("Hmm loaded from " + filename);
 			FileInputStream stream = new FileInputStream(filename);
 			ObjectInputStream in = new ObjectInputStream(stream);
+		    Utils.log("Hmm loaded from " + filename);
 			return (Hmm)in.readObject();
 		}
 		catch (IOException e)

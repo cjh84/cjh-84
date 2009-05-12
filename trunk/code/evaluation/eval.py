@@ -77,7 +77,7 @@ elif do == "neural":
         options = "mode=training classifier=neural " + n_option + "=" + str(i) + " criterion=error"
         evaluate(pathname, options)  
         #get accuracy of training
-        options = "mode=recognition classifier=neural " + n_option + "=" + str(i) + " criterion=error"
+        options = "mode=recognition classifier=neural " + n_option + "=" + str(i) + " criterion=accuracy"
         evaluate(pathname, options)  
 
 elif do == "markov":
@@ -99,7 +99,7 @@ elif do == "markov":
         options = "mode=training classifier=markov " + m_option + "=" + str(i) + " criterion=performance"
         evaluate(pathname, options)
         options = "mode=recognition classifier=markov criterion=accuracy"
-        evaluate(pathname, options)    
+        evaluate(pathname, options)
     
 else:
     usage()

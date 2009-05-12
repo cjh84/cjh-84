@@ -1,6 +1,6 @@
 \documentclass[12pt,a4,notitlepage]{report}
 
-\usepackage{verbatim,graphicx,fancyvrb}
+\usepackage{verbatim,graphicx,fancyvrb,amsmath}
 
 % \input{epsf}            % to allow postscript inclusions
 
@@ -31,7 +31,7 @@
 \newcommand{\variable}[1]{\texttt{#1}}
 \newenvironment{pseudocode}{\begin{slshape}\begin{tabbing}\hspace*{0.5cm}\=\hspace*{0.5cm}\=\hspace*{0.5cm}\= \kill }{\end{tabbing}\end{slshape}}
 \DefineVerbatimEnvironment{code}{Verbatim}{}
-\newcommand{\implies}{\Rightarrow}
+%\newcommand{\implies}{\Rightarrow}
 
 \includeonly{propbody}
 
@@ -88,16 +88,19 @@ Supervisor:         & Cecily Morrison, Laurel Riek                    \\
 
 \section*{Original Aims of the Project}
 
-The original 
-
-To write a gesture recognition system which converts a stream of coordinates into commands to drive a robot.
+To utilise the machine learning techniques of neural networks and hidden Markov models for the purposes of gesture recognition. The input device chosen was the motion capture system, and the arm gestures used to drive robots.
 
 \section*{Work Completed}
 
-Preprocessing
-Recognition methods: Heuristic, Neural, Markov, Hybrid
-Robot control
-Full simulations of coordinates and control
+All preprocessing of the raw input data, including translating relative arm coordinates into body coordinates.
+
+In addition to the original two recognisers, I have implemented a further two recognisers, which are heuristics-based and aggregative respectively.
+
+I recorded nearly a hundred gestures for use in training and evaluation, including multiple users and negative examples.
+
+I have implemented control for the physical robots and motion capture. I also implemented full simulations of both the coordinates stream and command stream.
+
+Finally, I have implemented the multiplayer extension.
 
 \section*{Special Difficulties}
 
@@ -119,11 +122,6 @@ I, Cheryl Hung of King's College, being a candidate for Part II of the Computer 
 \tableofcontents
 
 \listoffigures
-
-\newpage
-\section*{Acknowledgements}
-
-Acknowledgements
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % now for the chapters
@@ -327,6 +325,8 @@ This gives the \textit{back-propagation formula}\cite{NeuralPat}:
 
 The importance of this result is the resulting reduction in time complexity, as training neural networks is very time consuming. The majority of the work is done calculating $a_{ij} = \sum_i {w_{ji}z_i}$. There are $W$ derivatives to calculate for $W$, letting $W$ be the total number of weights and biases. The naive approach of explicit evaluating each derivative in $O(W)$ operations is therefore $O(W^2)$ in time complexity. By contrast,  backpropagation (using $\frac {\partial E_p(\mathbf w)} {\partial w_{ji}} = \delta_j z_i$ to calculate the derivatives) reduces the computational complexity to $O(W)$.
 
+I researched several neural network libraries, including Joone and JavaNNS. The Joone library has particularly good tools for writing third party modules, as well as support for distributed training, which would be useful for higher performance in the CPU intensive training stage.
+
 \subsection{Hidden Markov Models}
 
 First order Markov processes are a class of statistical model which state that the probability of being in some future state is only dependant on the current state, also known as the memoryless model since the ``memory" or past states have no effect on the next state.
@@ -344,34 +344,36 @@ A Hidden Markov Model is one where these probabilities characterizing the states
 
 For a Markov Model, $Pr(E_t|S_t)$ is the sensor model and $Pr(S_t|S_{t-1})$ is the transition model. $Pr(S_0)$ denotes the prior state.\cite{AIModern} The assumption is that the probabilities do not change over time, as the observations are stationary processes.
 
-The forward-backward algorithm solves the task of smoothing; deducing the previous states from the current state, $Pr(S_t|e_{1:t})$ for $0 \leq T < t$. 
+There are four basic inference tasks that can be calculated using this formalism:
 
-{latex:
+\begin{enumerate}
+\item filtering: deducing the current state that we might be in, $Pr(S_t|e|{1:t})$
+\item prediction: deducing the future state that we might be in, $Pr(S_t|e|{1:t})$ for some $T>0$
+\item smoothing: deducing the past state that we might have been in at time $T$, $Pr(S_t|e|{1:t})$ for some $0 \le T < T$
+\item Viterbi path : deducing the most likely sequence of states so far, $\underset{s_{1:t}}{\operatornamewithlimits{argmax}Pr(S_t|e|{1:t})}$
+\end{enumerate}
 
-The forward pass calculates $f_{1:t} = Pr(S_t|e_{1:t})$, passing $f_{1:t}$ as a forward message:
-\begin{eqnarray*}
-Pr(S_T | e_{1:t}) &=& Pr(S_T | e_{1:T}, e_{T+1:t}) \\
-&=& c Pr(S_T | e_{1:T}) Pr(e_{T+1:t} | S_T,e_{1:T}) \\
-&=& c Pr(S_T | e_{1:T}) Pr(e_{T+1:t} | S_T) \\
-&=& c f_{1:T} b_{T+1:t} \\
-\end{eqnarray*}
-			
-where $b_{T+1:t} = Pr(e_{T+1:t}|S_T)$ is the backward message for computing backwards probabilities:
+The Viterbi algorithm solves the final task, which finds the maximum of the probabilities of taking each path through the states.
 
 \begin{eqnarray*}
-\mbox{Initialisation: }b_{t+1:t} &=& Pr(e_{t+1:t}|S_t) = (1,...1) \\
-b_{T+1:t} 	= Pr(e_{T+1:t}|S_T) &=&  \sum_{s_{T+1}} Pr(e_{T+1:t}, s_{T+1} | S_T) \\
-						&=& \sum_{s_{T+1}} Pr(e_{T+1:t} | s_{T+1}) Pr(S_{T+1} | S_T) \\
-						&=& \sum_{s_{T+1}} Pr(e_{T+1:t}, e_{T+2:t} | s_{T+1}) \\
-						&=& \sum_{s_{T+1}} Pr(e_{T+1} | s_{T+1}) Pr(e_{T+2:t} | s_{T+1}) Pr(s_{T+1}|S_T) \\
-						&=& \sum_{s_{T+1}} * Sensor model * b_{T+2:t} * Transition model \\
-						&=& BACKWARDS(e_{T+1:t}, b_{T+2:t}) \\
+\max_{s_{1:t}} Pr(s_{1:t},S{t+1}|e{1:t+1}) &=& c \max_{s_{1:t}} Pr(S_{t+1},s_t) Pr(e{t+1}|S{t+1}) Pr(s_{1:t}|e_{1:t}) \\
+ &=& c Pr (e{t+1}|S{t+1}) \max_{s_t}\left( Pr(S_{t+1}|s_t) \max_{s_{1:t-1} Pr(s_{1:t-1}|e_{1:t}}) \right) \\
 \end{eqnarray*}
 
-This smooths all points $1:t$ in time $O(t^2)$. By storing the computed results for $f_{1:T}$ and using these in the computation of $b_{T+1:t}$, this is reduced to $O(t)$.
+The algorithm therefore walks forwards over all possible sequences, calculating the most likely sequence for reaching the final states and selecting the most likely sequence of states. The time of complexity of the Viterbi algorithm is $O(t)$ in the length of the sequence, t, since it performs the forward message pass phase once per possible path. The space complexity is also linear in $t$, for storing the $t$ pointers which indicate the best stage sequence.
 
-Matrix multiplication to calculate f
-Re-estimation
+\begin{pseudocode}
+for each possible state sequence: \\
+\>  for each state at time t, $s_t$: \\
+\>\>    forward a message $m_{1:t}$ combining the filtered estimate $Pr(S_t|e_{1:t})$ and \\\ \>\> updated with the new observation, giving the probability of the best sequence reaching this state \\
+\> return maximum of the probabilities, following the pointers back to find most likely sequence \\
+\end{pseudocode}
+
+The Baum-Welch algorithm performs the training, analogous to the backpropagation phase of the neural networks.\cite{Baum-Welch}
+
+%Matrix multiplication to calculate f Re-estimation EM Pg 731
+
+Alternative Java libraries for Hidden Markov Models include Jahmm, jHMM, and HmmSDK.
 
 \section{Feature extraction}
 
@@ -381,7 +383,13 @@ There are several ways of doing this. For a discretely sampled time series, as t
 
 However these techniques were deemed excessively complex for the purposes of gesture recognition with a finite set of planar gestures. The simpler method of extracting axis-aligned ranges is sufficient for distinguishing the gestures without adding the computational overhead of these other techniques.
 
-\section{Tools}
+\section{Development environment}
+
+The majority of the system was developed under Linux with the Ubuntu 8.10 distribution. Programming was using a mixture of NEdit, gedit, and the command line tools \texttt{javac}, \texttt{java} and \texttt{python}.
+
+The XO laptops run a modified version of Fedora Linux, while the PC used during live capture runs Windows XP.
+
+\subsection{Tools}
 
 Subversion was used for version control, together with Google Code Project Hosting. The libraries used were:
 
@@ -391,11 +399,9 @@ SCOP: Server COmmunication Protocol \\
 PyRobot: robot and laptop control, motors, sensors and webcam \\
 Tarsus: motion capture and object reconstruction \\
 
-The majority of the system was developed under Ubuntu Linux, using NEdit and GEdit. The XO laptops run a modified version of Fedora Linux, while the PC used during live capture runs Windows XP.
+This dissertation was typeset using \LaTeX and bibtex. The graphs shown in the evaluation were generated using \texttt{gnuplot}.
 
-This dissertation was typeset using \LaTeX.
-
-\section{Languages}
+\subsection{Languages}
 
 The choice of languages was based on ease of development, portability, availability of libraries, and type safety. Python was chosen for readability and rapid prototyping, while Java was used for interfacing with powerful libraries. In a few cases certain classes have been prototyped in Python before being ported to Java.
 
@@ -418,13 +424,13 @@ Figure \ref{sysdiag} shows how components are decoupled for re-usability. During
 
 The relay program on the XO laptop converts this into drive commands and the PyRobot library handles low level opcodes. The monitor shows the output for a turtle program which responds to the same commands, again for test purposes.
 
-Message passing provides inter-language communication via an SCOP server running on the SRCF.
+Message passing provides inter-language communication via an SCOP server running on the SRCF. Logically, the processing can take place on a remote computer, but for this purposes I chose to perform processing on the local machine also used for interpreting Vicon data.
 
 \subsection{Component Interfaces}
 
 All SCOP messages are ASCII string messages. Each class that interacts with the server has a name and can express an interest in one or more streams, or endpoints by opening sockets.
 
-NB: All names containing \verb^p1^ have \verb^p2^ equivalents.
+NB: All names in the following discussions containing \verb^p1^ have \verb^p2^ equivalents.
 
 \subsection{Protocols and data formats}
 
@@ -484,6 +490,8 @@ This stream is a direct transcription of the ``ok"/``dropout" field of the coord
 \label{dfd}
 \end{figure}
 
+Figure \ref{dfd} shows how the system components are decoupled throughout. The coordserver, ctrlserver and statusserver can be redirected completely independently in a way that is transparent to users. \scopendpoint{p1*} are interests to which modules publish events to and subsribe in order to listen to; \variable{*p1} denotes the scop identifier for each module. The ^, & and | refer respectively to whether an instance of a class can listen to a single endpoint (taking a command line argument for \scopendpoint{p1} or \scopendpoint{p1}), to both endpoints simultaneously, or to either one or two as needed.
+
 \subsection{Breakdown of components}
 
 Class diagrams
@@ -515,12 +523,7 @@ String[] channels \newline
 } } \\ \hline
 \end{tabular}
 
-The Tarsus system performs the following processing in real time on the raw camera data:
-
-Triangulation of twelve marker positions (using a variable number of between 3 and 10 cameras) in three dimensional space
-Interpolation and smoothing of the marker data, to reduce jitter
-Pairwise comparison between sets of the marker angles and three skeletons of defined features
-Using the notation \<A-X, A-Y, A-Z, T-X, T-Y, T-Z\>, it send the rotation and translation data for each object. If some markers are occluded or there is insufficient rigidity in the angles for object reconstruction, T-X, T-Y and T-Z are held at their last known position, and A-X, A-Y, and A-Z are set to 0.0.
+The Tarsus system triangulates markers using infra-red emitted from the cameras, which is bounced back from the reflective markers. It uses stereoscopic techniques to resolves these into world coordinates, using ten cameras for redundancy when a marker is occluded for whatever reason.
 
 With three objects per user and six data-points per object, the Tarsus server sends eighteen or thirty six (for two players) values per frame via TCP/IP on port 800, at 100 frames per second.
 
@@ -838,8 +841,6 @@ void set\_columns(MemoryInputSynapse syn, int first, int last) \newline
 
 There are six input nodes for LeftArm {dx,dy,dz} and RightArm {dx,dy,dz}, a layer of hidden nodes and five output nodes corresponding to the five gestures. Each gesture is labelled with a vector of expected output; for example, an accelerate gesture is (1,0,0,0,0), a Turn Right gesture is (0,0,0,1,0) and a non-gesture is (0,0,0,0,0).
 
-I researched several neural network libraries, including Joone and JavaNNS. The Joone library has particularly good tools for writing third party modules, as well as support for distributed training, which would be useful for higher performance in the CPU intensive training stage.
-
 \newpage
 
 \subsection{Hidden Markov Model recogniser}
@@ -868,8 +869,6 @@ void learnkm()
 
 
 Each gesture is modelled by a different Markov process, so five Hidden Markov Models are created for the five gestures. This recogniser uses the raw data rather than the extracted data, since it is highly dependant on the temporal characteristics of the input vector.
-
-Alternative Java libraries for Hidden Markov Models include Jahmm, jHMM, and HmmSDK.
 
 \newpage
 
@@ -1037,40 +1036,694 @@ static long performance() \newline
 } } \\ \hline
 \end{tabular}
 
-The 
+The Evaluation class provides a recogniser-independent interface to the training and recognition APIs. It represents the union of all the legitimate combinations of modes (training, recognition with and without negative examples), criteria (performance, error, and accuracy) and classifiers (heuristic, neural, markov and hybrid), as well as interface to the Config file to set parameters. It also reads in a training.dat file and parses it for Samples according to the type of evaluation that is performing; for example, recognition without negative examples only produces Samples for which the gesture is not a NoMatch.
 
-\section{Training data}
+The python eval.py module provides a command line tool to iterate over a certain parameter (for example, momentum between 0.0 and 1.0 in steps of 0.1), appending the results to .dat files.
 
-Jitter in axis angles
+\subsection{Hardware}
 
+The processing units used for performance measurements were 1Gb Intel dual-core main memory, and 160 Gb storage (hard drive).
+
+\subsection{Caveats}
+
+A note to bear in mind throughout this presentation of results is that the neural network's initialisation step involves randomizing the weights, which means that the results are non-deterministic.
+
+Unless the parameter is under specific evaluation, the following values were otherwise supplied as defaults:
+
+Neural networks
+Learner = Basic backpropagation
+Epochs = 1000
+Nodes in hidden layer = 20
+Learning rate = 0.8
+Momentum = 0.3
+Do not train on negative examples
+
+Hidden Markov models
+Learner = Baum-Welch
+Number of hidden states = 5
+Iterations = 10
 
 \section{Comparison of gesture recognition methods}
 
-\section{Accuracy}
+\begin{figure}
+\centering
+\includegraphics[scale=0.3,angle=-90]{results/all/recog.ps}
+\includegraphics[scale=0.3,angle=-90]{results/all/no-neg.ps}
+\caption{Comparisons of properties of all the recognisers.}
+\label{all_recognisers}
+\end{figure}
 
-Body part tagging - hat, body, belt
+Figure \ref{all_recognisers} shows basic comparisons between each the four recognisers, based on time taken to recognise a set of gestures and accuracy. For this purpose, eleven gestures were reserved as unseen gestures, so that any training would be done on a subset of the recorded examples. Eighteen further were negative examples, and eighteen more normal gestures.
 
-Stationary vs. moving user
+The data shows that the heuristic recogniser is by far the fastest and most accurate, which is unsurprising as the parameters are fine-tuned for the specific application and the comparing ranges method is cheap. In comparison, neural networks are cheap but rather less accurate, especially when it has only been trained on known gestures. Hidden Markov models are very expensive but provide good results, while the hybrid recogniser, being the aggregation of all the recognisers, takes the most computation and provides good results.
 
-Trained vs. untrained
+\section{Neural network parameters}
 
-Accuracy vs. amount of training data (compare HMM and ANN)
+\begin{figure}
+\centering
+\includegraphics[scale=0.3,angle=-90]{results/neural/n_epochs.ps}
+\includegraphics[scale=0.3,angle=-90]{results/neural_err/n_epochs.ps}
+\includegraphics[scale=0.3,angle=-90]{results/neural/n_hidden_nodes.ps}
+\includegraphics[scale=0.3,angle=-90]{results/neural_err/n_hidden_nodes.ps}
+\includegraphics[scale=0.3,angle=-90]{results/neural/n_learner.ps}
+\includegraphics[scale=0.3,angle=-90]{results/neural_err/n_learner.ps}
+\caption{Comparisons of parameters in the neural networks recogniser.}
+\label{n_intparameters}
+\end{figure}
 
-Choice of gesture
+The following pairs of graphs relate to a single training parameter; the first shows accuracy and performance data, as before, whilst the second shows the root mean squared error between the predicted results and the training examples, after training. A point to note is that the timing now refers to the time taken to train the neural recogniser, rather than to recognise the gesture.
 
-Optimal number of hidden nodes (ANNs) and hidden states (HMMs)
+Although the number of epochs does not make much difference to the accuracy, it does somewhat reduce the RMSE in training. Varying the number of nodes in the hidden layer between 5 and 65 also shows a slight increase in accuracy and decrease in error. However, changing the learner makes a significant difference to the RMSE, when changing from the basic backpropagation to batch propagation, in the same number of epochs.
 
+\begin{figure}
+\centering
+\includegraphics[scale=0.3,angle=-90]{results/neural/n_learning_rate.ps}
+\includegraphics[scale=0.3,angle=-90]{results/neural_err/n_learning_rate.ps}
+\includegraphics[scale=0.3,angle=-90]{results/neural/n_momentum.ps}
+\includegraphics[scale=0.3,angle=-90]{results/neural_err/n_momentum.ps}
+\caption{Comparisons of parameters in the neural networks recogniser.}
+\label{n_floatparameters}
+\end{figure}
 
-\chapter{Conclusions [TODO]}
+The neural networks may also be varied in their training parameters in internal settings. Setting a very low learning rate does increase accuracy, whilst setting a too high momentum means that the gradient descent oscillates wildly and doesn't settle down to a good minimum within the number of epochs specified.
+
+\section{Hidden Markov model parameters}
+\begin{figure}
+\centering
+\includegraphics[scale=0.3,angle=-90]{results/markov/m_hidden_states.ps}
+\includegraphics[scale=0.3,angle=-90]{results/markov/m_iterations.ps}
+\includegraphics[scale=0.4,angle=-90]{results/markov/m_learner.ps}
+\caption{Comparisons of parameters in the hidden Markov model recogniser.}
+\label{m_parameters}
+\end{figure}
+
+Figure \ref{m_parameters} compares the number of hidden states and the number of iterations of which to perform the Baum-Welch algorithm. It is clear that a gesture can be successfully characterised in three states and the time taken increases exponentially when increasing states or number of iterations. The Baum-Welch algorithm is beaten by K-Means clustering, which performs equally as well despite taking a fraction of the time to train.
+
+\section{Real time control}
+\begin{figure}
+\centering
+\includegraphics[scale=0.3,angle=0]{images/cherylscreen.ps}
+\includegraphics[scale=0.3,angle=0]{images/davidrobots.ps}
+\caption{Photographs of demonstrations}
+\label{demonstrations}
+\end{figure}
+
+Figure \ref{demonstrations} illustrates the alternative methods available for real time control; through arm gestures, or with a mobile device such as a laptop with Control.py running. The robots are connected wirelessly to the WGB network and are set to listen to a single player only, thus demonstrating the multiple user extension.
+
+\section{Successes and failures}
+
+Overall, this project completed its original goals and surpassed them by also implementing extensions. It provides an end-to-end system for conversion of arm gestures into robot control with success rates of over 80 per cent. In addition to the two originally planned recognisers, I implemented a further two recognisers and a full simulation system for every component of the system.
+
+A point to note is that rather than implementing all the algorithms from scratch as originally planned, I chose to use established libraries (Joone and Jahmm) for my machine learning needs. This came about on advice of my supervisor and has reduced the workload in this case, to give me time to implement a more fully complete system.
+
+\chapter{Conclusions}
+
+This project implements a working, complete system which has been demonstrated at the Computer Laboratory and tried with multiple users. It takes a multidisciplinary approach, rather than relying on a single technique, and all parts are fully modularised and cleanly separated.
+
+In the upcoming summer, it will be used for educational purposes. The extensions which will be implemented in time for the Sutton Trust Summer School include a mobile application for control and writing a multiplayer game using the bump sensors from the robot. It is hoped that this will encourage others to experiment and interact with the system, testing its robostness and reliability.
 
 \addcontentsline{toc}{chapter}{Bibliography}
 \bibliography{dissertation}
 
 \appendix
 
-\chapter{Appendices}
+\chapter{Neural Network recogniser}
 
-Sample code
+\begin{code}
+import java.io.*;
+import java.util.*;
+
+import org.joone.log.*;
+import org.joone.engine.*;
+import org.joone.engine.learning.*;
+import org.joone.io.*;
+import org.joone.net.NeuralNet;
+
+class Neural extends Recogniser implements NeuralNetListener 
+{
+	static double NEURAL_THRESHOLD = -1;
+
+	static int LEARNING_MODE = -1;
+	static int NUM_EPOCHS = -1;
+	static int NUM_HIDDEN_NEURONS = -1;
+	static double LEARNING_RATE = -1;
+	static double MOMENTUM = -1;
+	static boolean TRAIN_ON_NEGS = false;
+	
+	String output_file;
+	double err;
+	
+	LinearLayer input;
+	SigmoidLayer hidden, output;
+	FullSynapse synapse_IH, synapse_HO;
+	NeuralNet nnet;
+	Monitor monitor;
+	MemoryInputSynapse inputStream, samples;
+	TeachingSynapse trainer;
+	
+	static long timing = System.nanoTime();
+
+	public static Gesture recognise(Person person, Features features)
+	{		
+		/* Uses:
+			features.displacement
+			features.leftarm|rightarm.get_delta(0|1|2)
+			Total 7 input neurons
+		*/
+		
+		double[] inputdata, outputdata;
+		Pattern pin, pout;
+		
+		init(person); // Check person.nnet has been initialised
+
+		inputdata = new double[Features.num_features];
+		features.extract(inputdata);
+		pin = new Pattern(inputdata);
+		pin.setCount(person.neural_seq++);
+		person.nnet.singleStepForward(pin);
+		pout = person.netout.fwdGet();
+		
+		dump_results(pout);
+				
+		if(NEURAL_THRESHOLD < 0)
+			NEURAL_THRESHOLD = Double.valueOf(Config.lookup("neuralthreshold"));
+		
+		
+		double[] a = pout.getArray();
+		int command = Gesture.NoMatch;
+				
+		for (int i = 0; i < Gesture.num_gestures; i++)
+		{
+			if(a[i] > NEURAL_THRESHOLD)
+			{
+				if(command == Gesture.NoMatch)
+					command = i;
+				else
+					command = Gesture.MultiMatch;
+			}
+		}
+		
+		return new Gesture(command);
+
+	}
+		
+	void train(ArrayList<Sample> sampleslist, String out_file)
+	{
+
+		output_file = out_file;
+		Sample samp;
+		init_parameters();
+		
+		int num_samples = sampleslist.size();
+		double[][] inputdata = new double[num_samples][Features.num_features];
+		double[][] outputdata = new double[num_samples][Gesture.num_gestures];
+		for(int i = 0; i < num_samples; i++)
+		{
+			samp = sampleslist.get(i);
+			samp.feat.extract(inputdata[i]);
+			for(int j = 0; j < Gesture.num_gestures; j++)
+				outputdata[i][j] = 0.0;
+			if(samp.gesture.command < Gesture.num_gestures)
+				outputdata[i][samp.gesture.command] = 1.0;
+		}
+		
+		input = new LinearLayer();
+		hidden = new SigmoidLayer();
+		output = new SigmoidLayer();
+		input.setLayerName("input");
+		hidden.setLayerName("hidden");
+		output.setLayerName("output");
+		input.setRows(Features.num_features);
+		hidden.setRows(NUM_HIDDEN_NEURONS);
+		output.setRows(Gesture.num_gestures);
+		synapse_IH = new FullSynapse();
+		synapse_HO = new FullSynapse();
+		synapse_IH.setName("IH");
+		synapse_HO.setName("HO");
+		input.addOutputSynapse(synapse_IH);
+		hidden.addInputSynapse(synapse_IH);
+		hidden.addOutputSynapse(synapse_HO);
+		output.addInputSynapse(synapse_HO);
+		
+		inputStream = new MemoryInputSynapse();
+		inputStream.setInputArray(inputdata);
+		set_columns(inputStream, 1, Features.num_features);
+		input.addInputSynapse(inputStream);
+
+		samples = new MemoryInputSynapse();
+		samples.setInputArray(outputdata);
+		set_columns(samples, 1, Gesture.num_gestures);
+			
+		trainer = new TeachingSynapse();
+		trainer.setDesired(samples);
+		output.addOutputSynapse(trainer);
+			
+		nnet = new NeuralNet();
+		nnet.addLayer(input, NeuralNet.INPUT_LAYER);
+		nnet.addLayer(hidden, NeuralNet.HIDDEN_LAYER);
+		nnet.addLayer(output, NeuralNet.OUTPUT_LAYER);
+		
+		monitor = nnet.getMonitor();
+		monitor.setTrainingPatterns(num_samples);
+		monitor.setTotCicles(NUM_EPOCHS);
+		monitor.setLearningRate(LEARNING_RATE);
+		monitor.setMomentum(MOMENTUM);
+		monitor.setLearning(true);
+		
+		//Add learner
+		
+		monitor.addLearner(0, "org.joone.engine.BasicLearner"); // On-line
+		monitor.addLearner(1, "org.joone.engine.BatchLearner"); // Batch
+		monitor.addLearner(2, "org.joone.engine.RpropLearner"); // RPROP
+		
+		monitor.setLearningMode(LEARNING_MODE);
+				
+		monitor.setSingleThreadMode(true);
+		monitor.addNeuralNetListener(this);
+			
+		nnet.go();
+	}
+	
+	private void init_parameters()
+	{
+		if(LEARNING_MODE < 0)
+			LEARNING_MODE = Integer.valueOf(Config.lookup("n_learner"));
+		if(NUM_EPOCHS < 0)
+			NUM_EPOCHS = Integer.valueOf(Config.lookup("n_epochs"));
+		if(NUM_HIDDEN_NEURONS < 0)
+			NUM_HIDDEN_NEURONS = Integer.valueOf(Config.lookup("n_hidden_nodes"));
+		if(LEARNING_RATE < 0)
+			LEARNING_RATE = Double.valueOf(Config.lookup("n_learning_rate"));
+		if(MOMENTUM < 0)
+			MOMENTUM = Double.valueOf(Config.lookup("n_momentum"));
+		if(TRAIN_ON_NEGS == false)
+			TRAIN_ON_NEGS = Boolean.valueOf(Config.lookup("n_train_on_negs"));
+		
+		if (LEARNING_MODE == 2)
+		{
+			LEARNING_RATE = 1.0;
+		}
+	}
+	
+	private void set_columns(MemoryInputSynapse syn, int first, int last)
+	{
+		String cols = "";
+		
+		for(int i = first; i <= last; i++)
+		{
+			if(i == last)
+				cols = cols + i;
+			else
+				cols = cols + i + ",";
+		}
+		syn.setAdvancedColumnSelector(cols);
+	}
+		
+	// NeuralNetListener interface methods follow:
+	
+	public void errorChanged(NeuralNetEvent e)
+	{
+		int cycle;
+		
+		Monitor mon = (Monitor)e.getSource();
+		cycle = mon.getCurrentCicle();
+		if(cycle % (NUM_EPOCHS/10) == 0 || cycle >= NUM_EPOCHS - 10)
+		{
+			err = mon.getGlobalError();
+			Utils.log(String.format("%d", cycle) + " epochs remaining; RMSE = " 
+			    + String.format("%5f", err));
+	    }
+	}
+	
+	public void netStarted(NeuralNetEvent e)
+	{
+		Utils.log("Training started");
+		timing = System.nanoTime();
+	}
+	
+	public void netStopped(NeuralNetEvent e)
+	{
+		timing = System.nanoTime() - timing;
+		Utils.log("Learning-mode Learning-rate Momentum Epochs Hidden-nodes ns RMSE");
+		Utils.results(LEARNING_MODE + " " + LEARNING_RATE + " " + MOMENTUM + " " + NUM_EPOCHS + " " + NUM_HIDDEN_NEURONS + " " + timing + " " + String.format("%5f", err));
+		saveNeuralNet(nnet, output_file);
+	}
+	
+	public void netStoppedError(NeuralNetEvent e, String error)
+	{
+		Utils.log("Net stopped error: " + error);
+	}
+	
+	public void cicleTerminated(NeuralNetEvent e) {}
+	
+	static void saveNeuralNet(NeuralNet nnet, String filename)	
+	{
+		try
+		{
+			FileOutputStream stream = new FileOutputStream(filename);
+			ObjectOutputStream out = new ObjectOutputStream(stream);
+			out.writeObject(nnet);
+			out.close();
+		}
+		catch(Exception e)
+		{
+			Utils.error("Cannot save neural net to <" + filename + ">");
+		}
+	}
+		
+	static NeuralNet restoreNeuralNet(String filename)
+	{
+		try
+		{
+			FileInputStream stream = new FileInputStream(filename);
+			ObjectInputStream in = new ObjectInputStream(stream);
+			return (NeuralNet)in.readObject();
+		}
+		catch(Exception e)
+		{
+			Utils.error("Cannot load neural net from <" + filename + ">");
+		}
+		return null; // Never happens
+	}
+	
+	static void dump_results(Pattern pat)
+	{
+		double[] a = pat.getArray();
+		Gesture gest = new Gesture(0);
+		
+		assert(a.length == Gesture.num_gestures);
+		for(int i = 0; i < Gesture.num_gestures; i++)
+		{
+			gest.command = i;
+			if (Utils.verbose)
+				System.out.printf(gest.toString() + ": %5f\n", a[i]);
+		}
+	}
+	
+	static void init(Person p)
+	{
+		Layer input, output;
+
+		if(p.nnet != null)
+			return; // Already initialised
+			
+		p.nnet = restoreNeuralNet(p.neural_file);
+		
+		input = p.nnet.getInputLayer();
+		input.removeAllInputs();
+		
+		output = p.nnet.getOutputLayer();
+		output.removeAllOutputs();
+		
+		p.netout = new DirectSynapse();
+		output.addOutputSynapse(p.netout);
+		
+		p.nnet.getMonitor().setLearning(false);
+	}
+}
+\end{code}
+
+\chapter{Hidden Markov model recogniser}
+\begin{code}
+import java.io.*;
+import java.util.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import be.ac.ulg.montefiore.run.jahmm.*;
+import be.ac.ulg.montefiore.run.jahmm.learn.*;
+import be.ac.ulg.montefiore.run.jahmm.io.*;
+
+class Markov extends Recogniser
+{
+
+	ArrayList<Learner> learners;
+	ArrayList<ArrayList<ArrayList<ObservationVector>>> sequences;
+	
+	static final int NUM_DIMENSIONS = 9;
+	static int NUM_STATES = -1;
+	static int NUM_ITERATIONS = -1;
+	static int LEARNER = -1;
+	
+	String output_root;
+	
+	static int SCALING_FACTOR = 100;
+	
+	public static Gesture recognise(Person person, Features features)
+	{
+		String filename;
+		double[] probabilities = new double[Gesture.num_gestures];
+		ArrayList<ObservationVector> framedata = toObservationVectors(features.rawdata);
+		
+		Hmm<ObservationVector> recog_hmm = new Hmm<ObservationVector>(5, new OpdfMultiGaussianFactory(features.rawdata.size()));
+				
+		for (int i = 0; i < Gesture.num_gestures; i++)
+		{
+			filename  = person.markov_root + new Gesture(i).toAction();
+			recog_hmm = restore_hmm(filename);
+			probabilities[i] = recog_hmm.lnProbability(framedata);
+		}
+
+		dump_results(probabilities);
+
+		int command = Gesture.NoMatch;
+				
+		for (int i = 0; i < Gesture.num_gestures; i++)
+		{
+			if(!Double.isNaN(probabilities[i]))
+			{
+				if(command == Gesture.NoMatch)
+					command = i;
+				else
+					command = Gesture.MultiMatch;
+			}
+		}
+
+		return new Gesture(command);
+	}
+
+	static void dump_results(double[] a)
+	{
+		Gesture gest = new Gesture(0);
+		
+		assert(a.length == Gesture.num_gestures);
+		for(int i = 0; i < Gesture.num_gestures; i++)
+		{
+			gest.command = i;
+			Utils.log(gest.toString() + ": " + String.format("%5f", a[i]));
+		}
+	}
+
+	void train(ArrayList<Sample> samples, String out_file)
+	{
+		init_parameters();
+		output_root = out_file;
+
+		for (Sample sample : samples)
+		{
+			Learner learner = learners.get(sample.gesture.command);
+			learner.add_sequence(toObservationVectors(sample.data));
+			Utils.log("Assigned " + sample.pathname +
+			 " to learner for " + learner.gesture.toString());
+		}
+		
+		long timing = System.nanoTime();
+		
+		for (Learner learner : learners)
+		{
+			Utils.log("Training " + learner.gesture.toString());
+			if (LEARNER == 0)
+			{	
+				learner.learnbw();
+			}
+			else if (LEARNER == 1)
+			{
+				learner.learnkm();
+			}
+			else
+			{
+				Utils.error("Unknown learner; valid options are " +
+					"0 for Baulm-Welch and 1 for K-Means");
+			}
+			
+			save_hmm(learner, output_root + "_" + learner.gesture.toAction());
+		}
+		
+        timing = System.nanoTime() - timing;
+        
+        Utils.log("Learner hidden-states iterations ms");
+        Utils.results(LEARNER + " " + NUM_STATES + " " + NUM_ITERATIONS + " " + timing/1000);
+	}
+
+	private static ArrayList<ObservationVector> toObservationVectors(ArrayList<Frame> frames)
+	{
+		ArrayList<ObservationVector> ovs = new ArrayList<ObservationVector>();
+		double[] values;
+		
+		for (int i = 0; i < frames.size(); i++)
+		{
+			values = frames.get(i).toDoubles();
+			for (double v : values)
+			{
+				v  = v / SCALING_FACTOR;
+			}
+			ovs.add(new ObservationVector(values));
+		}
+		//System.out.println("Done sample " + s.pathname);
+		return ovs;
+	}
+		
+	static void save_hmm(Learner learner, String filename)
+	{
+		try
+		{
+			FileOutputStream stream = new FileOutputStream(filename);
+			ObjectOutputStream out = new ObjectOutputStream(stream);
+			out.writeObject(learner.hmm);
+			out.close();
+		    Utils.log("Hmm saved to " + filename);
+		}
+		catch (IOException e)
+		{
+			Utils.error("Cannot save hidden markov model to <" + filename + ">");
+		}
+	}
+	
+	static Hmm restore_hmm(String filename)
+	{
+		try
+		{
+			FileInputStream stream = new FileInputStream(filename);
+			ObjectInputStream in = new ObjectInputStream(stream);
+		    Utils.log("Hmm loaded from " + filename);
+			return (Hmm)in.readObject();
+		}
+		catch (IOException e)
+		{
+			Utils.error("Cannot load hidden markov model from <" + filename + ">");
+		}
+		catch (Exception e)
+		{}
+		return null;
+	}
+
+	private void init_parameters()
+	{
+		if(NUM_STATES < 0)
+			NUM_STATES = Integer.valueOf(Config.lookup("m_hidden_states"));
+		if(NUM_ITERATIONS < 0)
+			NUM_ITERATIONS = Integer.valueOf(Config.lookup("m_iterations"));
+		if(LEARNER < 0)
+			LEARNER = Integer.valueOf(Config.lookup("m_learner"));
+
+		learners = new ArrayList<Learner>(5);
+
+		for (int i = 0; i < Gesture.num_gestures; i++)
+		{
+			learners.add(new Learner(NUM_STATES, NUM_DIMENSIONS, NUM_ITERATIONS,
+				new Gesture(i)));
+		}
+	}
+};
+
+class Learner
+{
+	Hmm<ObservationVector> hmm;
+	ArrayList<ArrayList<ObservationVector>> sequences;
+	BaumWelchScaledLearner bwl;
+	KMeansLearner<ObservationVector> kml; 
+    OpdfMultiGaussianFactory factory;
+    Gesture gesture;
+    
+	int num_states;
+	int num_dimensions;
+	int num_iterations;    
+
+	Learner(int states, int dimensions, int iterations, Gesture g)
+	{
+		num_states = states;
+		num_dimensions = dimensions;
+		num_iterations = iterations;
+		gesture = g;
+
+		factory = new OpdfMultiGaussianFactory(num_dimensions);
+		hmm = new Hmm<ObservationVector>(num_states, factory);
+		sequences = new ArrayList<ArrayList<ObservationVector>>();
+	}
+	
+	void add_sequence(ArrayList<ObservationVector> seq)
+	{
+		sequences.add(seq);
+	}
+	
+	void learnbw()
+	{
+		bwl = new BaumWelchScaledLearner();
+		bwl.setNbIterations(num_iterations);
+		//One iteration of KMeansLearner to initalise
+		hmm = new KMeansLearner<ObservationVector>(num_states, factory, sequences).iterate();
+		hmm = bwl.learn(hmm, sequences);
+	}
+	
+	void learnkm()
+	{
+		kml = new KMeansLearner<ObservationVector>(num_states, factory, sequences);
+		hmm = kml.learn();
+	}
+}
+\end{code}
+
+\chapter{Control.py}
+
+\begin{code}
+from Tkinter import *
+import scop
+
+class Controls(Frame):
+    """This class provides mousebutton and arrow key support for emitting basic controls (a,d,l,r,s) to an SCOP socket."""
+
+    def __init__(self, parent, sock, player, width=800, height=800, **options):
+        Frame.__init__(self, parent, **options)
+        self.width, self.height = width, height
+        parent.title("Player " + str(player))
+        self.sock = sock     
+        
+        Button(self, text='accel', command=self.Accelerate).grid(row=0, column=1)
+        Button(self, text='decel', command=self.Decelerate).grid(row=2, column=1)
+        Button(self, text='left', command=self.TurnLeft).grid(row=1, column=0)
+        Button(self, text='right', command=self.TurnRight).grid(row=1, column=2)
+        Button(self, text='startstop', command=self.Pause).grid(row=1, column=1)
+
+        self.running = 0
+        self.period = 20 # milliseconds
+
+        parent.bind('<KeyPress-Left>', self.TurnLeft)
+        parent.bind('<KeyPress-Right>', self.TurnRight)
+        parent.bind('<KeyPress-Up>', self.Accelerate)
+        parent.bind('<KeyPress-Down>', self.Decelerate)
+        parent.bind('<KeyPress-space>', self.Pause)
+
+    def Accelerate(self, event=None):
+        scop.scop_emit(self.sock, "a")
+
+    def Decelerate(self, event=None):
+        scop.scop_emit(self.sock, "d")
+
+    def TurnLeft(self, event=None):
+        scop.scop_emit(self.sock, "l")
+
+    def TurnRight(self, event=None):
+        scop.scop_emit(self.sock, "r")
+        
+    def Pause(self, event=None):
+	if self.running:
+	    self.running = 0
+	    scop.scop_emit(self.sock, "s")
+	else:
+	    self.running = 1
+	    scop.scop_emit(self.sock, "s")
+\end{code}
 
 \cleardoublepage
 
