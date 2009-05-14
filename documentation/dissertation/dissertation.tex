@@ -59,7 +59,8 @@ Computer Science Tripos \\
 \vspace*{5mm}
 King's College \\
 \vspace*{5mm}
-\today  % today's date
+2009
+%\today  % today's date
 \end{center}
 
 \cleardoublepage
@@ -80,7 +81,7 @@ College:            & \bf King's College                     \\
 Project Title:      & \bf Gesture-controlled Robotics using the \\
                     & \bf Vicon motion capture system \\
 Examination:        & \bf Computer Science Tripos, 2009        \\
-Word Count:         & \bf wordcount \\
+Word Count:         & \bf 9,500 \\
 Project Originator: & Cheryl Hung                    \\
 Supervisor:         & Cecily Morrison, Laurel Riek                    \\ 
 \end{tabular}
@@ -139,6 +140,12 @@ The philosophy which is common to these systems is the convergence towards ``eve
 
 Robots, by contrast, have generally been operated by skilled engineers and researchers. The motivation was to bring the power of human intuition to the human-machine interface, using techniques from machine learning. The medium that I chose to investigate and exploit is gesture recognition, a specialization of pattern recognition.
 
+\section{Previous work}
+
+Use of gestures, especially pointing, is an age-old technique for communication. The developing field of machine learning and artificial intelligence over the last sixty years has created an interest in classifying and interpreting these techniques. Artifical neural networks, and especially hidden Markov models, have been shown to model the world realistically to some extent.
+
+The use of hidden Markov models is particularly prominent in speech recognition. However, it has also been applied to gesture recognition; for example, tracking of hand gestures to use as pointing gestures for human-robot interaction\cite{HRI}. Hidden Markov models have also been used to qualify arm gestures in stroke patients\cite{AzLeder}, and to control unmanned aerial vehicles\cite{UAVs}.
+
 \section{Project aims}
 
 While machine vision is one option for obtaining user input, motion capture systems provide far more detailed location data, down to hundredths of a millimeter. Gesture recognition is a two-phase problem; the training with prerecorded datasets and the run-time interpretation. Rather than accepting arbitrary gestures as input, I chose to train on a finite set of predefined gestures, converting these into commands that are used to drive the robot. 
@@ -184,8 +191,8 @@ This was the option chosen, for ease of development and cost effectiveness.
 The budget was \pounds 500, funded equally by the Computer Laboratory Outreach programme and King's College. The final expenditure came to \pounds 585 as follows:
 
 Two iRobot Creates at \$229.99 = \pounds 306.80 \\
-OLPC XO laptop @ \$220.00 = \pounds 151.86 \\
-OLPC XO laptop @ \$170.00 = \pounds 117.35 \\
+OLPC XO laptop at \$220.00 = \pounds 151.86 \\
+OLPC XO laptop at \$170.00 = \pounds 117.35 \\
 UK/US Step Down Adapter = \pounds 8.99 \\
 Total: \pounds 585.00
 
@@ -199,7 +206,7 @@ The objects are needed firstly for input to a gesture, and secondly to represent
 
 Options for positional data were belt, hat and body. Having experimented with all three options, empirical results showed that the belt was easily occluded and confused by the arm markers, while the hat gave poor rotational data due to the independent movement of the head. The final configuration chosen was twelve markers spread across two arms and body (upper chest and back).
 
-The data output is six data values per object; an Axis Angle triplet for rotation and a triplet for global translation in millimetres (mm). An alternative rotation system which is also available is Euler angles.
+The data output is six data values per object; an Axis Angle triplet for rotation and a triplet for global translation in millimetres. An alternative rotation system which is also available is Euler angles.
 
 In order to simplify data processing while providing adequate control over the robot, most of the pre-set gestures were constrained to one arm movement within two dimensions (x-z or y-z planes in a z-up world). The commands chosen to provide basic steering and speed were accelerate, decelerate, turn left, turn right and start/stop, the latter being a test case for a more complex gesture, in this case a single clap at chest level. Figure \ref{gestures} shows the arm gestures for each command.
 
@@ -264,7 +271,7 @@ There are many different techniques in the field of machine learning used for pa
 Statistical techniques for pattern recognition are based on finding a classifier
 $ h: X \mapsto Y $ which maps $x \in X$ to $y \in Y$ in a close approximation to the actual ground function $ g: X \mapsto Y $ where the training set $ (\mathbf x_1,y_1), ... , (\mathbf x_n, y_n) $ are instances of $X \times Y$ (the Cartesian product of the $X$ and $Y$ domains).
 
-Among the more popular techniques are Support Vector Machines, naive Bayes classifier, k-nearest neighbour, neural networks and hidden Markov models. I chose the latter two as an example of a general classifier and temporal (or sequential) classifier respectively.
+Among the more popular techniques are support vector machines, naive Bayes classifier, k-nearest neighbour, neural networks and hidden Markov models. I chose the latter two as an example of a general classifier and temporal (or sequential) classifier respectively.
 
 \subsection{Neural Networks}
 
@@ -357,7 +364,7 @@ where $S_{0:t-1} = (S_0,S_1,...S_{t-1})$ is the set of states from time $0$ to t
 
 At each time $t$, a symbol is emitted from state $i$. For a Bakis HMM, the only options at $t+1$ are to stay in state $i$ or move to state $i+1$\cite{Bakis}. Each state is parametrized by an emission probability of staying in the same state and a transition probability of moving to state $i+1$.
 
-A Hidden Markov Model is one where these probabilities characterizing the states are unknown, and for a training sequence, it is unknown which state the observation lies in. To find the probabilities, the Baum-Welch algorithm takes a vector of training sequences and iterates using Expectation-Maximization. The expectation is calculated by the forward-backward algorithm, which is an example of dynamic programming and the use of memoization to avoid recomputing solutions to sub-problems.
+A hidden Markov model is one where these probabilities characterizing the states are unknown, and for a training sequence, it is unknown which state the observation lies in. To find the probabilities, the Baum-Welch algorithm takes a vector of training sequences and iterates using Expectation-Maximization. The expectation is calculated by the forward-backward algorithm, which is an example of dynamic programming and the use of memoization to avoid recomputing solutions to sub-problems.
 
 For a Markov Model, $Pr(E_t|S_t)$ is the sensor model and $Pr(S_t|S_{t-1})$ is the transition model. $Pr(S_0)$ denotes the prior state. The assumption is that the probabilities do not change over time, as the observations are stationary processes.
 
@@ -427,7 +434,10 @@ Subversion was used for version control, with Google Code Project Hosting provid
 
 Rather than implementing all the algorithms from scratch as originally planned, I chose to use established libraries for my machine learning needs. This came about on advice from my supervisor and has reduced the workload in this case, to give me time to implement a more complete final system.
 
-I researched several neural network libraries, including Joone\ref{Joone} and JavaNNS\ref{JavaNNS}. The Joone library has particularly good tools for writing third party modules, as well as support for distributed training, which would be useful for higher performance in the CPU intensive training stage.
+I researched several neural network libraries,
+including Joone\cite{Joone} and JavaNNS.
+% JavaNNS\cite{JavaNNS}.
+The Joone library has particularly good tools for writing third party modules, as well as support for distributed training, which would be useful for higher performance in the CPU intensive training stage.
 
 Java libraries for Hidden Markov Models included Jahmm\cite{Jahmm}, jHMM, and HmmSDK. I chose Jahmm as it has a good API and support for processing of vectors.
 
@@ -530,12 +540,21 @@ This stream is a direct transcription of the \texttt{<"ok"/"dropout">} field of 
 
 \subsection{Breakdown of components}
 
-Class diagrams
-{diagram: class diagram}
+Figure \ref{classdiag} shows the class diagram for the Java classes. Not included are the Python modules \class{control}, \class{view}, \class{feedback} \class{relay} and \class{eval}, as they are completely independent.
+
+The method signatures for each class are listed in more detail within the pertinent section.
+
+\begin{figure}
+\centering
+%\includegraphics[scale=0.53,angle=0]{diagrams/classdiagram.ps}
+\includegraphics[scale=1.25,angle=-90]{diagrams/classes.eps}
+\caption{Class diagram. Note that \class{Evaluation}, \class{Utils} and \class{Config} interact with almost all other classes and have been truncated for clarity.}
+\label{classdiag}
+\end{figure}
 
 \section{Motion capture}
 
-The Tarsus system triangulates markers using infra-red emitted from the cameras, which is bounced back from the reflective markers. It uses stereoscopic techniques to resolve these into world coordinates, using ten cameras for redundancy when a marker is occluded for whatever reason.
+The TARSUS system triangulates markers using infra-red emitted from the cameras, which is bounced back from the reflective markers. It uses stereoscopic techniques to resolve these into world coordinates, using ten cameras for redundancy when a marker is occluded for whatever reason.
 
 With three objects per user and six data-points per object, the Tarsus server sends eighteen or thirty six (for two players) values per frame via TCP/IP on port 800, at 100 frames per second.
 
@@ -626,6 +645,14 @@ static SixDOF parse(String s)
 \end{tabular}
 
 \begin{tabular}{|c|} \hline 
+\class{RecordedGesture} \\ \hline
+\multicolumn{1}{|p{8cm}|}
+{ \variable{String filename \newline
+ArrayList\<Frame\> data
+} } \\ \hline
+\end{tabular}
+
+\begin{tabular}{|c|} \hline 
 \class{SimGesture} \\ \hline
 \multicolumn{1}{|p{16cm}|}
 { \variable{static ArrayList\<RecordedGesture\> read\_gesture(String gesture\_dir) \newline
@@ -639,7 +666,8 @@ public static void replay\_gesture(SCOP scop, RecordedGesture gesture)
 \end{tabular}
 
 The \class{GestureReader} class contains a \variable{getData()} method, which reads in the data line by line until it finds an object name it recognises (``BodyP1", ``LeftArmP2" etc), ignores the column headings, and parses each frame until it finds whitespace. Each frame becomes a \class{Frame} object, containing references to three \class{SixDOF} objects for body, left arm and right arm. The \class{SixDOF} (six degrees of freedom) holds the six double precision floating point numbers corresponding to \<R-X\>, \<R-Y\>, \<R-Z\>, \<T-X\>, \<T-Y\>, \<T-Z\>; calling \variable{normalise()} sets the angle of rotation and normalises the rotation tuple to a unit vector. \\
-The \class{SimGesture} class is used to replay the data in the same format as a Vicon stream on the same SCOP stream, rendering it identical to the real data. It uses \class{GestureReader.getData(filename)} on all CSV files from a single person and replays them in a random order. It assumes that all recorded gestures begin and end in the neutral position, and so movement between gestures is represented by linearly interpolating all values for a random length of time. It also appends the dropout boolean, in the same way as \class{Capture}.
+The \class{SimGesture} class is used to replay the data in the same format as a Vicon stream on the same SCOP stream, rendering it identical to the real data. It uses \class{GestureReader}.\variable{getData(filename)} on all CSV files from a single person and replays them in a random order, appending the dropout boolean in the same way as \class{Capture}. It assumes that all recorded gestures begin and end in the neutral position, and so movement between gestures is represented by linearly interpolating all values for a random length of time. It also performs a \variable{framesync} in parallel to ensure that data is emitted at 100fps.
+
 
 \subsection{Preprocessing}
 
@@ -744,7 +772,7 @@ Frame get(int windowsize, int index)
 
 A circular buffer holds a list of frames and a pointer to indicate the next position for an incoming data frame. \class{SlidingWindow} performs preprocessing on  incoming frames, adds them to the active position until the buffer is full, and from then on overwrites the oldest frames.
 
-Every ten frames, SlidingWindow runs the specified recogniser on the circular buffer with a range of window sizes from 50 frames (0.5 seconds) to 350 frames (3.5 seconds). Trials show that almost all clearly defined gestures fall within these boundaries.
+Every ten frames, \class{SlidingWindow} runs the specified recogniser on the circular buffer with a range of window sizes from 50 frames (0.5 seconds) to 350 frames (3.5 seconds). Trials show that almost all clearly defined gestures fall within these boundaries.
 
 \begin{pseudocode}
 Loop forever: \\
@@ -757,12 +785,12 @@ Loop forever: \\
 
 If a gesture is recognised from the current window, the buffer continues to fill with arriving data but no more attempts at recognition are made until the minimum windowsize is exceeded. In addition, \class{SlidingWindow} monitors the frames for a flag indicating a dropout; if a frame contains data where at least one object is unavailable, it emits a ``dropout" message to the \variable{statusserver}, and ``ok" when the object returns.
 
-This status information is used by \class{Feedback.py} to display two rectangles, for player 1 and player 2, as in figure \ref{feedback}. A red rectangle indicates that the data is currently unavailable, while a green rectangle indicates a good detection rate. This feedback was highly rated in my user study of the system, allowing users to distinguish between poor detection from the Vicon system and poor recognition from a recogniser.
+This status information is used by the Python class \class{feedback} to display two rectangles, for player 1 and player 2, as in figure \ref{feedback}. A red rectangle indicates that the data is currently unavailable, while a green rectangle indicates a good detection rate. This feedback was highly rated in my user study of the system, allowing users to distinguish between poor detection from the Vicon system and poor recognition from a recogniser.
 
 \begin{figure}
 \centering
 \includegraphics[scale=0.4,angle=0]{images/feedback.ps}
-\caption{Feedback listening to \scopendpoint{p1status} and \scopendpoint{p2status} and showing that \scopendpoint{p1status} has reported a dropout.}
+\caption{\class{feedback} listening to \scopendpoint{p1status} and \scopendpoint{p2status} and showing that \scopendpoint{p1status} has reported a dropout.}
 \label{feedback}
 \end{figure}
 
@@ -788,7 +816,16 @@ void extract(double[] a)
 } } \\ \hline
 \end{tabular}
 
-Ranges is a utility class which contains six values for the minimum and maximum of x, y and z.  It takes a list of Frames and holds two Ranges for left and right arms, and a double containing the displacement value calculated as follows:
+\begin{tabular}{|c|} \hline 
+\class{Ranges} \\ \hline
+\multicolumn{1}{|p{8cm}|}
+{\variable{private double[] min, max \newline
+void update(SixDOF bodypart) \newline
+double get\_delta(int axis)
+} } \\ \hline
+\end{tabular}
+
+\class{Features} takes a list of \class{Frames} and holds two \class{Ranges} for left and right arms, and a double containing the displacement value calculated as follows:
 \begin{code}
 double displacement = 0.0;
 displacement += square(last.left.tx - first.left.tx);
@@ -798,6 +835,9 @@ displacement += square(last.right.ax - first.right.ax);
 displacement += square(last.right.ay - first.right.ay);
 displacement += square(last.right.az - first.right.az);
 \end{code}
+
+\class{Ranges} is a utility class which contains six values for the minimum and maximum of x, y and z.  
+
 \section{Recognition}
 
 \subsection{Recogniser}
@@ -856,7 +896,7 @@ void train(ArrayList<Sample> samples, String out\_file)
 } } \\ \hline
 \end{tabular}
 
-The \class{Person} class is the union of all trained data related to a single specified user. It aggregates \class{Interval}s, neural network and hidden Markov model parameters, and also contains a constructor populating these fields from data files.
+The \class{Person} class is the union of all trained data related to a single specified user. It aggregates \class{Interval}s, neural network and hidden Markov model parameters, and also contains a constructor populating these fields from data files. It represents the saved behaviour of a \class{User}.
 
 \begin{tabular}{|c|} \hline 
 \class{Person} \\ \hline
@@ -878,7 +918,7 @@ private static boolean match(Person person, Features features, int gesture)
 
 \begin{tabular}{|c|} \hline 
 \class{Intervals} \\ \hline
-\multicolumn{1}{|p{12cm}|}
+\multicolumn{1}{|p{8cm}|}
 {\variable{private double[][] range \newline
   double get\_min(int axis) \newline
   double get\_max(int axis) \newline
@@ -988,7 +1028,7 @@ Sample(String pathname, Gesture g)
 } } \\ \hline
 \end{tabular}
 
-The offline training phase is implemented with a Training class and a set of Samples. The constructor calls the \variable{train()} method on the specified classifier, and can be used as a command line tool on a directory of gestures. This can be used to train a classifier and save the results to a data file.
+The offline training phase is implemented with an instance of the \class{Training} class and a set of \class{Sample}s. The constructor calls the \variable{train()} method on the specified classifier, and can be used as a command line tool on a directory of gestures. This can be used to train a classifier and save the results to a data file.
 
 \section{Framework}
 
@@ -1064,10 +1104,7 @@ Loop forever: \\
 
 Decoupling various components allows message passing between different languages, which was important to allow the Java client to communicate with the Python robotics control. SCOP, a lightweight middleware framework, allows particularly simple events, messaging and RPC in C++, C, Java, Python and Scheme. SCOP hides the client and server setup and silently discards data streams if there are no listeners. This makes it particularly simple to create and run such a distributed system by passing processed gesture data from the Java client to the Python robotics library.
 
-SCOP assigns a name to each resource and an optional source hint to each stream. In order to listen to both players' commands, \class{Transform}, \class{control} and \class{view} open two sockets to listen to two independent streams. Relay.py only listens to the stream of its user, either \scopendpoint{p1ctrl} or \scopendpoint{p2ctrl}.
-
-\scopendpoint{p1coords} and \scopendpoint{p2coords} represent the raw input streams from two users.
-\scopendpoint{p1ctrl} and \scopendpoint{p2ctrl} are the {a,d,l,r,s} commands as interpreted from the two users.
+SCOP assigns a name to each resource and an optional source hint to each stream. In order to listen to both players' commands, \class{Transform}, \class{control} and \class{view} open two sockets to listen to two independent streams. \class{relay} only listens to the stream of its user, either \scopendpoint{p1ctrl} or \scopendpoint{p2ctrl}. All other classes may listen to \scopendpoint{p1} or \scopendpoint{p2} as necessary.
 
 The SRCF was used to provide a SCOP server running on a domain name, so that all units can reach it irrespective of whether they were wired or wireless and without knowing IP addresses. When testing on the King's College wifi network, it was found that broadcasting on non-standard ports is refused, including 51234. To compensate for this, \class{tunnel.sh} sets up ssh port forwarding to the SRCF, so that sockets opened on the OLPC XO appear as if connected from the SRCF's port 51234.
 
@@ -1078,11 +1115,14 @@ The three streams used for interprocess communication are \scopendpoint{p1coords
 \begin{tabular}{|c|} \hline 
 \class{Config} \\ \hline
 \multicolumn{1}{|p{12cm}|}
-{\variable{- Config() \newline
-- static String lookup(String key) \newline
-- void supply\_defaults() \newline
-- void check\_add(String key, String defaultvalue) \newline
-- String do\_lookup(String key)
+{\variable{public static String lookup(String key) \newline
+public static String set(String key, String value) \newline
+private Config() \newline
+private HashMap\<String,String\> dict \newline
+private static String lookup(String key) \newline
+private void supply\_defaults() \newline
+private void check\_add(String key, String defaultvalue) \newline
+private String do\_lookup(String key)
 } } \\ \hline
 \end{tabular}
 
@@ -1103,9 +1143,19 @@ The second evaluation metric is determining the optimal training parameters for 
 \multicolumn{1}{|p{12cm}|}
 {\variable{static double error() \newline
 static double[] accuracy() \newline
-- static int match(Sample s, Gesture g) \newline
+private static int match(Sample s, Gesture g) \newline
 static long performance() \newline
-- static void print\_results()
+private static void print\_results()
+} } \\ \hline
+\end{tabular}
+
+\begin{tabular}{|c|} \hline 
+\class{Result} \\ \hline
+\multicolumn{1}{|p{4cm}|}
+{\variable{CORRECT \newline
+FALSE\_POS \newline
+FALSE\_NEG \newline
+INCORRECT
 } } \\ \hline
 \end{tabular}
 
@@ -1115,7 +1165,8 @@ The python \class{eval} module provides a command line tool to iterate over a ce
 
 \subsection{Hardware}
 
-The processing units used for performance measurements were 1Gb Intel dual-core main memory, and 160 Gb storage (hard drive).
+The hardware used for performance measurements comprised a 2.8 Ghz Intel
+dual-core CPU with 1 Gb main memory, and 160 Gb storage (hard drive).
 
 \subsection{Defaults}
 
@@ -1132,7 +1183,7 @@ Unless the parameter is under specific evaluation, the following values were oth
 \begin{figure}
 \centering
 \includegraphics[scale=0.7,angle=0]{results/key.ps}
-\caption{Key for all graphs}
+\caption{Key for all graphs. See Appendix D for tables.}
 \label{key}
 \end{figure}
 
@@ -1144,7 +1195,7 @@ Unless the parameter is under specific evaluation, the following values were oth
 \label{all_recognisers}
 \end{figure}
 
-Figure \ref{all_recognisers} shows basic comparisons between each the four recognisers, based on accuracy and time taken to recognise a set of gestures . For this purpose, eleven gestures were reserved as unseen gestures, so that any training would be done on a subset of the recorded examples. Eighteen further were negative examples, and eighteen more normal gestures.
+Figure \ref{all_recognisers} shows basic comparisons between each the four recognisers, based on accuracy and time taken to recognise a set of gestures. For this purpose, eleven gestures were reserved as unseen gestures, so that any training would be done on a subset of the recorded examples. Eighteen further were negative examples, and eighteen more normal gestures.
 
 The data shows that the heuristic recogniser is by far the fastest and most accurate, which is unsurprising as the parameters are fine-tuned for the specific application. In comparison, neural networks are cheap but rather less accurate, especially when they have only been trained on known gestures. Hidden Markov models are expensive but provide good results, while the hybrid recogniser, being the aggregation of all the recognisers, takes the most computation and provides good results.
 
@@ -1162,7 +1213,7 @@ The neural networks have a number of variables which can be adjusted to obtain b
 \includegraphics[scale=0.3,angle=-90]{results/neural_err/n_hidden_nodes.ps}
 \includegraphics[scale=0.3,angle=-90]{results/neural/n_learner.ps}
 \includegraphics[scale=0.3,angle=-90]{results/neural_err/n_learner.ps}
-\caption{Comparison of parameters in the neural networks recogniser.}
+\caption{Comparison of number of epochs, number of nodes in the hidden layer and type of learner in the neural networks recogniser.}
 \label{n_intparameters}
 \end{figure}
 
@@ -1176,7 +1227,7 @@ Although the number of epochs does not make much difference to the accuracy, it 
 \includegraphics[scale=0.3,angle=-90]{results/neural_err/n_learning_rate.ps}
 \includegraphics[scale=0.3,angle=-90]{results/neural/n_momentum.ps}
 \includegraphics[scale=0.3,angle=-90]{results/neural_err/n_momentum.ps}
-\caption{Comparison of parameters in the neural networks recogniser.}
+\caption{Comparison of learning rate and momentum in the neural networks recogniser.}
 \label{n_floatparameters}
 \end{figure}
 
@@ -1191,16 +1242,16 @@ Hidden Markov Models may also be trained with different parameters, such as the 
 \includegraphics[scale=0.3,angle=-90]{results/markov/m_hidden_states.ps}
 \includegraphics[scale=0.3,angle=-90]{results/markov/m_iterations.ps}
 \includegraphics[scale=0.4,angle=-90]{results/markov/m_learner.ps}
-\caption{Comparison of parameters in the hidden Markov model recogniser.}
+\caption{Comparison of number of hidden states, number of iterations and type of learner in the hidden Markov model recogniser.}
 \label{m_parameters}
 \end{figure}
 
-Figure \ref{m_parameters} compares the results of varying these two paramters. The figure shows that a gesture can be successfully characterised in three states, which agrees with the expected result in that a gesture can be described in three phases; increasing displacement or distance from origin, no movement when the pose is held, and decreasing displacement. The time taken increases exponentially when increasing states or number of iterations, which is expected. The Baum-Welch algorithm performs equally as well as k-means clustering, but the k-means learner is faster and also does not require tagged examples, as it is an unsupervised learning method.
+Figure \ref{m_parameters} compares the results of varying these two parameters. The figure shows that a gesture can be successfully characterised in three states, which agrees with the expected result in that a gesture can be described in three phases; increasing displacement or distance from origin, no movement when the pose is held, and decreasing displacement. The time taken increases exponentially when increasing states or number of iterations, which is expected. The Baum-Welch algorithm performs equally as well as k-means clustering, but the k-means learner is faster and also does not require tagged examples, as it is an unsupervised learning method.
 
 \subsection{Real time control}
 \begin{figure}
 \centering
-\includegraphics[scale=0.3,angle=0]{images/cherylscreen.ps}
+\includegraphics[scale=0.36,angle=0]{images/cherylscreen.ps}
 \includegraphics[scale=0.3,angle=0]{images/davidrobots.ps}
 \caption{Photographs of demonstrations}
 \label{demonstrations}
@@ -1229,7 +1280,7 @@ Overall, this project completed its original goals and surpassed them by also im
 
 This project implements a working, complete system which has been demonstrated at the Computer Laboratory Rainbow group Outreach day and tried with multiple users. It combines fundamentally different techniques, and all parts are fully modularised and cleanly separated. This decoupling is a success of software engineering; almost all of the components are testing and can be used as standalone modules.
 
-Integrating five libraries using two languages across three platforms was a major achievement of careful planning and understanding. The plan was completed to a budget, as stated in my project proposal, and the hardware obtained and succesfully integrated into the system. The recognition engine is usable in real-time, offering four classification techniques and 80\% succes rate with two users.
+Integrating five libraries using two languages across three platforms was a major achievement of careful planning and understanding. The plan was completed to a budget, as stated in my project proposal, and the hardware obtained and succesfully integrated into the system. The recognition engine is usable in real-time, offering four classification techniques and 80\% success rate with two users.
 
 \section{Reflection}
 
@@ -1246,583 +1297,845 @@ In the upcoming summer, this system will be used for educational purposes. The e
 
 \appendix
 
-\chapter{Neural Network recogniser}
+\chapter{Code snippets from recognisers}
+
+\section{\class{Heuristic}}
 
 \begin{code}
-import java.io.*;
-import java.util.*;
+class Heuristic extends Recogniser
+{
+   static double CLOSED_THRESHOLD = -1;
+   
+   public static Gesture recognise(Person person, Features features)
+   {
+      int command = Gesture.NoMatch;
 
-import org.joone.log.*;
-import org.joone.engine.*;
-import org.joone.engine.learning.*;
-import org.joone.io.*;
-import org.joone.net.NeuralNet;
+      if(CLOSED_THRESHOLD < 0)
+         CLOSED_THRESHOLD = Double.valueOf(Config.lookup("closedthreshold"));
+      for(int i = 0; i < Gesture.num_gestures; i++)
+      {
+         if(match(person, features, i))
+         {
+            if(command == Gesture.NoMatch)
+               command = i;
+            else
+               command = Gesture.MultiMatch;
+         }
+      }
+      Gesture g = new Gesture(command);
+      return g;
+   }
+   
+   private static boolean match(Person person, Features features, int gesture)
+   {
+      Intervals left_range = person.left[gesture];
+      Intervals right_range = person.right[gesture];
+      double left_delta, right_delta;
+      
+      for(int axis = 0; axis < 3; axis++)
+      {
+         if(features.displacement > CLOSED_THRESHOLD)
+            return false;
+         
+         left_delta = features.leftarm.get_delta(axis);
+         if(left_range.get_min(axis) > left_delta ||
+               left_range.get_max(axis) < left_delta)
+            return false;
+         
+         right_delta = features.rightarm.get_delta(axis);
+         if(right_range.get_min(axis) > right_delta ||
+               right_range.get_max(axis) < right_delta)
+            return false;
+      }
+      return true;
+   }
+};
+\end{code}
 
+\section{\class{Neural}}
+
+\begin{code}
 class Neural extends Recogniser implements NeuralNetListener 
 {
-	static double NEURAL_THRESHOLD = -1;
+   LinearLayer input;
+   SigmoidLayer hidden, output;
+   FullSynapse synapse_IH, synapse_HO;
+   NeuralNet nnet;
+   Monitor monitor;
+   MemoryInputSynapse inputStream, samples;
+   TeachingSynapse trainer;
+   
+   public static Gesture recognise(Person person, Features features)
+   {     
+      double[] inputdata, outputdata;
+      Pattern pin, pout;
+      
+      init(person); // Check person.nnet has been initialised
 
-	static int LEARNING_MODE = -1;
-	static int NUM_EPOCHS = -1;
-	static int NUM_HIDDEN_NEURONS = -1;
-	static double LEARNING_RATE = -1;
-	static double MOMENTUM = -1;
-	static boolean TRAIN_ON_NEGS = false;
-	
-	String output_file;
-	double err;
-	
-	LinearLayer input;
-	SigmoidLayer hidden, output;
-	FullSynapse synapse_IH, synapse_HO;
-	NeuralNet nnet;
-	Monitor monitor;
-	MemoryInputSynapse inputStream, samples;
-	TeachingSynapse trainer;
-	
-	static long timing = System.nanoTime();
+      inputdata = new double[Features.num_features];
+      features.extract(inputdata);
+      pin = new Pattern(inputdata);
+      pin.setCount(person.neural_seq++);
+      person.nnet.singleStepForward(pin);
+      pout = person.netout.fwdGet();
+            
+      double[] a = pout.getArray();
+      int command = Gesture.NoMatch;
+            
+      for (int i = 0; i < Gesture.num_gestures; i++)
+      {
+         if(a[i] > NEURAL_THRESHOLD)
+         {
+            if(command == Gesture.NoMatch)
+               command = i;
+            else
+               command = Gesture.MultiMatch;
+         }
+      }
+      
+      return new Gesture(command);
 
-	public static Gesture recognise(Person person, Features features)
-	{		
-		/* Uses:
-			features.displacement
-			features.leftarm|rightarm.get_delta(0|1|2)
-			Total 7 input neurons
-		*/
-		
-		double[] inputdata, outputdata;
-		Pattern pin, pout;
-		
-		init(person); // Check person.nnet has been initialised
+   }
+      
+   void train(ArrayList<Sample> sampleslist, String out_file)
+   {
 
-		inputdata = new double[Features.num_features];
-		features.extract(inputdata);
-		pin = new Pattern(inputdata);
-		pin.setCount(person.neural_seq++);
-		person.nnet.singleStepForward(pin);
-		pout = person.netout.fwdGet();
-		
-		dump_results(pout);
-				
-		if(NEURAL_THRESHOLD < 0)
-			NEURAL_THRESHOLD = Double.valueOf(Config.lookup("neuralthreshold"));
-		
-		
-		double[] a = pout.getArray();
-		int command = Gesture.NoMatch;
-				
-		for (int i = 0; i < Gesture.num_gestures; i++)
-		{
-			if(a[i] > NEURAL_THRESHOLD)
-			{
-				if(command == Gesture.NoMatch)
-					command = i;
-				else
-					command = Gesture.MultiMatch;
-			}
-		}
-		
-		return new Gesture(command);
+      output_file = out_file;
+      Sample samp;
+      init_parameters();
+      
+      int num_samples = sampleslist.size();
+      double[][] inputdata = new double[num_samples][Features.num_features];
+      double[][] outputdata = new double[num_samples][Gesture.num_gestures];
+      for(int i = 0; i < num_samples; i++)
+      {
+         samp = sampleslist.get(i);
+         samp.feat.extract(inputdata[i]);
+         for(int j = 0; j < Gesture.num_gestures; j++)
+            outputdata[i][j] = 0.0;
+         if(samp.gesture.command < Gesture.num_gestures)
+            outputdata[i][samp.gesture.command] = 1.0;
+      }
+      
+      input = new LinearLayer();
+      hidden = new SigmoidLayer();
+      output = new SigmoidLayer();
+      input.setLayerName("input");
+      hidden.setLayerName("hidden");
+      output.setLayerName("output");
+      input.setRows(Features.num_features);
+      hidden.setRows(NUM_HIDDEN_NEURONS);
+      output.setRows(Gesture.num_gestures);
+      synapse_IH = new FullSynapse();
+      synapse_HO = new FullSynapse();
+      synapse_IH.setName("IH");
+      synapse_HO.setName("HO");
+      input.addOutputSynapse(synapse_IH);
+      hidden.addInputSynapse(synapse_IH);
+      hidden.addOutputSynapse(synapse_HO);
+      output.addInputSynapse(synapse_HO);
+      
+      inputStream = new MemoryInputSynapse();
+      inputStream.setInputArray(inputdata);
+      set_columns(inputStream, 1, Features.num_features);
+      input.addInputSynapse(inputStream);
 
-	}
-		
-	void train(ArrayList<Sample> sampleslist, String out_file)
-	{
-
-		output_file = out_file;
-		Sample samp;
-		init_parameters();
-		
-		int num_samples = sampleslist.size();
-		double[][] inputdata = new double[num_samples][Features.num_features];
-		double[][] outputdata = new double[num_samples][Gesture.num_gestures];
-		for(int i = 0; i < num_samples; i++)
-		{
-			samp = sampleslist.get(i);
-			samp.feat.extract(inputdata[i]);
-			for(int j = 0; j < Gesture.num_gestures; j++)
-				outputdata[i][j] = 0.0;
-			if(samp.gesture.command < Gesture.num_gestures)
-				outputdata[i][samp.gesture.command] = 1.0;
-		}
-		
-		input = new LinearLayer();
-		hidden = new SigmoidLayer();
-		output = new SigmoidLayer();
-		input.setLayerName("input");
-		hidden.setLayerName("hidden");
-		output.setLayerName("output");
-		input.setRows(Features.num_features);
-		hidden.setRows(NUM_HIDDEN_NEURONS);
-		output.setRows(Gesture.num_gestures);
-		synapse_IH = new FullSynapse();
-		synapse_HO = new FullSynapse();
-		synapse_IH.setName("IH");
-		synapse_HO.setName("HO");
-		input.addOutputSynapse(synapse_IH);
-		hidden.addInputSynapse(synapse_IH);
-		hidden.addOutputSynapse(synapse_HO);
-		output.addInputSynapse(synapse_HO);
-		
-		inputStream = new MemoryInputSynapse();
-		inputStream.setInputArray(inputdata);
-		set_columns(inputStream, 1, Features.num_features);
-		input.addInputSynapse(inputStream);
-
-		samples = new MemoryInputSynapse();
-		samples.setInputArray(outputdata);
-		set_columns(samples, 1, Gesture.num_gestures);
-			
-		trainer = new TeachingSynapse();
-		trainer.setDesired(samples);
-		output.addOutputSynapse(trainer);
-			
-		nnet = new NeuralNet();
-		nnet.addLayer(input, NeuralNet.INPUT_LAYER);
-		nnet.addLayer(hidden, NeuralNet.HIDDEN_LAYER);
-		nnet.addLayer(output, NeuralNet.OUTPUT_LAYER);
-		
-		monitor = nnet.getMonitor();
-		monitor.setTrainingPatterns(num_samples);
-		monitor.setTotCicles(NUM_EPOCHS);
-		monitor.setLearningRate(LEARNING_RATE);
-		monitor.setMomentum(MOMENTUM);
-		monitor.setLearning(true);
-		
-		//Add learner
-		
-		monitor.addLearner(0, "org.joone.engine.BasicLearner"); // On-line
-		monitor.addLearner(1, "org.joone.engine.BatchLearner"); // Batch
-		monitor.addLearner(2, "org.joone.engine.RpropLearner"); // RPROP
-		
-		monitor.setLearningMode(LEARNING_MODE);
-				
-		monitor.setSingleThreadMode(true);
-		monitor.addNeuralNetListener(this);
-			
-		nnet.go();
-	}
-	
-	private void init_parameters()
-	{
-		if(LEARNING_MODE < 0)
-			LEARNING_MODE = Integer.valueOf(Config.lookup("n_learner"));
-		if(NUM_EPOCHS < 0)
-			NUM_EPOCHS = Integer.valueOf(Config.lookup("n_epochs"));
-		if(NUM_HIDDEN_NEURONS < 0)
-			NUM_HIDDEN_NEURONS = Integer.valueOf(Config.lookup("n_hidden_nodes"));
-		if(LEARNING_RATE < 0)
-			LEARNING_RATE = Double.valueOf(Config.lookup("n_learning_rate"));
-		if(MOMENTUM < 0)
-			MOMENTUM = Double.valueOf(Config.lookup("n_momentum"));
-		if(TRAIN_ON_NEGS == false)
-			TRAIN_ON_NEGS = Boolean.valueOf(Config.lookup("n_train_on_negs"));
-		
-		if (LEARNING_MODE == 2)
-		{
-			LEARNING_RATE = 1.0;
-		}
-	}
-	
-	private void set_columns(MemoryInputSynapse syn, int first, int last)
-	{
-		String cols = "";
-		
-		for(int i = first; i <= last; i++)
-		{
-			if(i == last)
-				cols = cols + i;
-			else
-				cols = cols + i + ",";
-		}
-		syn.setAdvancedColumnSelector(cols);
-	}
-		
-	// NeuralNetListener interface methods follow:
-	
-	public void errorChanged(NeuralNetEvent e)
-	{
-		int cycle;
-		
-		Monitor mon = (Monitor)e.getSource();
-		cycle = mon.getCurrentCicle();
-		if(cycle % (NUM_EPOCHS/10) == 0 || cycle >= NUM_EPOCHS - 10)
-		{
-			err = mon.getGlobalError();
-			Utils.log(String.format("%d", cycle) + " epochs remaining; RMSE = " 
-			    + String.format("%5f", err));
-	    }
-	}
-	
-	public void netStarted(NeuralNetEvent e)
-	{
-		Utils.log("Training started");
-		timing = System.nanoTime();
-	}
-	
-	public void netStopped(NeuralNetEvent e)
-	{
-		timing = System.nanoTime() - timing;
-		Utils.log("Learning-mode Learning-rate Momentum Epochs Hidden-nodes ns RMSE");
-		Utils.results(LEARNING_MODE + " " + LEARNING_RATE + " " + MOMENTUM + " " + NUM_EPOCHS + " " + NUM_HIDDEN_NEURONS + " " + timing + " " + String.format("%5f", err));
-		saveNeuralNet(nnet, output_file);
-	}
-	
-	public void netStoppedError(NeuralNetEvent e, String error)
-	{
-		Utils.log("Net stopped error: " + error);
-	}
-	
-	public void cicleTerminated(NeuralNetEvent e) {}
-	
-	static void saveNeuralNet(NeuralNet nnet, String filename)	
-	{
-		try
-		{
-			FileOutputStream stream = new FileOutputStream(filename);
-			ObjectOutputStream out = new ObjectOutputStream(stream);
-			out.writeObject(nnet);
-			out.close();
-		}
-		catch(Exception e)
-		{
-			Utils.error("Cannot save neural net to <" + filename + ">");
-		}
-	}
-		
-	static NeuralNet restoreNeuralNet(String filename)
-	{
-		try
-		{
-			FileInputStream stream = new FileInputStream(filename);
-			ObjectInputStream in = new ObjectInputStream(stream);
-			return (NeuralNet)in.readObject();
-		}
-		catch(Exception e)
-		{
-			Utils.error("Cannot load neural net from <" + filename + ">");
-		}
-		return null; // Never happens
-	}
-	
-	static void dump_results(Pattern pat)
-	{
-		double[] a = pat.getArray();
-		Gesture gest = new Gesture(0);
-		
-		assert(a.length == Gesture.num_gestures);
-		for(int i = 0; i < Gesture.num_gestures; i++)
-		{
-			gest.command = i;
-			if (Utils.verbose)
-				System.out.printf(gest.toString() + ": %5f\n", a[i]);
-		}
-	}
-	
-	static void init(Person p)
-	{
-		Layer input, output;
-
-		if(p.nnet != null)
-			return; // Already initialised
-			
-		p.nnet = restoreNeuralNet(p.neural_file);
-		
-		input = p.nnet.getInputLayer();
-		input.removeAllInputs();
-		
-		output = p.nnet.getOutputLayer();
-		output.removeAllOutputs();
-		
-		p.netout = new DirectSynapse();
-		output.addOutputSynapse(p.netout);
-		
-		p.nnet.getMonitor().setLearning(false);
-	}
+      samples = new MemoryInputSynapse();
+      samples.setInputArray(outputdata);
+      set_columns(samples, 1, Gesture.num_gestures);
+         
+      trainer = new TeachingSynapse();
+      trainer.setDesired(samples);
+      output.addOutputSynapse(trainer);
+         
+      nnet = new NeuralNet();
+      nnet.addLayer(input, NeuralNet.INPUT_LAYER);
+      nnet.addLayer(hidden, NeuralNet.HIDDEN_LAYER);
+      nnet.addLayer(output, NeuralNet.OUTPUT_LAYER);
+      
+      monitor = nnet.getMonitor();
+      monitor.setTrainingPatterns(num_samples);
+      monitor.setTotCicles(NUM_EPOCHS);
+      monitor.setLearningRate(LEARNING_RATE);
+      monitor.setMomentum(MOMENTUM);
+      monitor.setLearning(true);
+      
+      //Add learner
+      
+      monitor.addLearner(0, "org.joone.engine.BasicLearner"); // On-line
+      monitor.addLearner(1, "org.joone.engine.BatchLearner"); // Batch
+      monitor.addLearner(2, "org.joone.engine.RpropLearner"); // RPROP
+      
+      monitor.setLearningMode(LEARNING_MODE);
+            
+      monitor.setSingleThreadMode(true);
+      monitor.addNeuralNetListener(this);
+         
+      nnet.go();
+   }
 }
 \end{code}
 
-\chapter{Hidden Markov model recogniser}
+\section{\class{Markov}}
 \begin{code}
-import java.io.*;
-import java.util.*;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import be.ac.ulg.montefiore.run.jahmm.*;
-import be.ac.ulg.montefiore.run.jahmm.learn.*;
-import be.ac.ulg.montefiore.run.jahmm.io.*;
-
 class Markov extends Recogniser
 {
 
-	ArrayList<Learner> learners;
-	ArrayList<ArrayList<ArrayList<ObservationVector>>> sequences;
-	
-	static final int NUM_DIMENSIONS = 9;
-	static int NUM_STATES = -1;
-	static int NUM_ITERATIONS = -1;
-	static int LEARNER = -1;
-	
-	String output_root;
-	
-	static int SCALING_FACTOR = 100;
-	
-	public static Gesture recognise(Person person, Features features)
-	{
-		String filename;
-		double[] probabilities = new double[Gesture.num_gestures];
-		ArrayList<ObservationVector> framedata = toObservationVectors(features.rawdata);
-		
-		Hmm<ObservationVector> recog_hmm = new Hmm<ObservationVector>(5, new OpdfMultiGaussianFactory(features.rawdata.size()));
-				
-		for (int i = 0; i < Gesture.num_gestures; i++)
-		{
-			filename  = person.markov_root + new Gesture(i).toAction();
-			recog_hmm = restore_hmm(filename);
-			probabilities[i] = recog_hmm.lnProbability(framedata);
-		}
+   ArrayList<Learner> learners;
+   ArrayList<ArrayList<ArrayList<ObservationVector>>> sequences;
+   
+   public static Gesture recognise(Person person, Features features)
+   {
+      String filename;
+      double[] probabilities = new double[Gesture.num_gestures];
+      ArrayList<ObservationVector> framedata = 
+        toObservationVectors(features.rawdata);
+      
+      Hmm<ObservationVector> recog_hmm = new Hmm<ObservationVector>
+        (5, new OpdfMultiGaussianFactory(features.rawdata.size()));
+            
+      for (int i = 0; i < Gesture.num_gestures; i++)
+      {
+         filename  = person.markov_root + new Gesture(i).toAction();
+         recog_hmm = restore_hmm(filename);
+         probabilities[i] = recog_hmm.lnProbability(framedata);
+      }
 
-		dump_results(probabilities);
+      int command = Gesture.NoMatch;
+            
+      for (int i = 0; i < Gesture.num_gestures; i++)
+      {
+         if(!Double.isNaN(probabilities[i]))
+         {
+            if(command == Gesture.NoMatch)
+               command = i;
+            else
+               command = Gesture.MultiMatch;
+         }
+      }
 
-		int command = Gesture.NoMatch;
-				
-		for (int i = 0; i < Gesture.num_gestures; i++)
-		{
-			if(!Double.isNaN(probabilities[i]))
-			{
-				if(command == Gesture.NoMatch)
-					command = i;
-				else
-					command = Gesture.MultiMatch;
-			}
-		}
+      return new Gesture(command);
+   }
 
-		return new Gesture(command);
-	}
+   void train(ArrayList<Sample> samples, String out_file)
+   {
+      init_parameters();
+      output_root = out_file;
 
-	static void dump_results(double[] a)
-	{
-		Gesture gest = new Gesture(0);
-		
-		assert(a.length == Gesture.num_gestures);
-		for(int i = 0; i < Gesture.num_gestures; i++)
-		{
-			gest.command = i;
-			Utils.log(gest.toString() + ": " + String.format("%5f", a[i]));
-		}
-	}
-
-	void train(ArrayList<Sample> samples, String out_file)
-	{
-		init_parameters();
-		output_root = out_file;
-
-		for (Sample sample : samples)
-		{
-			Learner learner = learners.get(sample.gesture.command);
-			learner.add_sequence(toObservationVectors(sample.data));
-			Utils.log("Assigned " + sample.pathname +
-			 " to learner for " + learner.gesture.toString());
-		}
-		
-		long timing = System.nanoTime();
-		
-		for (Learner learner : learners)
-		{
-			Utils.log("Training " + learner.gesture.toString());
-			if (LEARNER == 0)
-			{	
-				learner.learnbw();
-			}
-			else if (LEARNER == 1)
-			{
-				learner.learnkm();
-			}
-			else
-			{
-				Utils.error("Unknown learner; valid options are " +
-					"0 for Baulm-Welch and 1 for K-Means");
-			}
-			
-			save_hmm(learner, output_root + "_" + learner.gesture.toAction());
-		}
-		
+      for (Sample sample : samples)
+      {
+         Learner learner = learners.get(sample.gesture.command);
+         learner.add_sequence(toObservationVectors(sample.data));
+         Utils.log("Assigned " + sample.pathname +
+          " to learner for " + learner.gesture.toString());
+      }
+      
+      long timing = System.nanoTime();
+      
+      for (Learner learner : learners)
+      {
+         Utils.log("Training " + learner.gesture.toString());
+         if (LEARNER == 0)
+         {  
+            learner.learnbw();
+         }
+         else if (LEARNER == 1)
+         {
+            learner.learnkm();
+         }
+         else
+         {
+            Utils.error("Unknown learner; valid options are " +
+               "0 for Baulm-Welch and 1 for K-Means");
+         }
+         
+         save_hmm(learner, output_root + "_" + learner.gesture.toAction());
+      }
+      
         timing = System.nanoTime() - timing;
         
         Utils.log("Learner hidden-states iterations ms");
-        Utils.results(LEARNER + " " + NUM_STATES + " " + NUM_ITERATIONS + " " + timing/1000);
-	}
-
-	private static ArrayList<ObservationVector> toObservationVectors(ArrayList<Frame> frames)
-	{
-		ArrayList<ObservationVector> ovs = new ArrayList<ObservationVector>();
-		double[] values;
-		
-		for (int i = 0; i < frames.size(); i++)
-		{
-			values = frames.get(i).toDoubles();
-			for (double v : values)
-			{
-				v  = v / SCALING_FACTOR;
-			}
-			ovs.add(new ObservationVector(values));
-		}
-		//System.out.println("Done sample " + s.pathname);
-		return ovs;
-	}
-		
-	static void save_hmm(Learner learner, String filename)
-	{
-		try
-		{
-			FileOutputStream stream = new FileOutputStream(filename);
-			ObjectOutputStream out = new ObjectOutputStream(stream);
-			out.writeObject(learner.hmm);
-			out.close();
-		    Utils.log("Hmm saved to " + filename);
-		}
-		catch (IOException e)
-		{
-			Utils.error("Cannot save hidden markov model to <" + filename + ">");
-		}
-	}
-	
-	static Hmm restore_hmm(String filename)
-	{
-		try
-		{
-			FileInputStream stream = new FileInputStream(filename);
-			ObjectInputStream in = new ObjectInputStream(stream);
-		    Utils.log("Hmm loaded from " + filename);
-			return (Hmm)in.readObject();
-		}
-		catch (IOException e)
-		{
-			Utils.error("Cannot load hidden markov model from <" + filename + ">");
-		}
-		catch (Exception e)
-		{}
-		return null;
-	}
-
-	private void init_parameters()
-	{
-		if(NUM_STATES < 0)
-			NUM_STATES = Integer.valueOf(Config.lookup("m_hidden_states"));
-		if(NUM_ITERATIONS < 0)
-			NUM_ITERATIONS = Integer.valueOf(Config.lookup("m_iterations"));
-		if(LEARNER < 0)
-			LEARNER = Integer.valueOf(Config.lookup("m_learner"));
-
-		learners = new ArrayList<Learner>(5);
-
-		for (int i = 0; i < Gesture.num_gestures; i++)
-		{
-			learners.add(new Learner(NUM_STATES, NUM_DIMENSIONS, NUM_ITERATIONS,
-				new Gesture(i)));
-		}
-	}
+        Utils.results(LEARNER + " " + NUM_STATES + 
+		    " " + NUM_ITERATIONS + " " + timing/1000);
+   }
 };
 
 class Learner
 {
-	Hmm<ObservationVector> hmm;
-	ArrayList<ArrayList<ObservationVector>> sequences;
-	BaumWelchScaledLearner bwl;
-	KMeansLearner<ObservationVector> kml; 
+   Hmm<ObservationVector> hmm;
+   ArrayList<ArrayList<ObservationVector>> sequences;
+   BaumWelchScaledLearner bwl;
+   KMeansLearner<ObservationVector> kml; 
     OpdfMultiGaussianFactory factory;
     Gesture gesture;
     
-	int num_states;
-	int num_dimensions;
-	int num_iterations;    
+   int num_states;
+   int num_dimensions;
+   int num_iterations;    
 
-	Learner(int states, int dimensions, int iterations, Gesture g)
-	{
-		num_states = states;
-		num_dimensions = dimensions;
-		num_iterations = iterations;
-		gesture = g;
+   Learner(int states, int dimensions, int iterations, Gesture g)
+   {
+      num_states = states;
+      num_dimensions = dimensions;
+      num_iterations = iterations;
+      gesture = g;
 
-		factory = new OpdfMultiGaussianFactory(num_dimensions);
-		hmm = new Hmm<ObservationVector>(num_states, factory);
-		sequences = new ArrayList<ArrayList<ObservationVector>>();
-	}
-	
-	void add_sequence(ArrayList<ObservationVector> seq)
-	{
-		sequences.add(seq);
-	}
-	
-	void learnbw()
-	{
-		bwl = new BaumWelchScaledLearner();
-		bwl.setNbIterations(num_iterations);
-		//One iteration of KMeansLearner to initalise
-		hmm = new KMeansLearner<ObservationVector>(num_states, factory, sequences).iterate();
-		hmm = bwl.learn(hmm, sequences);
-	}
-	
-	void learnkm()
-	{
-		kml = new KMeansLearner<ObservationVector>(num_states, factory, sequences);
-		hmm = kml.learn();
-	}
+      factory = new OpdfMultiGaussianFactory(num_dimensions);
+      hmm = new Hmm<ObservationVector>(num_states, factory);
+      sequences = new ArrayList<ArrayList<ObservationVector>>();
+   }
+   
+   void add_sequence(ArrayList<ObservationVector> seq)
+   {
+      sequences.add(seq);
+   }
+   
+   void learnbw()
+   {
+      bwl = new BaumWelchScaledLearner();
+      bwl.setNbIterations(num_iterations);
+      //One iteration of KMeansLearner to initalise
+      hmm = new KMeansLearner<ObservationVector>
+		  (num_states, factory, sequences).iterate();
+      hmm = bwl.learn(hmm, sequences);
+   }
+   
+   void learnkm()
+   {
+      kml = new KMeansLearner<ObservationVector>
+		  (num_states, factory, sequences);
+      hmm = kml.learn();
+   }
 }
 \end{code}
 
-\chapter{Control.py}
+\chapter{Simulated Gesture input}
 
 \begin{code}
-from Tkinter import *
-import scop
+class SimGesture
+{  
+   static ArrayList<RecordedGesture> read_gestures(String gesture_dir)
+   {
+      ArrayList<RecordedGesture> gestures;
+      ArrayList<Frame> data;
+      String filename;
+      RecordedGesture record;
+      File dir;
+      File[] contents;
+      
+      gestures = new ArrayList<RecordedGesture>();
+      
+      dir = new File(gesture_dir);
+      if(dir.exists() == false || dir.canRead() == false ||
+            dir.isDirectory() == false)
+      {
+         Utils.error("Cannot read directory " + gesture_dir);
+         System.exit(0);
+      }
+      contents = dir.listFiles();
+      for(File f: contents)
+      {
+         if(f.getName().endsWith(".csv") == false)
+            continue;
+         filename = f.getPath();
+         // System.out.println(filename);
+         record = new RecordedGesture();
+         record.data = GestureReader.getData(filename);
+         record.filename = filename;
+         gestures.add(record);
+      }
+      return gestures;
+   }
 
-class Controls(Frame):
-    """This class provides mousebutton and arrow key support for emitting basic controls (a,d,l,r,s) to an SCOP socket."""
+   static double interpolate_angle(double from, double to, double w)
+   {
+      double v = 1 - w;
+      double x1, y1, x2, y2, x, y;
+      double theta;
+      
+      x1 = Math.sin(from) * v;
+      y1 = Math.cos(from) * v;
+      x2 = Math.sin(to) * w;
+      y2 = Math.cos(to) * w;
+      x = x1 + x2;
+      y = y1 + y2;
+      theta = Math.atan2(y, x);
+      return theta;
+   }
+   
+   static SixDOF interpolate_sixdof(SixDOF from, SixDOF to, double w)
+   {
+      // "w" is the weighting for the "to" body part (0.0 - 1.0)
+      SixDOF sixdof = new SixDOF();
+      double v = 1 - w;
+      
+      sixdof.ax = v * from.ax + w * to.ax;
+      sixdof.ay = v * from.ay + w * to.ay;
+      sixdof.az = v * from.az + w * to.az;
+      sixdof.angle = interpolate_angle(from.angle, to.angle, w);
+      
+      sixdof.tx = v * from.tx + w * to.tx;
+      sixdof.ty = v * from.ty + w * to.ty;
+      sixdof.tz = v * from.tz + w * to.tz;
+      return sixdof;
+   }
+   
+   static Frame interpolate_frames(Frame from, Frame to, double weight)
+   {
+      // "weight" is the weighting for the "to" frame (0.0 - 1.0)
+      Frame f = new Frame();
+      
+      f.body = interpolate_sixdof(from.body, to.body, weight);
+      f.left = interpolate_sixdof(from.left, to.left, weight);
+      f.right = interpolate_sixdof(from.right, to.right, weight);
+      return f;
+   }
+   
+   static void interpolate_gestures(SCOP scop, RecordedGesture from_gesture,
+         RecordedGesture to_gesture, int duration)
+   {
+      int num_frames;
+      Frame from, to, f;
+      
+      Utils.log("Interpolating for " + duration + " ms");
+      from = from_gesture.data.get(from_gesture.data.size() - 1);
+      to = to_gesture.data.get(0);
+      num_frames = (duration * FRAME_RATE) / 1000;
+      for(int i = 0; i < num_frames; i++)
+      {
+         f = interpolate_frames(from, to,
+               (double)(i + 1) / (double)(num_frames + 1));
+         scop.emit(f.toString());
+                  
+         framesync();
+      }
+   }
 
-    def __init__(self, parent, sock, player, width=800, height=800, **options):
-        Frame.__init__(self, parent, **options)
-        self.width, self.height = width, height
-        parent.title("Player " + str(player))
-        self.sock = sock     
-        
-        Button(self, text='accel', command=self.Accelerate).grid(row=0, column=1)
-        Button(self, text='decel', command=self.Decelerate).grid(row=2, column=1)
-        Button(self, text='left', command=self.TurnLeft).grid(row=1, column=0)
-        Button(self, text='right', command=self.TurnRight).grid(row=1, column=2)
-        Button(self, text='startstop', command=self.Pause).grid(row=1, column=1)
+   static void framesync()
+   {
+      framecounter++;
+      
+      long target_time = framecounter * 1000 / FRAME_RATE + start_of_stream;
+      long current_time = System.currentTimeMillis();
+      
+      if(current_time >= target_time)
+      {
+         if(current_time > target_time + 100)
+            Utils.log("Warning: SimGesture overload, lagging >10ms");
+         return;
+      }
+      Utils.delay((int)(target_time - current_time));
+   }
+         
+   static void replay_gesture(SCOP scop, RecordedGesture gesture)
+   {
+      Frame f;
+      
+      Utils.log("Replaying gesture ");
+      Utils.results(gesture.filename);
+      Utils.log(" (frames " + framecounter + " to " + (framecounter +
+            gesture.data.size()) + ")");
+      for(int i = 0; i < gesture.data.size(); i++)
+      {
+         f = gesture.data.get(i);
+         scop.emit(f.toString());
+         framesync();
+      }
 
-        self.running = 0
-        self.period = 20 # milliseconds
+   }
+}
 
-        parent.bind('<KeyPress-Left>', self.TurnLeft)
-        parent.bind('<KeyPress-Right>', self.TurnRight)
-        parent.bind('<KeyPress-Up>', self.Accelerate)
-        parent.bind('<KeyPress-Down>', self.Decelerate)
-        parent.bind('<KeyPress-space>', self.Pause)
-
-    def Accelerate(self, event=None):
-        scop.scop_emit(self.sock, "a")
-
-    def Decelerate(self, event=None):
-        scop.scop_emit(self.sock, "d")
-
-    def TurnLeft(self, event=None):
-        scop.scop_emit(self.sock, "l")
-
-    def TurnRight(self, event=None):
-        scop.scop_emit(self.sock, "r")
-        
-    def Pause(self, event=None):
-	if self.running:
-	    self.running = 0
-	    scop.scop_emit(self.sock, "s")
-	else:
-	    self.running = 1
-	    scop.scop_emit(self.sock, "s")
+class GestureReader
+{
+   static ArrayList<Frame> getData(String filename)
+   {
+      ArrayList<Frame> data = new ArrayList<Frame>();
+      String line;
+      int frameno = 0;
+      SixDOF sixdof;
+      char c;
+      
+      int bodypart = -1, startpart;
+      
+      try
+      {
+         BufferedReader in = new BufferedReader(new FileReader(filename));
+         while((line = in.readLine()) != null)
+         {
+            if(line.length() == 0)
+               continue;
+            startpart = -1;
+            c = line.charAt(0);
+            if(c >= '0' && c <= '9')
+            {
+               sixdof = parse(line);
+               while(frameno > data.size() - 1)
+                  data.add(new Frame());
+               if(bodypart == Body)
+                  data.get(frameno).body = sixdof;
+               else if(bodypart == LeftArm)
+                  data.get(frameno).left = sixdof;
+               else if(bodypart == RightArm)
+                  data.get(frameno).right = sixdof;
+               else
+                  Utils.error("Frame data received for unknown body part");
+               frameno++;
+            }
+            else if(line.startsWith("Belt") || line.startsWith("Hat") ||
+                  line.startsWith("Body"))
+               startpart = Body;
+            else if(line.startsWith("Left"))
+               startpart = LeftArm;
+            else if(line.startsWith("Right"))
+               startpart = RightArm;
+            else
+               Utils.error("Invalid line in data file.");
+            
+            if(startpart >= 0)
+            {
+               // Start new body part:
+               bodypart = startpart;
+               frameno = 0;
+               if((line = in.readLine()) == null)
+                  Utils.error("Unexpected end of file.");
+            }
+         }
+         in.close();
+      }
+      catch(IOException e)
+      {
+         System.out.println("Cannot read from <" + filename + ">");
+         System.exit(0);
+      }
+      Frame last = data.get(data.size() - 1);
+      if(last.body == null || last.left == null || last.right == null)
+         Utils.error("Different number of frames for different body parts.");
+      return data;
+   }
+};
 \end{code}
+
+\chapter{Gesture segmentation}
+
+\begin{code}
+class SlidingWindow
+{
+   public static void main(String[] args)
+   {
+      final int BUFFER_SIZE = 500;
+      final int MIN_WINDOW = 50, MAX_WINDOW = 350, WINDOW_STEP = 10;
+      CircularBuffer buf;
+      msg = scopin.get_message();
+      f = new Frame(msg);
+      Transform.process(f);
+      buf = new CircularBuffer(BUFFER_SIZE, f);
+      start_time = System.currentTimeMillis();
+      
+      while(true)
+      {
+         before_block = System.nanoTime();
+         msg = scopin.get_message();
+         after_block = System.nanoTime();
+         blocked_time += after\_block - before\_block;
+         if(msg == null)
+            Utils.error("Error reading message from SCOP");
+         
+         f = new Frame(msg);
+         Transform.process(f);
+         buf.add(f);
+         framecounter++;
+         
+         dropout = f.dropout();
+         if(dropout != dropped\_out)
+         {
+            String status;
+            if(dropout)
+               status = "dropout";
+            else
+               status = "ok";
+            scopstat.emit(status);
+            Utils.log("New status: " + status);
+            dropped_out = dropout;
+         }
+         
+         if(framecounter % 1000 == 0)
+         {
+            double fps, cpu;
+            
+            current_time = System.currentTimeMillis();
+            elapsed_time = current_time - start_time;
+            cpu = (double)blocked_time / 1000000.0 / (double)elapsed_time;
+            cpu = 100.0 * (1.0 - cpu);
+            fps = (double)(framecounter - laststatus) / (double)elapsed_time
+                  * 1000.0;
+            Utils.log("FPS = " + String.format("%.1f", fps)
+                + " CPU utilisation = " + String.format("%.1f", cpu) + "%");
+            
+            start_time = current_time;
+            blocked\_time = 0;
+            laststatus = framecounter;
+         }
+         if(framecounter % WINDOW_STEP == 0)
+         {
+            int availableframes = framecounter - lastrecognition;
+            
+            for(int windowsize = MIN_WINDOW; windowsize <= MAX_WINDOW &&
+                  windowsize <= availableframes; windowsize += WINDOW_STEP)
+            {
+               if(recognised(buf, windowsize, framecounter) == true)
+               {
+                  lastrecognition = framecounter;
+                  break;
+               }
+            }
+         }
+      }
+
+      scop.close();
+   }
+}
+
+class GestureReader
+{
+   static SixDOF parse(String s)
+   {
+      String[] values;
+      SixDOF sixdof = new SixDOF();
+      
+      values = s.split(",");
+      if(values.length != 7)
+      {
+         System.out.println("Parse error on line <" + s + "> (" +
+               values.length + " values)");
+         System.exit(0);
+      }
+      sixdof.ax = Double.valueOf(values[1]) * Math.PI / 180.0;
+      sixdof.ay = Double.valueOf(values[2]) * Math.PI / 180.0;
+      sixdof.az = Double.valueOf(values[3]) * Math.PI / 180.0;
+      sixdof.tx = Double.valueOf(values[4]);
+      sixdof.ty = Double.valueOf(values[5]);
+      sixdof.tz = Double.valueOf(values[6]);
+      sixdof.ax *= Math.PI / 180.0;
+      sixdof.normalise();
+      return sixdof;
+   }
+   
+   static final int Body = 0;
+   static final int LeftArm = 1;
+   static final int RightArm = 2;
+   
+   static ArrayList<Frame> getData(String filename)
+   {
+      ArrayList<Frame> data = new ArrayList<Frame>();
+      String line;
+      int frameno = 0;
+      SixDOF sixdof;
+      char c;
+      
+      int bodypart = -1, startpart;
+      
+      try
+      {
+         BufferedReader in = new BufferedReader(new FileReader(filename));
+         while((line = in.readLine()) != null)
+         {
+            if(line.length() == 0)
+               continue;
+            startpart = -1;
+            c = line.charAt(0);
+            if(c >= '0' && c <= '9')
+            {
+               sixdof = parse(line);
+               while(frameno > data.size() - 1)
+                  data.add(new Frame());
+               if(bodypart == Body)
+                  data.get(frameno).body = sixdof;
+               else if(bodypart == LeftArm)
+                  data.get(frameno).left = sixdof;
+               else if(bodypart == RightArm)
+                  data.get(frameno).right = sixdof;
+               else
+                  Utils.error("Frame data received for unknown body part");
+               frameno++;
+            }
+            else if(line.startsWith("Belt") || line.startsWith("Hat") ||
+                  line.startsWith("Body"))
+               startpart = Body;
+            else if(line.startsWith("Left"))
+               startpart = LeftArm;
+            else if(line.startsWith("Right"))
+               startpart = RightArm;
+            else
+               Utils.error("Invalid line in data file.");
+            
+            if(startpart >= 0)
+            {
+               // Start new body part:
+               bodypart = startpart;
+               frameno = 0;
+               if((line = in.readLine()) == null)
+                  Utils.error("Unexpected end of file.");
+            }
+         }
+         in.close();
+      }
+      catch(IOException e)
+      {
+         System.out.println("Cannot read from <" + filename + ">");
+         System.exit(0);
+      }
+      Frame last = data.get(data.size() - 1);
+      if(last.body == null || last.left == null || last.right == null)
+         Utils.error("Different number of frames for different body parts.");
+      return data;
+   }
+};
+
+
+\end{code}
+
+\chapter{Tables of results}
+
+Correct, false positives, false negatives and incorrect recognitions are given in \%.
+
+\section{All recognisers}
+
+\subsection{Recognition rates including negative gestures}
+
+\begin{tabular}{l|ccccc}
+Recogniser & Correct & False positives & False negatives & Incorrect & Time in ms \\ \hline
+Heuristic & 85.106 & 2.128 & 12.766 & 0.000 & 2148 \\
+Neural & 55.319 & 0.000 & 44.681 & 0.000 & 180550 \\
+Markov & 63.830 & 14.894 & 19.149 & 2.128 & 3914882	\\
+Hybrid & 80.851 & 0.000 & 19.149 & 0.000 & 4136745 \\
+\end{tabular}	
+
+\subsection{Recognition rates excluding negative gestures}
+
+\begin{tabular}{l|ccccc}
+Recogniser & Correct & False positives & False negatives & Incorrect & Time in ms \\ \hline
+Heuristic & 79.310 & 0.000 & 20.690 & 0.000 & 2094	\\
+Neural & 27.586 & 0.000 & 72.414 & 0.000 & 154373	\\
+Markov & 65.517 & 0.000 & 31.034 & 3.448 & 3912585	\\
+Hybrid & 68.966 & 0.000 & 31.034 & 0.000 & 4348238	\\
+\end{tabular}	
+
+\section{Neural network parameters}
+
+\subsection{Epochs}
+
+\begin{tabular}{c|cccccc}
+Epochs & Time in ns & Error & Correct & False pos & False neg & Incorrect \\ \hline
+100 & 494014532 & 0.484754 & 38.298 & 0.000 & 61.702 & 0.000 \\
+200 & 852160050 & 0.413959 & 48.936 & 0.000 & 51.064 & 0.000 \\
+300 & 1310019711 & 0.428305 & 51.064 & 0.000 & 44.681 & 4.255 \\
+400 & 1569497171 & 0.473745 & 42.553 & 0.000 & 55.319 & 2.128 \\
+500 & 1963321175 & 0.484276 & 38.298 & 0.000 & 61.702 & 0.000 \\
+600 & 2303271715 & 0.468796 & 40.426 & 0.000 & 59.574 & 0.000 \\
+700 & 2641930678 & 0.429680 & 51.064 & 0.000 & 44.681 & 4.255 \\
+800 & 3069397925 & 0.443833 & 46.809 & 0.000 & 48.936 & 4.255 \\
+900 & 3418706638 & 0.470450 & 42.553 & 0.000 & 55.319 & 2.128 \\
+1000 & 3825216682 & 0.445603 & 44.681 & 0.000 & 55.319 & 0.000 \\
+1100 & 4230667724 & 0.429279 & 51.064 & 0.000 & 44.681 & 4.255 \\
+1200 & 4521389172 & 0.414404 & 51.064 & 0.000 & 46.809 & 2.128 \\
+1300 & 4943561402 & 0.442314 & 48.936 & 0.000 & 46.809 & 4.255 \\
+1400 & 5382021039 & 0.444414 & 44.681 & 0.000 & 55.319 & 0.000 \\
+1500 & 5619347221 & 0.460444 & 46.809 & 0.000 & 51.064 & 2.128 \\
+1600 & 6172803597 & 0.419664 & 57.447 & 0.000 & 36.170 & 6.383 \\
+1700 & 6343792158 & 0.443532 & 44.681 & 0.000 & 55.319 & 0.000 \\
+1800 & 6939302410 & 0.444124 & 46.809 & 0.000 & 48.936 & 4.255 \\
+1900 & 7202249519 & 0.426561 & 48.936 & 4.255 & 44.681 & 2.128 \\
+\end{tabular}	
+
+\subsection{Number of neurons in the hidden layer}
+
+\begin{tabular}{c|cccccc}
+\#neurons & Time in ns & Error & Correct & False pos & False neg & Incorrect \\ \hline
+5 & 1704171340 & 0.479992 & 38.298 & 0.000 & 61.702 & 0.000 \\
+10 & 2484331946 & 0.426971 & 48.936 & 0.000 & 46.809 & 4.255 \\
+15 & 3127442384 & 0.471925 & 40.426 & 0.000 & 59.574 & 0.000 \\
+20 & 3898959784 & 0.475446 & 44.681 & 0.000 & 46.809 & 8.511 \\
+25 & 4975425019 & 0.447978 & 48.936 & 0.000 & 46.809 & 4.255 \\
+30 & 5182903552 & 0.438601 & 53.191 & 4.255 & 40.426 & 2.128 \\
+35 & 5853244268 & 0.483151 & 38.298 & 0.000 & 61.702 & 0.000 \\
+40 & 6601236191 & 0.452157 & 44.681 & 0.000 & 55.319 & 0.000 \\
+45 & 7328486162 & 0.351041 & 63.830 & 0.000 & 34.043 & 2.128 \\
+50 & 7928302619 & 0.410273 & 59.574 & 2.128 & 31.915 & 6.383 \\
+55 & 8820263051 & 0.383438 & 61.702 & 0.000 & 31.915 & 6.383 \\
+60 & 9336418384 & 0.368782 & 61.702 & 0.000 & 36.170 & 2.128 \\
+65 & 10175352804 & 0.415397 & 57.447 & 0.000 & 36.170 & 6.383 \\
+\end{tabular}
+
+\subsection{Learner}
+
+\begin{tabular}{l|cccccc}
+Backpropagation & Time in ms & Error & Correct & False pos & False neg & Incorrect \\ \hline
+Standard & 3894112 & 0.470532 & 40.426 & 0.000 & 59.574 & 0.000 \\
+Batch & 6631781 & 0.449182 & 40.426 & 0.000 & 59.574 & 0.000 \\
+Resilient & 6936377 & 0.500000 & 38.298 & 0.000 & 61.702 & 0.000 \\
+\end{tabular}
+
+\subsection{Learning rate}
+
+\begin{tabular}{c|cccccc}
+Learning rate & Time in ns & Error & Correct & False pos & False neg & Incorrect \\ \hline
+0.1 & 3775847140 & 0.303077 & 61.702 & 0.000 & 34.043 & 4.255 \\
+0.2 & 3818757272 & 0.422700 & 48.936 & 0.000 & 44.681 & 6.383 \\
+0.3 & 3811971495 & 0.395833 & 51.064 & 0.000 & 48.936 & 0.000 \\
+0.4 & 3819905742 & 0.392023 & 57.447 & 0.000 & 36.170 & 6.383 \\
+0.5 & 3824802315 & 0.452159 & 40.426 & 0.000 & 59.574 & 0.000 \\
+0.6 & 3827846415 & 0.452357 & 40.426 & 0.000 & 59.574 & 0.000 \\
+0.7 & 3789670337 & 0.473228 & 44.681 & 0.000 & 46.809 & 8.511 \\
+0.8 & 3933531427 & 0.425247 & 46.809 & 0.000 & 53.191 & 0.000 \\
+0.9 & 3833952291 & 0.429401 & 48.936 & 4.255 & 44.681 & 2.128 \\
+1.0 & 3843970392 & 0.457509 & 42.553 & 0.000 & 57.447 & 0.000 \\
+\end{tabular}
+
+\subsection{Momentum}
+
+\begin{tabular}{c|cccccc}
+Momentum & Time in ns & Error & Correct & False pos & False neg & Incorrect \\ \hline
+0.1 & 3920458256 & 0.387309 & 55.319 & 0.000 & 42.553 & 2.128  \\
+0.2 & 3873086034 & 0.460942 & 48.936 & 0.000 & 46.809 & 4.255  \\
+0.3 & 3804137815 & 0.383810 & 59.574 & 0.000 & 36.170 & 4.255  \\
+0.4 & 3838913256 & 0.428254 & 48.936 & 0.000 & 48.936 & 2.128  \\
+0.5 & 3808166121 & 0.415957 & 51.064 & 0.000 & 46.809 & 2.128  \\
+0.6 & 4622423029 & 0.449144 & 46.809 & 0.000 & 51.064 & 2.128  \\
+0.7 & 4800556495 & 0.496654 & 40.426 & 0.000 & 59.574 & 0.000  \\
+0.8 & 4470688803 & 0.453686 & 46.809 & 0.000 & 51.064 & 2.128  \\
+0.9 & 4246731707 & 0.790327 & 12.766 & 38.298 & 0.000 & 48.936  \\
+1.0 & 3882328899 & 0.799305 & 12.766 & 38.298 & 0.000 & 48.936  \\
+\end{tabular}
+
+\section{Hidden Markov model parameters}
+
+\subsection{Number of hidden states}
+
+\begin{tabular}{c|ccccc}
+\# of hidden states & Time in ns & Correct & False pos & False neg & Incorrect \\ \hline
+1 & 1509917951 & 51.064 & 21.277 & 12.766 & 14.894 \\
+2 & 4581457629 & 61.702 & 17.021 & 19.149 & 2.128 \\
+3 & 9167806732 & 63.830 & 14.894 & 19.149 & 2.128 \\
+4 & 15113765856 & 63.830 & 14.894 & 19.149 & 2.128 \\
+5 & 22899169657 & 63.830 & 14.894 & 19.149 & 2.128 \\
+\end{tabular}
+
+\subsection{Number of iterations}
+
+\begin{tabular}{c|ccccc}
+\# of iterations & Time in ns & Correct & False pos & False neg & Incorrect \\ \hline
+1 & 2695617669 & 63.830 & 14.894 & 19.149 & 2.128 \\
+3 & 7112320489 & 63.830 & 14.894 & 19.149 & 2.128 \\
+5 & 11522937273 & 63.830 & 14.894 & 19.149 & 2.128 \\
+\end{tabular}
+
+\subsection{Learner}
+
+\begin{tabular}{l|ccccc}
+Learner & Time in ns & Correct & False pos & False neg & Incorrect \\ \hline
+Baum-Welch & 22927365907 & 63.830 & 14.894 & 19.149 & 2.128\\
+K-Means & 1799183626 & 63.830 & 14.894 & 19.149 & 2.128\\
+\end{tabular}
 
 \cleardoublepage
 
