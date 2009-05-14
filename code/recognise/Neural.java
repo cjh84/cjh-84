@@ -75,7 +75,7 @@ class Neural extends Recogniser implements NeuralNetListener
 
 	}
 		
-	void train(ArrayList<Sample> sampleslist, String out_file)
+	public void train(ArrayList<Sample> sampleslist, String out_file)
 	{
 
 		output_file = out_file;

@@ -191,7 +191,7 @@ class Classifier
 		id = which;
 	}
 	
-	Gesture recognise(Person person, Features features)
+	public Gesture recognise(Person person, Features features)
 	{
 		switch(id)
 		{
@@ -247,8 +247,8 @@ class Classifier
 
 class Recogniser
 {
-	static Gesture recognise(Person person, Features features) { return null; }
-	void train(ArrayList<Sample> samples, String out_file) { ; }
+	public static Gesture recognise(Person person, Features features) { return null; }
+	public void train(ArrayList<Sample> samples, String out_file) { ; }
 	
 	static String filename;
 	static User user;
@@ -419,8 +419,8 @@ class Person
 		Person ch = new Person();
 		
 		ch.neural_file = "/home/cheryl/project/testing/Cheryl/cheryl.net";
-		ch.markov_root = "/home/cheryl/project/code/evaluation/temp_file.out_";
-	    //ch.markov_root = "/home/cheryl/project/testing/Cheryl/Cheryl_Markov.out_";
+	    //ch.markov_root = "/home/cheryl/project/code/evaluation/temp_file.out_";
+	    ch.markov_root = "/home/cheryl/project/testing/Cheryl/Cheryl_Markov.out_";
 		
 		ch.left[Gesture.TurnLeft].setX(15,30);
 		ch.left[Gesture.TurnLeft].setY(0,18);
