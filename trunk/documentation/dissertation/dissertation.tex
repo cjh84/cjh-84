@@ -364,7 +364,7 @@ where $S_{0:t-1} = (S_0,S_1,...S_{t-1})$ is the set of states from time $0$ to t
 
 At each time $t$, a symbol is emitted from state $i$. For a Bakis HMM, the only options at $t+1$ are to stay in state $i$ or move to state $i+1$\cite{Bakis}. Each state is parametrized by an emission probability of staying in the same state and a transition probability of moving to state $i+1$.
 
-A hidden Markov model is one where these probabilities characterizing the states are unknown, and for a training sequence, it is unknown which state the observation lies in. To find the probabilities, the Baum-Welch algorithm takes a vector of training sequences and iterates using Expectation-Maximization. The expectation is calculated by the forward-backward algorithm, which is an example of dynamic programming and the use of memoization to avoid recomputing solutions to sub-problems.
+A hidden Markov model is one where these probabilities characterizing the states are unknown, and for a training sequence $E_{0:t} = (E_0, E_1, \ldots, E_t)$, it is unknown which state the observation lies in. To find the probabilities, the Baum-Welch algorithm takes a vector of training sequences and iterates using Expectation-Maximization. The expectation is calculated by the forward-backward algorithm, which is an example of dynamic programming and the use of memoization to avoid recomputing solutions to sub-problems.
 
 For a Markov Model, $Pr(E_t|S_t)$ is the sensor model and $Pr(S_t|S_{t-1})$ is the transition model. $Pr(S_0)$ denotes the prior state. The assumption is that the probabilities do not change over time, as the observations are stationary processes.
 
@@ -540,7 +540,8 @@ This stream is a direct transcription of the \texttt{<"ok"/"dropout">} field of 
 
 \subsection{Breakdown of components}
 
-Figure \ref{classdiag} shows the class diagram for the Java classes. Not included are the Python modules \class{control}, \class{view}, \class{feedback} \class{relay} and \class{eval}, as they are completely independent.
+Figure \ref{classdiag} shows the class diagram for the Java classes. The Python modules \class{control}, \class{view},
+\class{feedback}, \class{relay} and \class{eval} are independent and thus not included on the diagram.
 
 The method signatures for each class are listed in more detail within the pertinent section.
 
@@ -785,7 +786,7 @@ Loop forever: \\
 
 If a gesture is recognised from the current window, the buffer continues to fill with arriving data but no more attempts at recognition are made until the minimum windowsize is exceeded. In addition, \class{SlidingWindow} monitors the frames for a flag indicating a dropout; if a frame contains data where at least one object is unavailable, it emits a ``dropout" message to the \variable{statusserver}, and ``ok" when the object returns.
 
-This status information is used by the Python class \class{feedback} to display two rectangles, for player 1 and player 2, as in figure \ref{feedback}. A red rectangle indicates that the data is currently unavailable, while a green rectangle indicates a good detection rate. This feedback was highly rated in my user study of the system, allowing users to distinguish between poor detection from the Vicon system and poor recognition from a recogniser.
+This status information is used by the Python \class{feedback} class to display two rectangles, for player 1 and player 2, as in figure \ref{feedback}. A red rectangle indicates that the data is currently unavailable, while a green rectangle indicates a good detection rate. This feedback was highly rated in my user study of the system, allowing users to distinguish between poor detection from the Vicon system and poor recognition from a recogniser.
 
 \begin{figure}
 \centering
@@ -796,13 +797,36 @@ This status information is used by the Python class \class{feedback} to display 
 
 \subsection{Feature extraction}
 
-Neural networks have a fixed number of input nodes, but the feature vector has a variable number of frames. Therefore it is also necessary to perform feature extraction to create a fixed size set of variables to characterise the gesture. Performing feature extraction also reduces the search space for the recogniser, in order to increase the probability of successful matching. The gesture contains a lot of redundancy, since frames are taken at a high frame rate and show close temporal correlation.
+Neural networks have a fixed number of input nodes, but the feature
+vector has a variable number of frames. Therefore it is also necessary
+to perform feature extraction to create a fixed size set of variables to
+characterise the gesture. Performing feature extraction also reduces the
+search space for the recogniser, in order to increase the probability of
+successful matching. The gesture contains a lot of redundancy, since
+frames are taken at a high frame rate and show close temporal
+correlation.
 
-Choosing the minimal features which extracted the most information to distinguish the gestures was an important step. Using the entire data for each gesture (6 data points * 3 objects * ~300 frames/gesture = 5400 data values, for each example) would be equivalent to template matching and would require excessive processing times. Since the gestures were chosen to be axis aligned relative to the body, the distinguishing features are the range of dx,dy,dz values that each prototypical gesture may take, which is not sensitive to factors such as the person's height or their neutral posture.
+Choosing the minimal features which extracted the most information to
+distinguish the gestures was an important step. Using the entire data
+for each gesture (6 data points * 3 objects * ~300 frames/gesture = 5400
+data values, for each example) would be equivalent to template matching
+and would require excessive processing times. Since the gestures were
+chosen to be axis aligned relative to the body, the distinguishing
+features are the range of dx,dy,dz values that each prototypical gesture
+may take, which is not sensitive to factors such as the person's height
+or their neutral posture.
 
-Each gesture is symmetric and begins and ends with a neutral pose, so I defined a further ``relocation" feature indicating a closed gesture: a double defining the sum of squares error of the distance moved from the beginning. Thus a gesture which is at the peak displacement will have a large relocation value, while a closed gesture which has returned to the starting pose has a small displacement value.
+Each gesture is symmetric and begins and ends with a neutral pose, so I
+defined a further ``displacement" feature indicating a closed gesture: a
+double defining the sum of squares error of the distance moved from the
+beginning. Thus an incomplete gesture will have a
+large displacement value and not be matched, while a closed gesture
+which has returned to the starting pose has a small displacement value.
 
-The seven features which are extracted are LeftArm {\em\{dx,dy,dz\}} and RightArm {\em\{dx,dy,dz\}}, normalised to between 0 and 1, and {\em displacement}, the sum of squares error of the first and last frames, in millimetres.
+The seven features which are extracted are LeftArm {\em\{dx,dy,dz\}} and
+RightArm {\em\{dx,dy,dz\}}, normalised to between 0 and 1, and {\em
+displacement}, the sum of squares error of the first and last frames, in
+millimetres.
 
 \begin{tabular}{|c|} \hline 
 \class{Features} \\ \hline
@@ -940,17 +964,17 @@ When given a \class{Person} and \class{Features} calculated from a list of frame
 \begin{tabular}{|c|} \hline 
 \class{Neural extends Recogniser implements NeuralNetListener} \\ \hline
 \multicolumn{1}{|p{16cm}|}
-{ \variable{+ static Gesture recognise(Person person, Features features) \newline
-+ void train(ArrayList<Sample> sampleslist, String out\_file) \newline
-- void init\_parameters() \newline
+{ \variable{public static Gesture recognise(Person person, Features features) \newline
+public void train(ArrayList<Sample> sampleslist, String out\_file) \newline
+private void init\_parameters() \newline
 static void saveNeuralNet(NeuralNet nnet, String filename) \newline
 static NeuralNet restoreNeuralNet(String filename) \newline
 void set\_columns(MemoryInputSynapse syn, int first, int last) \newline
-+ void errorChanged(NeuralNetEvent e) \newline
-+ void netStarted(NeuralNetEvent e) \newline
-+ void netStopped(NeuralNetEvent e) \newline
-+ void netStoppedError(NeuralNetEvent e, String error) \newline
-+ void cicleTerminated(NeuralNetEvent e)
+public void errorChanged(NeuralNetEvent e) \newline
+public void netStarted(NeuralNetEvent e) \newline
+public void netStopped(NeuralNetEvent e) \newline
+public void netStoppedError(NeuralNetEvent e, String error) \newline
+public void cicleTerminated(NeuralNetEvent e)
 } } \\ \hline
 \end{tabular}
 
@@ -965,12 +989,12 @@ Training can be done in one of three modes; the standard Backpropagation algorit
 \begin{tabular}{|c|} \hline 
 \class{Markov extends Recogniser} \\ \hline
 \multicolumn{1}{|p{16cm}|}
-{ \variable{+ static Gesture recognise(Person person, Features features) \newline
-+ void train(ArrayList<Sample> samples, String out\_file) \newline
-- static ArrayList<ObservationVector> toObservationVectors(ArrayList<Frame> frames) \newline
+{ \variable{public static Gesture recognise(Person person, Features features) \newline
+public void train(ArrayList<Sample> samples, String out\_file) \newline
+private static ArrayList<ObservationVector> toObservationVectors(ArrayList<Frame> frames) \newline
 static void save\_hmm(Learner learner, String filename) \newline
 static Hmm restore\_hmm(String filename) \newline
-- void init\_parameters()
+private void init\_parameters()
 } } \\ \hline
 \end{tabular}
 
@@ -997,8 +1021,8 @@ The recognition phase is an implementation of the Viterbi algorithm which finds 
 \begin{tabular}{|c|} \hline 
 \class{Hybrid extends Recogniser} \\ \hline
 \multicolumn{1}{|p{16cm}|}
-{ \variable{+ static Gesture recognise(Person person, Features features) \newline
-+ void train(ArrayList<Sample> samples, String out\_file)
+{ \variable{public static Gesture recognise(Person person, Features features) \newline
+public void train(ArrayList<Sample> samples, String out\_file)
 } } \\ \hline
 \end{tabular}
 
@@ -1043,7 +1067,7 @@ Two graphical user interfaces were created which simulated input (via mouse and 
 \centering
 \includegraphics[scale=0.5,angle=0]{images/ControlP1.ps}
 \includegraphics[scale=0.5,angle=0]{images/ControlP2.ps}
-\caption{Control.py emitting actions to \scopendpoint{p1ctrl} and \scopendpoint{p2ctrl}}
+\caption{\class{control} emitting actions to \scopendpoint{p1ctrl} and \scopendpoint{p2ctrl}}
 \label{control}
 \end{figure}
 
@@ -1052,8 +1076,8 @@ Two graphical user interfaces were created which simulated input (via mouse and 
 \begin{figure}[hb]
 \centering
 \includegraphics[scale=0.5,angle=0]{images/View.ps}
-\caption{View.py listening to \scopendpoint{p1ctrl} and \scopendpoint{p2ctrl}}
-\label{control}
+\caption{\class{view} listening to \scopendpoint{p1ctrl} and \scopendpoint{p2ctrl}}
+\label{view}
 \end{figure}
 
 \end{itemize}
@@ -1064,16 +1088,16 @@ The \class{relay} class, running on the OLPC XO laptop, listens to either \scope
 
 Since the laptops are separate from the desktop PC running all other components, the robot's player numbers are assigned from an environment variable. The initilisation of \class{relay} includes looking up the hostname on the laptop
 
-Converting ``Turn Left/Right" commands into a turning radii is shown in Figure \ref{tradius} and is achieved by driving the two wheels on the robot at different speeds. An alarm is set for when the turn completes and the robot resumes straight line motion.
+Converting ``Turn Left/Right" commands into a turning radius is shown in Figure \ref{tradius} and is achieved by driving the two wheels on the robot at different speeds. An alarm is set for when the turn completes and the robot resumes straight line motion.
 
-Accelerate and decelerates increment and decrement the velocity; turn left and right change the radius; and start/stop either performs an initialising acceleration, or sets the velocity to zero. The PyRobot library converts the Drive(velocity, radius) commands into 4 byte opcodes and operands. It serialises these for transmission over the USB-to-serial link in order to control the wheel motors.
+Accelerate and decelerates increment and decrement the velocity; turn left and right change the radius; and start/stop either performs an initialising acceleration, or sets the velocity to zero. The PyRobot library converts the \variable{Drive(velocity, radius)} commands into 4 byte opcodes and operands. It serialises these for transmission over the USB-to-serial link in order to control the wheel motors.
 
 A discrete turn command is transformed into a change of turning radius for a set period of time. Furthermore, since users issue commands asynchronously, a turn command may be issued while the robot is in the middle of a turn. For this case, the alarm is incremented by 0.5 seconds per turn instruction. Figure \ref{turntime} demonstrates the algorithm to calculate the correct amount of turning time.
 
 \begin{figure}
 \centering
-\includegraphics[scale=1.0,angle=0]{diagrams/turningradius.ps}
-\caption{Turning radius}
+\includegraphics[scale=0.6,angle=0]{diagrams/tradius.ps}
+\caption{Using the turning radius to drive the robot's wheels.}
 \label{tradius}
 \end{figure}
 
@@ -1159,7 +1183,7 @@ INCORRECT
 } } \\ \hline
 \end{tabular}
 
-The \class{Evaluation} class provides a recogniser-independent interface to the training and recognition APIs. It represents the union of all the legitimate combinations of modes (training, recognition with and without negative examples), criteria (performance, error, and accuracy) and classifiers (heuristic, neural, markov and hybrid), as well as interface to the \class{Config} file to set parameters. It also reads in a training.dat file and parses it for \class{Sample}s according to the type of evaluation that is performing; for example, recognition without negative examples only produces \class{Samples} for which the gesture is not a \variable{NoMatch}.
+The \class{Evaluation} class provides a recogniser-independent interface to the training and recognition APIs. It represents the union of all the legitimate combinations of modes (training, recognition with and without negative examples), criteria (performance, error, and accuracy) and classifiers (heuristic, neural, markov and hybrid), as well as interface to the \class{Config} file to set parameters. It also reads in a training.dat file and parses it for \class{Sample}s according to the type of evaluation that is performing; for example, recognition without negative examples only produces \class{Samples} for which the gesture is not a \variable{NoMatch}. It uses \class{Result} to score the accuracy of recognition.
 
 The python \class{eval} module provides a command line tool to iterate over a certain parameter (for example, momentum between 0.0 and 1.0 in steps of 0.1), appending the results to .dat files.
 
@@ -2026,86 +2050,86 @@ Hybrid & 68.966 & 0.000 & 31.034 & 0.000 & 4348238	\\
 \subsection{Epochs}
 
 \begin{tabular}{c|cccccc}
-Epochs & Time in ns & Error & Correct & False pos & False neg & Incorrect \\ \hline
-100 & 494014532 & 0.484754 & 38.298 & 0.000 & 61.702 & 0.000 \\
-200 & 852160050 & 0.413959 & 48.936 & 0.000 & 51.064 & 0.000 \\
-300 & 1310019711 & 0.428305 & 51.064 & 0.000 & 44.681 & 4.255 \\
-400 & 1569497171 & 0.473745 & 42.553 & 0.000 & 55.319 & 2.128 \\
-500 & 1963321175 & 0.484276 & 38.298 & 0.000 & 61.702 & 0.000 \\
-600 & 2303271715 & 0.468796 & 40.426 & 0.000 & 59.574 & 0.000 \\
-700 & 2641930678 & 0.429680 & 51.064 & 0.000 & 44.681 & 4.255 \\
-800 & 3069397925 & 0.443833 & 46.809 & 0.000 & 48.936 & 4.255 \\
-900 & 3418706638 & 0.470450 & 42.553 & 0.000 & 55.319 & 2.128 \\
-1000 & 3825216682 & 0.445603 & 44.681 & 0.000 & 55.319 & 0.000 \\
-1100 & 4230667724 & 0.429279 & 51.064 & 0.000 & 44.681 & 4.255 \\
-1200 & 4521389172 & 0.414404 & 51.064 & 0.000 & 46.809 & 2.128 \\
-1300 & 4943561402 & 0.442314 & 48.936 & 0.000 & 46.809 & 4.255 \\
-1400 & 5382021039 & 0.444414 & 44.681 & 0.000 & 55.319 & 0.000 \\
-1500 & 5619347221 & 0.460444 & 46.809 & 0.000 & 51.064 & 2.128 \\
-1600 & 6172803597 & 0.419664 & 57.447 & 0.000 & 36.170 & 6.383 \\
-1700 & 6343792158 & 0.443532 & 44.681 & 0.000 & 55.319 & 0.000 \\
-1800 & 6939302410 & 0.444124 & 46.809 & 0.000 & 48.936 & 4.255 \\
-1900 & 7202249519 & 0.426561 & 48.936 & 4.255 & 44.681 & 2.128 \\
+Epochs & Time in ms & Error & Correct & False pos & False neg & Incorrect \\ \hline
+100 & 494 & 0.484754 & 38.298 & 0.000 & 61.702 & 0.000 \\
+200 & 852 & 0.413959 & 48.936 & 0.000 & 51.064 & 0.000 \\
+300 & 1310 & 0.428305 & 51.064 & 0.000 & 44.681 & 4.255 \\
+400 & 1569 & 0.473745 & 42.553 & 0.000 & 55.319 & 2.128 \\
+500 & 1963 & 0.484276 & 38.298 & 0.000 & 61.702 & 0.000 \\
+600 & 2303 & 0.468796 & 40.426 & 0.000 & 59.574 & 0.000 \\
+700 & 2641 & 0.429680 & 51.064 & 0.000 & 44.681 & 4.255 \\
+800 & 3069 & 0.443833 & 46.809 & 0.000 & 48.936 & 4.255 \\
+900 & 3418 & 0.470450 & 42.553 & 0.000 & 55.319 & 2.128 \\
+1000 & 3825 & 0.445603 & 44.681 & 0.000 & 55.319 & 0.000 \\
+1100 & 4230 & 0.429279 & 51.064 & 0.000 & 44.681 & 4.255 \\
+1200 & 4521 & 0.414404 & 51.064 & 0.000 & 46.809 & 2.128 \\
+1300 & 4943 & 0.442314 & 48.936 & 0.000 & 46.809 & 4.255 \\
+1400 & 5382 & 0.444414 & 44.681 & 0.000 & 55.319 & 0.000 \\
+1500 & 5619 & 0.460444 & 46.809 & 0.000 & 51.064 & 2.128 \\
+1600 & 6172 & 0.419664 & 57.447 & 0.000 & 36.170 & 6.383 \\
+1700 & 6343 & 0.443532 & 44.681 & 0.000 & 55.319 & 0.000 \\
+1800 & 6939 & 0.444124 & 46.809 & 0.000 & 48.936 & 4.255 \\
+1900 & 7202 & 0.426561 & 48.936 & 4.255 & 44.681 & 2.128 \\
 \end{tabular}	
 
 \subsection{Number of neurons in the hidden layer}
 
 \begin{tabular}{c|cccccc}
-\#neurons & Time in ns & Error & Correct & False pos & False neg & Incorrect \\ \hline
-5 & 1704171340 & 0.479992 & 38.298 & 0.000 & 61.702 & 0.000 \\
-10 & 2484331946 & 0.426971 & 48.936 & 0.000 & 46.809 & 4.255 \\
-15 & 3127442384 & 0.471925 & 40.426 & 0.000 & 59.574 & 0.000 \\
-20 & 3898959784 & 0.475446 & 44.681 & 0.000 & 46.809 & 8.511 \\
-25 & 4975425019 & 0.447978 & 48.936 & 0.000 & 46.809 & 4.255 \\
-30 & 5182903552 & 0.438601 & 53.191 & 4.255 & 40.426 & 2.128 \\
-35 & 5853244268 & 0.483151 & 38.298 & 0.000 & 61.702 & 0.000 \\
-40 & 6601236191 & 0.452157 & 44.681 & 0.000 & 55.319 & 0.000 \\
-45 & 7328486162 & 0.351041 & 63.830 & 0.000 & 34.043 & 2.128 \\
-50 & 7928302619 & 0.410273 & 59.574 & 2.128 & 31.915 & 6.383 \\
-55 & 8820263051 & 0.383438 & 61.702 & 0.000 & 31.915 & 6.383 \\
-60 & 9336418384 & 0.368782 & 61.702 & 0.000 & 36.170 & 2.128 \\
-65 & 10175352804 & 0.415397 & 57.447 & 0.000 & 36.170 & 6.383 \\
+\#neurons & Time in ms & Error & Correct & False pos & False neg & Incorrect \\ \hline
+5 & 1704 & 0.479992 & 38.298 & 0.000 & 61.702 & 0.000 \\
+10 & 2484 & 0.426971 & 48.936 & 0.000 & 46.809 & 4.255 \\
+15 & 3127 & 0.471925 & 40.426 & 0.000 & 59.574 & 0.000 \\
+20 & 3898 & 0.475446 & 44.681 & 0.000 & 46.809 & 8.511 \\
+25 & 4975 & 0.447978 & 48.936 & 0.000 & 46.809 & 4.255 \\
+30 & 5182 & 0.438601 & 53.191 & 4.255 & 40.426 & 2.128 \\
+35 & 5853 & 0.483151 & 38.298 & 0.000 & 61.702 & 0.000 \\
+40 & 6601 & 0.452157 & 44.681 & 0.000 & 55.319 & 0.000 \\
+45 & 7328 & 0.351041 & 63.830 & 0.000 & 34.043 & 2.128 \\
+50 & 7928 & 0.410273 & 59.574 & 2.128 & 31.915 & 6.383 \\
+55 & 8820 & 0.383438 & 61.702 & 0.000 & 31.915 & 6.383 \\
+60 & 9336 & 0.368782 & 61.702 & 0.000 & 36.170 & 2.128 \\
+65 & 10175 & 0.415397 & 57.447 & 0.000 & 36.170 & 6.383 \\
 \end{tabular}
 
 \subsection{Learner}
 
 \begin{tabular}{l|cccccc}
 Backpropagation & Time in ms & Error & Correct & False pos & False neg & Incorrect \\ \hline
-Standard & 3894112 & 0.470532 & 40.426 & 0.000 & 59.574 & 0.000 \\
-Batch & 6631781 & 0.449182 & 40.426 & 0.000 & 59.574 & 0.000 \\
-Resilient & 6936377 & 0.500000 & 38.298 & 0.000 & 61.702 & 0.000 \\
+Standard & 3894 & 0.470532 & 40.426 & 0.000 & 59.574 & 0.000 \\
+Batch & 6631 & 0.449182 & 40.426 & 0.000 & 59.574 & 0.000 \\
+Resilient & 6936 & 0.500000 & 38.298 & 0.000 & 61.702 & 0.000 \\
 \end{tabular}
 
 \subsection{Learning rate}
 
 \begin{tabular}{c|cccccc}
-Learning rate & Time in ns & Error & Correct & False pos & False neg & Incorrect \\ \hline
-0.1 & 3775847140 & 0.303077 & 61.702 & 0.000 & 34.043 & 4.255 \\
-0.2 & 3818757272 & 0.422700 & 48.936 & 0.000 & 44.681 & 6.383 \\
-0.3 & 3811971495 & 0.395833 & 51.064 & 0.000 & 48.936 & 0.000 \\
-0.4 & 3819905742 & 0.392023 & 57.447 & 0.000 & 36.170 & 6.383 \\
-0.5 & 3824802315 & 0.452159 & 40.426 & 0.000 & 59.574 & 0.000 \\
-0.6 & 3827846415 & 0.452357 & 40.426 & 0.000 & 59.574 & 0.000 \\
-0.7 & 3789670337 & 0.473228 & 44.681 & 0.000 & 46.809 & 8.511 \\
-0.8 & 3933531427 & 0.425247 & 46.809 & 0.000 & 53.191 & 0.000 \\
-0.9 & 3833952291 & 0.429401 & 48.936 & 4.255 & 44.681 & 2.128 \\
-1.0 & 3843970392 & 0.457509 & 42.553 & 0.000 & 57.447 & 0.000 \\
+Learning rate & Time in ms & Error & Correct & False pos & False neg & Incorrect \\ \hline
+0.1 & 3775 & 0.303077 & 61.702 & 0.000 & 34.043 & 4.255 \\
+0.2 & 3818 & 0.422700 & 48.936 & 0.000 & 44.681 & 6.383 \\
+0.3 & 3811 & 0.395833 & 51.064 & 0.000 & 48.936 & 0.000 \\
+0.4 & 3819 & 0.392023 & 57.447 & 0.000 & 36.170 & 6.383 \\
+0.5 & 3824 & 0.452159 & 40.426 & 0.000 & 59.574 & 0.000 \\
+0.6 & 3827 & 0.452357 & 40.426 & 0.000 & 59.574 & 0.000 \\
+0.7 & 3789 & 0.473228 & 44.681 & 0.000 & 46.809 & 8.511 \\
+0.8 & 3933 & 0.425247 & 46.809 & 0.000 & 53.191 & 0.000 \\
+0.9 & 3833 & 0.429401 & 48.936 & 4.255 & 44.681 & 2.128 \\
+1.0 & 3843 & 0.457509 & 42.553 & 0.000 & 57.447 & 0.000 \\
 \end{tabular}
 
 \subsection{Momentum}
 
 \begin{tabular}{c|cccccc}
-Momentum & Time in ns & Error & Correct & False pos & False neg & Incorrect \\ \hline
-0.1 & 3920458256 & 0.387309 & 55.319 & 0.000 & 42.553 & 2.128  \\
-0.2 & 3873086034 & 0.460942 & 48.936 & 0.000 & 46.809 & 4.255  \\
-0.3 & 3804137815 & 0.383810 & 59.574 & 0.000 & 36.170 & 4.255  \\
-0.4 & 3838913256 & 0.428254 & 48.936 & 0.000 & 48.936 & 2.128  \\
-0.5 & 3808166121 & 0.415957 & 51.064 & 0.000 & 46.809 & 2.128  \\
-0.6 & 4622423029 & 0.449144 & 46.809 & 0.000 & 51.064 & 2.128  \\
-0.7 & 4800556495 & 0.496654 & 40.426 & 0.000 & 59.574 & 0.000  \\
-0.8 & 4470688803 & 0.453686 & 46.809 & 0.000 & 51.064 & 2.128  \\
-0.9 & 4246731707 & 0.790327 & 12.766 & 38.298 & 0.000 & 48.936  \\
-1.0 & 3882328899 & 0.799305 & 12.766 & 38.298 & 0.000 & 48.936  \\
+Momentum & Time in ms & Error & Correct & False pos & False neg & Incorrect \\ \hline
+0.1 & 3920 & 0.387309 & 55.319 & 0.000 & 42.553 & 2.128  \\
+0.2 & 3873 & 0.460942 & 48.936 & 0.000 & 46.809 & 4.255  \\
+0.3 & 3804 & 0.383810 & 59.574 & 0.000 & 36.170 & 4.255  \\
+0.4 & 3838 & 0.428254 & 48.936 & 0.000 & 48.936 & 2.128  \\
+0.5 & 3808 & 0.415957 & 51.064 & 0.000 & 46.809 & 2.128  \\
+0.6 & 4622 & 0.449144 & 46.809 & 0.000 & 51.064 & 2.128  \\
+0.7 & 4800 & 0.496654 & 40.426 & 0.000 & 59.574 & 0.000  \\
+0.8 & 4470 & 0.453686 & 46.809 & 0.000 & 51.064 & 2.128  \\
+0.9 & 4246 & 0.790327 & 12.766 & 38.298 & 0.000 & 48.936  \\
+1.0 & 3882 & 0.799305 & 12.766 & 38.298 & 0.000 & 48.936  \\
 \end{tabular}
 
 \section{Hidden Markov model parameters}
@@ -2113,29 +2137,29 @@ Momentum & Time in ns & Error & Correct & False pos & False neg & Incorrect \\ \
 \subsection{Number of hidden states}
 
 \begin{tabular}{c|ccccc}
-\# of hidden states & Time in ns & Correct & False pos & False neg & Incorrect \\ \hline
-1 & 1509917951 & 51.064 & 21.277 & 12.766 & 14.894 \\
-2 & 4581457629 & 61.702 & 17.021 & 19.149 & 2.128 \\
-3 & 9167806732 & 63.830 & 14.894 & 19.149 & 2.128 \\
-4 & 15113765856 & 63.830 & 14.894 & 19.149 & 2.128 \\
-5 & 22899169657 & 63.830 & 14.894 & 19.149 & 2.128 \\
+\# of hidden states & Time in ms & Correct & False pos & False neg & Incorrect \\ \hline
+1 & 1509 & 51.064 & 21.277 & 12.766 & 14.894 \\
+2 & 4581 & 61.702 & 17.021 & 19.149 & 2.128 \\
+3 & 9167 & 63.830 & 14.894 & 19.149 & 2.128 \\
+4 & 15113 & 63.830 & 14.894 & 19.149 & 2.128 \\
+5 & 22899 & 63.830 & 14.894 & 19.149 & 2.128 \\
 \end{tabular}
 
 \subsection{Number of iterations}
 
 \begin{tabular}{c|ccccc}
-\# of iterations & Time in ns & Correct & False pos & False neg & Incorrect \\ \hline
-1 & 2695617669 & 63.830 & 14.894 & 19.149 & 2.128 \\
-3 & 7112320489 & 63.830 & 14.894 & 19.149 & 2.128 \\
-5 & 11522937273 & 63.830 & 14.894 & 19.149 & 2.128 \\
+\# of iterations & Time in ms & Correct & False pos & False neg & Incorrect \\ \hline
+1 & 2695 & 63.830 & 14.894 & 19.149 & 2.128 \\
+3 & 7112 & 63.830 & 14.894 & 19.149 & 2.128 \\
+5 & 11522 & 63.830 & 14.894 & 19.149 & 2.128 \\
 \end{tabular}
 
 \subsection{Learner}
 
 \begin{tabular}{l|ccccc}
-Learner & Time in ns & Correct & False pos & False neg & Incorrect \\ \hline
-Baum-Welch & 22927365907 & 63.830 & 14.894 & 19.149 & 2.128\\
-K-Means & 1799183626 & 63.830 & 14.894 & 19.149 & 2.128\\
+Learner & Time in ms & Correct & False pos & False neg & Incorrect \\ \hline
+Baum-Welch & 22927 & 63.830 & 14.894 & 19.149 & 2.128\\
+K-Means & 1799 & 63.830 & 14.894 & 19.149 & 2.128\\
 \end{tabular}
 
 \cleardoublepage
